@@ -1,15 +1,13 @@
 import styled from "styled-components";
 import { ServiciosContainer } from "./Servicios";
 import { Titulo } from "./Servicios";
-import { createClient } from "@supabase/supabase-js";
-import { Database, Tables } from "./database-types";
 import { useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from 'react-router-dom'
 import { CardInputs } from "./ServiciosCard";
+import { supabase } from "./utils/ClientSupabase";
 
-
-const SearchButtonLink = styled.button /*style*/ `
+const SearchButtonLink = styled.button`
 width: 4.5rem;
 height: 2.188rem;
 background: #0D4E80;
@@ -30,7 +28,7 @@ color:white;
     color:white;
   }
 `
-const CreateFormContainer = styled.div /*style*/ `
+const CreateFormContainer = styled.div`
 background:red;
 width: 60.3125%;
 background:red;
@@ -43,13 +41,13 @@ height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
 `
 
-const CreateContainer = styled(ServiciosContainer) /*style*/ `
+const CreateContainer = styled(ServiciosContainer)`
 .createForm{
-align-self:center;
+  align-self:center;
 }
 `
 
-const FormHeader = styled.div /*style*/ `
+const FormHeader = styled.div`
 width:100%;
 height:6.25rem ;
 background:#6B8AAC;
@@ -66,7 +64,7 @@ align-items:center;
 margin-bottom:2rem;
 `
 
-const CreateServicioForm = styled.form /*style*/ `
+const CreateServicioForm = styled.form`
 display:flex;
 gap:2rem;
 flex-direction:column;
@@ -77,57 +75,55 @@ display:flex;
 flex-direction:column;
 }
 .dateInput{
-   display: flex;
-   flex-direction:row;
-   gap:2rem;
-   }
+  display: flex;
+  flex-direction:row;
+  gap:2rem;
+}
 `
 
-export const FormatoInputs = styled.div /*style*/ `
+export const FormatoInputs = styled.div`
     text-align:left;
     margin-left:6.25rem;
    display:flex;
    flex-direction:column;
    width:12.698rem;
    
-   .textInputs{
-   all:unset;
-   background-image: url('data:image/svg+xml;utf8,<svg fill="%23000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>');
-   display:flex;
-   align-items:center;
-font-style: normal;
-font-weight: 400;
-font-size: 15px;
-line-height: 20px;
-text-align:left;
-padding-left:.5rem;
-color: #838383;
-width: 100%;
-height: 2.5125rem; 
-background: #FFFFFF;
-border: 0.071793rem solid #727272; 
-border-radius: 0.215379rem; 
+   .textInputs {
+    all:unset;
+    background-image: url('data:image/svg+xml;utf8,<svg fill="%23000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>');
+    display:flex;
+    align-items:center;
+    font-style: normal;
+    font-weight: 400;
+    font-size: 15px;
+    line-height: 20px;
+    text-align:left;
+    padding-left:.5rem;
+    color: #838383;
+    width: 100%;
+    height: 2.5125rem; 
+    background: #FFFFFF;
+    border: 0.071793rem solid #727272; 
+    border-radius: 0.215379rem; 
    }
    .arrowChange{
-   background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
-  background-repeat: no-repeat;
-  background-position-x: 100%;
-  background-position-y: .5rem;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='black' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/><path d='M0 0h24v24H0z' fill='none'/></svg>");
+    background-repeat: no-repeat;
+    background-position-x: 100%;
+    background-position-y: .5rem;
    }
-.checked{
-background: linear-gradient(180deg, #FFFFFF 0%, #C7C7C7 100%);
-border: 1px solid #838383;
-width:1rem;
-height:1rem;
-&:checked {
-    border-color: #E2E2E2;
-    cursor: pointer;
-  }
-
-}
- 
+    .checked {
+    background: linear-gradient(180deg, #FFFFFF 0%, #C7C7C7 100%);
+    border: 1px solid #838383;
+    width:1rem;
+    height:1rem;
+    &:checked {
+        border-color: #E2E2E2;
+        cursor: pointer;
+    }
+    }
 `
-const FormLabels = styled.label /*style*/ `
+const FormLabels = styled.label`
  
 font-style: normal;
 font-weight: 700;
@@ -136,7 +132,7 @@ line-height: 1.375rem;
 color: #474747;
 `
 
-export const DateInput = styled(StyledDatePicker) /*style*/ `
+export const DateInput = styled(StyledDatePicker)`
  
 font-style: normal;
 font-weight: 400;
@@ -151,7 +147,7 @@ background: #FFFFFF;
 border: 0.071793rem solid #727272; 
 border-radius: 0.215379rem; 
 `
-export const Horario = styled.input /*style*/ `
+export const Horario = styled.input`
  
 font-style: normal;
 font-weight: 400;
@@ -170,30 +166,22 @@ margin-top: .25rem;
   filter: invert(100%);
 }
 `
-export const TimeInput = styled.div /*style*/ `
+export const TimeInput = styled.div`
 display:flex;
 flex-direction:column;
 
 `
-export const FechaInput = styled.div /*style*/ `
+export const FechaInput = styled.div`
 display:flex;
 flex-direction:column;
 `
-
 
 const CreateClientForm = () => {
-    const supabaseUrl = 'https://stnrrgqnedpadgelrkbx.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bnJyZ3FuZWRwYWRnZWxya2J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTUzNDQxNDIsImV4cCI6MjAxMDkyMDE0Mn0.NIEDU3CpqCTJQfGmJInrQc_wYITz2BGSMEF08RL4s6I';
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey)
-    const today = new Date();
-    const [_fetchError, setFetchError] = useState("");
-    const [url, setUrl] = useState("")
+    const [_fetchError, _] = useState("");
     const [email, setEmail] = useState("")
-    const [estadoFacturacion, setEstadoFacturacion] = useState("")
     const [tipoCliente, setTipoCliente] = useState("")
-    const [responsableId, setResponsableId] = useState<number | undefined>()
     const [telefono, setTelefono] = useState("")
-    const [servicioFolio, SetServicioFolio] = useState<number | null>(null)
+    const [_servicioFolio, SetServicioFolio] = useState<number | null>(null)
     const [nombre, setNombre] = useState<string>("")
     const [apellido, setApellido] = useState<string>("")
     const navigate = useNavigate()
@@ -227,9 +215,6 @@ const CreateClientForm = () => {
                 }
                 console.log("hola")
                 SetServicioFolio(clienteId)
-
-
-
             }
         } catch (err) {
             console.error("Error adding servicio:", err);
@@ -262,8 +247,6 @@ const CreateClientForm = () => {
         const cambio = event.target.value
         setApellido(cambio)
     }
-
-
 
     return (
         <CreateContainer id="createContainer">
@@ -344,7 +327,6 @@ const CreateClientForm = () => {
             </CreateFormContainer>
         </CreateContainer>
     )
-
 }
 
 export default CreateClientForm

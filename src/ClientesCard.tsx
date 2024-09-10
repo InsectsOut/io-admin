@@ -1,9 +1,8 @@
-
-import { useEffect, useRef, useState } from "react"
+import { supabase } from "./utils/ClientSupabase";
+import { useEffect, useState } from "react"
 import styled from "styled-components"
-import { Database, Tables } from "./database-types";
+import { Tables } from "./database-types";
 import { Titulo } from "./Servicios";
-import { createClient } from "@supabase/supabase-js";
 import { useParams } from 'react-router-dom';
 import { servicioOptions } from "./tipo_servicios";
 import { CardContainer, ReturnButton } from "./ServiciosCard";
@@ -17,19 +16,17 @@ import { StyledButton } from "./ServiciosCard";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import DireccionCard from "./DireccionCard";
 
-
-type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
 
-const ClientCardContainer = styled(CardContainer) /*style*/ `
+const ClientCardContainer = styled(CardContainer)`
 height:30.625rem;
 
 `
-export const BodyContainer = styled.div /*style*/ `
+export const BodyContainer = styled.div`
 display:flex;
 gap:2.94rem;
 `
-const NumberInputs = styled(CardInputs) /*style*/ `
+const NumberInputs = styled(CardInputs)`
 &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
   appearance: none;
@@ -40,13 +37,14 @@ const NumberInputs = styled(CardInputs) /*style*/ `
   &::-webkit-outer-spin-button:hover {
     background-color: #ddd;
   }
+}
 `
 
 const inputWidthStyle = {
     width: "19.815rem"
 }
 
-export const AddResponsableCard = styled.div /*style*/ `
+export const AddResponsableCard = styled.div`
   width: 24.625rem; 
   height: 5.875rem; 
   background: #FFFFFF;
@@ -74,37 +72,23 @@ const TextoAddCard = styled.h1 /*style*/`
   color: #727272;
 `;
 
-
-
-
 const ClientesCard = () => {
-
-    interface TipoCliente {
-        tipo_cliente: string;
-    }
-
-    const supabaseUrl = 'https://stnrrgqnedpadgelrkbx.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bnJyZ3FuZWRwYWRnZWxya2J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTUzNDQxNDIsImV4cCI6MjAxMDkyMDE0Mn0.NIEDU3CpqCTJQfGmJInrQc_wYITz2BGSMEF08RL4s6I';
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey)
-    const [cliente, setCliente] = useState<Cliente[] | null>([])
+    const [, setCliente] = useState<Cliente[] | null>([])
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
     const [email, setEmail] = useState<string>("")
     const [apellido, setApellido] = useState<any>("")
     const { id } = useParams()
     const [tipoCliente, setTipoCliente] = useState<string>("")
-    const [tiposCliente, setTiposCliente] = useState<TipoCliente[]>([])
     const [responsable, setResponsable] = useState<string>("")
     const [isClicked, setClicked] = useState<boolean>(false);
     const [responsableExists, setResponsableExists] = useState<boolean | null>(false)
-    const [responsableId, setResponsableId] = useState<number | null>()
+    const [, setResponsableId] = useState<number | null>()
     const [updater, setUpdater] = useState(false)
-
 
     const handleChildStateChange = () => {
         setClicked(true)
     }
-
 
     const handleChildValue = (nuevoValor: string) => {
         setResponsable(nuevoValor)
@@ -143,7 +127,7 @@ const ClientesCard = () => {
                 .from("Clientes")
                 .select("*")
                 .filter("id", "eq", `${id}`)
-            const { data: cliente, error } = await query
+            const { data: cliente } = await query
             if (cliente) {
                 setCliente(cliente)
                 setNombre(cliente[0]?.nombre)
@@ -173,13 +157,7 @@ const ClientesCard = () => {
 
     }
 
-    const appearResponsableCard = () => {
-
-        setResponsableExists(true)
-    }
-
     const updateCliente = async () => {
-
         try {
             const { data, error } = await supabase
                 .from("Clientes")
@@ -315,7 +293,7 @@ const ClientesCard = () => {
                         </div>
                     </AddResponsableCard>
                 )}
-                 <DireccionCard></DireccionCard>
+                <DireccionCard></DireccionCard>
             </BodyContainer>
             <ReturnButton>Regresar</ReturnButton>
             <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { updateOrInsert(); updateCliente(); }}>

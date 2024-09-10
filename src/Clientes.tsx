@@ -1,28 +1,24 @@
 import { useEffect, useState } from "react";
-import { Database, Tables } from "./database-types";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "./utils/ClientSupabase";
+import { Tables } from "./database-types";
 import { ClientList, ClientName, CreateButton, EstatusForma, FiltrosContainer, FiltrosLista, FlechaAbajo, FolioLink, ModalContainer, ModalContentBottom, ModalContentTop, SearchBar, SearchBarForm, SearchButton, ServiciosContainer, ServiciosElement, ServiciosElement1, ServiciosElement2, ServiciosElement3, ServiciosElement4, ServiciosSelectContainer, Titulo } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
-type Servicio = Tables<"Servicios">
-type Cliente = Tables<"Clientes">
 import DelModal from "./DeleteModal";
 
-const ClientesElement1 = styled(ServiciosElement1) /*style*/ `
+type Cliente = Tables<"Clientes">
+
+const ClientesElement1 = styled(ServiciosElement1)`
 justify-content:unset;
 justify-content:left;
 &:hover{
 cursor: pointer;
 transform: scale(1.05); 
 }
-
 `
 
 const Clientes = () => {
-    const supabaseUrl = 'https://stnrrgqnedpadgelrkbx.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bnJyZ3FuZWRwYWRnZWxya2J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTUzNDQxNDIsImV4cCI6MjAxMDkyMDE0Mn0.NIEDU3CpqCTJQfGmJInrQc_wYITz2BGSMEF08RL4s6I';
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey)
     const [isRotated, setIsRotated] = useState(false);
     const [isRotated2, setIsRotated2] = useState(false)
     const [text, setText] = useState("")
@@ -31,25 +27,15 @@ const Clientes = () => {
     const [clientes, SetClientes] = useState<Cliente[]>([])
     const [clientId, setClientId] = useState<number | null>()
     const [selectedOptions, setSelectedOptions] = useState("")
-    const [_fetchError, setFetchError] = useState("");
+    const [_fetchError] = useState("");
     const [barraBusqueda, setBarraBusqueda] = useState("");
-    const [clientesFiltrados, setClientesFiltradis] = useState<Cliente[]>([])
+    const [clientesFiltrados] = useState<Cliente[]>([])
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const itemsPerPage: number = 8;
     const [allClientes, setAllCliente] = useState<Cliente[]>([])
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [deletedClient, setDeletedCliente] = useState<any>([])
-
-
-    // const [totalPages, setTotalPages] = useState<number>(1);
-    // const [currentPage, setCurrentPage] = useState<number>(1);
-    // const [totalPages, setTotalPages] = useState<number>(1);
-    // const itemsPerPage: number = 8;
-
-
-
-
 
     const handleSearchChange = (e: any) => {
         const cambio = e.target.value
@@ -124,7 +110,7 @@ const Clientes = () => {
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             if (barraBusqueda) {
                 query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`)
-                const { error, data: cliente, count } = await query
+                const { data: cliente, count } = await query
                 if (cliente) {
                     console.log(cliente)
                     SetClientes(cliente);
@@ -132,7 +118,7 @@ const Clientes = () => {
                     setTotalPages(totalPages || 0);
                 }
             }
-            const { error, data: cliente } = await query
+            const { data: cliente } = await query
             if (cliente) {
                 SetClientes(cliente);
             }
@@ -204,7 +190,7 @@ const Clientes = () => {
                 query = query.eq(filtroQuery, parametros);
             }
 
-            const { error, data: cliente, count } = await query
+            const { data: cliente, count } = await query
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
 
@@ -315,13 +301,13 @@ const Clientes = () => {
                 </SearchBarForm>
                 <FiltrosContainer>
                     <FiltrosLista
-                        onClick={(event) => { handleFiltrosClick(event); handleRotation(); }}
+                        onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
                     >Cliente <FlechaAbajo
                             className={isRotated ? "rotated" : ""}
 
                         /> </FiltrosLista>
                     <FiltrosLista
-                        onClick={(event) => { handleFiltrosClick(event); handleRotation2(); }}
+                        onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
                     >Tipo de Cliente <FlechaAbajo
                             className={isRotated2 ? "rotated2" : ""}
                         />

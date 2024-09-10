@@ -1,12 +1,10 @@
 // Inside PaginationComponent.tsx
-
-import React from 'react';
 import styled from 'styled-components';
 import { MdOutlineLastPage } from "react-icons/md";
 import { MdFirstPage } from "react-icons/md";
 
 //falta cambiar la pagina a 1 cuando vaya a buscar algo mas 
-const NumPaginas = styled.div /*style*/ `
+const NumPaginas = styled.div`
 position: absolute;
 width: 10.25rem;
 top:51rem;
@@ -16,7 +14,7 @@ justify-content:left;
 gap:1rem;
 `
 
-const PageButt = styled.button /*style*/ `
+const PageButt = styled.button`
 all:unset;
 display:flex;
 justify-content:center;
@@ -36,10 +34,10 @@ interface PaginationProps {
   currentPage: number;
   totalPages: number;
   onPageChange: (page: number) => void;
-  
+
 }
 
-const PaginationComponent: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange}) => {
+const PaginationComponent: React.FC<PaginationProps> = ({ currentPage, totalPages, onPageChange }) => {
   const goToPage = (page: number) => {
     onPageChange(page);
   };
@@ -48,9 +46,9 @@ const PaginationComponent: React.FC<PaginationProps> = ({ currentPage, totalPage
 
   return (
     <NumPaginas>
-      <PageButt disabled={currentPage === 1} onClick={() => { goToPage(currentPage - 1);  }}><MdFirstPage style={{color:"#838383"}} size={25} /></PageButt>
-      <span style={{color:'#838383'}}>{currentPage} / {totalPages}</span>
-      <PageButt disabled={currentPage === totalPages || totalPages===0} onClick={() => {goToPage(currentPage + 1); }}><MdOutlineLastPage style={{color:"#838383"}} size={25} /></PageButt>
+      <PageButt disabled={currentPage === 1} onClick={() => { goToPage(currentPage - 1); }}><MdFirstPage style={{ color: "#838383" }} size={25} /></PageButt>
+      <span style={{ color: '#838383' }}>{currentPage} / {totalPages}</span>
+      <PageButt disabled={currentPage === totalPages || totalPages === 0} onClick={() => { goToPage(currentPage + 1); }}><MdOutlineLastPage style={{ color: "#838383" }} size={25} /></PageButt>
       {/* Additional logic for displaying and navigating to specific pages */}
     </NumPaginas>
   );

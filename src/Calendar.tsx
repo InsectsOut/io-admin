@@ -1,13 +1,12 @@
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import daygrid from "@fullcalendar/daygrid";
 import timegrid from "@fullcalendar/timegrid";
 import interaction from "@fullcalendar/interaction";
 import EventModal from "./EventModal";
 import { supabase } from "./utils/ClientSupabase";
-import { Database, Tables } from "./database-types";
-import { FormatoInputs } from "./CreateServiceForm";
-import { mainStyle, mainStyleNoArrow } from "./ServiciosCard";
+import { Tables } from "./database-types";
+import { mainStyle } from "./ServiciosCard";
 import styled from "styled-components";
 
 type Servicio = Tables<"Servicios">;
@@ -24,7 +23,7 @@ interface FilterEventsProps {
   hovered: boolean;
 }
 
-const FilterEvents = styled.div<FilterEventsProps> /*style*/ `
+const FilterEvents = styled.div<FilterEventsProps>`
   background: ${props => (props.hovered ? 'rgba(0, 0, 0, 0.1)' : 'rgba(0, 0, 0, 0)')} !important;
   cursor: pointer;
   color: #474747;
@@ -38,7 +37,7 @@ const FilterEvents = styled.div<FilterEventsProps> /*style*/ `
   padding-left: 0.5rem;
 `;
 
-const Modal = styled.div /*style*/ `
+const Modal = styled.div`
   position: absolute;
   display: flex;
   z-index: 999;
@@ -57,7 +56,7 @@ const Modal = styled.div /*style*/ `
   }
 `;
 
-const FilterContainer = styled.div /*style*/ `
+const FilterContainer = styled.div`
   position: absolute;
   left: 15%;
   height: 40.33px;
@@ -85,7 +84,7 @@ const FilterContainer = styled.div /*style*/ `
   }
 `;
 
-const RelativeContainer = styled.div /*style*/ `
+const RelativeContainer = styled.div`
   position: relative;
 `;
 
@@ -106,7 +105,7 @@ const Calendar = () => {
         Clientes(*),
         Empleados:aplicador_Responsable(*)
       `);
-      const { data, error } = await query;
+      const { data, error } = query;
       if (error) {
         console.log(error);
       }
@@ -120,7 +119,7 @@ const Calendar = () => {
   const fetchEmpleados = async () => {
     try {
       let query = await supabase.from("Empleados").select(`*`);
-      const { data, error } = await query;
+      const { data, error } = query;
       if (error) {
         console.log(error);
       }
@@ -133,7 +132,7 @@ const Calendar = () => {
   const fetchClientes = async () => {
     try {
       let query = await supabase.from("Clientes").select(`*`);
-      const { data, error } = await query;
+      const { data, error } = query;
       if (error) {
         console.log(error);
       }
@@ -274,7 +273,7 @@ const Calendar = () => {
   };
 
   return (
-    <div style={{ padding: '20px', color: 'black', fontFamily: "Dm Sans", position: "relative" }}>
+    <div style={{ padding: '20px', color: 'black', fontFamily: "Open Sans", position: "relative" }}>
       <FilterContainer className="positioning">
         <RelativeContainer>
           <FilterEvents

@@ -2,8 +2,7 @@ import { Page, Text, Document, StyleSheet, View, Image, Font, PDFViewer } from '
 import logo from '../src/assets/logoGrande.png'
 import { supabase } from './utils/ClientSupabase';
 import { useEffect, useState } from 'react';
-import { Database, Tables } from "./database-types";
-import React from 'react';
+import { Tables } from "./database-types";
 import { useParams } from 'react-router-dom';
 
 type Servicio = Tables<"Servicios">

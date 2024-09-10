@@ -1,20 +1,15 @@
 import styled from "styled-components";
 import { ServiciosContainer } from "./Servicios";
 import { Titulo } from "./Servicios";
-import { createClient } from "@supabase/supabase-js";
-import { Database, Tables } from "./database-types";
+import { Tables } from "./database-types";
 import { useEffect, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
-import { Link, NavLink, useLocation } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom'
+import { supabase } from "./utils/ClientSupabase";
 type Cliente = Tables<"Clientes">
 type Responsable = Tables<"Responsables">
-import { SearchButton } from "./Servicios";
 
-
-
-
-const SearchButtonLink = styled.button /*style*/ `
+const SearchButtonLink = styled.button `
 width: 4.5rem;
 height: 2.188rem;
 background: #0D4E80;
@@ -35,7 +30,7 @@ color:white;
     color:white;
   }
 `
-const CreateFormContainer = styled.div /*style*/ `
+const CreateFormContainer = styled.div `
 background:red;
 width: 60.3125%;
 background:red;
@@ -47,13 +42,13 @@ height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
 `
 
-const CreateContainer = styled(ServiciosContainer) /*style*/ `
+const CreateContainer = styled(ServiciosContainer) `
 .createForm{
 align-self:center;
 }
 `
 
-const FormHeader = styled.div /*style*/ `
+const FormHeader = styled.div `
 width:100%;
 height:6.25rem ;
 background:#6B8AAC;
@@ -70,7 +65,7 @@ align-items:center;
 margin-bottom:2rem;
 `
 
-const CreateServicioForm = styled.form /*style*/ `
+const CreateServicioForm = styled.form `
 display:flex;
 gap:2rem;
 flex-direction:column;
@@ -87,7 +82,7 @@ flex-direction:column;
    }
 `
 
-export const FormatoInputs = styled.div /*style*/ `
+export const FormatoInputs = styled.div `
     text-align:left;
     margin-left:6.25rem;
    display:flex;
@@ -131,7 +126,7 @@ height:1rem;
 }
  
 `
-const FormLabels = styled.label /*style*/ `
+const FormLabels = styled.label `
  
 font-style: normal;
 font-weight: 700;
@@ -140,7 +135,7 @@ line-height: 1.375rem;
 color: #474747;
 `
 
-export const DateInput = styled(StyledDatePicker) /*style*/ `
+export const DateInput = styled(StyledDatePicker) `
  
 font-style: normal;
 font-weight: 400;
@@ -155,7 +150,7 @@ background: #FFFFFF;
 border: 0.071793rem solid #727272; 
 border-radius: 0.215379rem; 
 `
-export const Horario = styled.input /*style*/ `
+export const Horario = styled.input `
  
 font-style: normal;
 font-weight: 400;
@@ -174,39 +169,30 @@ margin-top: .25rem;
   filter: invert(100%);
 }
 `
-export const TimeInput = styled.div /*style*/ `
+export const TimeInput = styled.div `
 display:flex;
 flex-direction:column;
 
 `
-export const FechaInput = styled.div /*style*/ `
+export const FechaInput = styled.div `
 display:flex;
 flex-direction:column;
 `
-
 
 const CreateServiceForm = () => {
-    const supabaseUrl = 'https://stnrrgqnedpadgelrkbx.supabase.co';
-    const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InN0bnJyZ3FuZWRwYWRnZWxya2J4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE2OTUzNDQxNDIsImV4cCI6MjAxMDkyMDE0Mn0.NIEDU3CpqCTJQfGmJInrQc_wYITz2BGSMEF08RL4s6I';
-    const supabase = createClient<Database>(supabaseUrl, supabaseKey)
     const [clienteId, setClienteId] = useState<number | undefined>()
     const [clientes, setClientes] = useState<Cliente[]>([])
-    const [responsableError, setResponsableError] = useState("")
     const [selectedDate, setSelectedDate] = useState<null | Date>(null);
-    const today = new Date();
     const [_fetchError, setFetchError] = useState("");
     const [selectedTime, setSelectedTime] = useState<string>('00:00');
     const [responsables, setResponsables] = useState<Responsable[]>([])
-    const [nombreCliente, setNombreDelCliente] = useState("")
-    const [nombreResponsable, setNombreDelResponsable] = useState("")
-    const [url, setUrl] = useState("")
     const [observaciones2, setObservaciones] = useState("")
     const [frecuencia, setFrecuencia] = useState("")
     const [estadoFacturacion, setEstadoFacturacion] = useState("")
     const [tipoServicio, setTipoServicio] = useState("")
     const [responsableId, setResponsableId] = useState<number | undefined>()
     const [ordenDeCommpra, setOrdeDeCompra] = useState("")
-    const [servicioFolio, SetServicioFolio] = useState<number | null>(null)
+    const [_, SetServicioFolio] = useState<number | null>(null)
     const [otroSelected, setOtroSelected] = useState<boolean>(true)
     const navigate = useNavigate()
 
@@ -299,9 +285,6 @@ const CreateServiceForm = () => {
                 }
                 console.log("hola")
                 SetServicioFolio(folio)
-
-
-
             }
         } catch (err) {
             console.error("Error adding servicio:", err);

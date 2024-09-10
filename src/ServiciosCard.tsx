@@ -1,29 +1,25 @@
-import { useEffect, useRef, useState } from "react"
-//import React from "react";
+import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { Database, Tables } from "./database-types";
+import { Tables } from "./database-types";
 import { FormatoInputs } from "./CreateServiceForm";
 import { Titulo } from "./Servicios";
-import { createClient } from "@supabase/supabase-js";
-import { useLocation, useParams } from 'react-router-dom';
+import { useParams } from 'react-router-dom';
 import { FechaInput } from "./CreateServiceForm";
 import { DateInput } from "./CreateServiceForm";
 import { TimeInput } from "./CreateServiceForm";
 import { Horario } from "./CreateServiceForm";
-import { FaEdit } from "react-icons/fa";
 import { servicioOptions } from "./tipo_servicios";
 import Modal from "./ModalComponents";
-type Servicio = Tables<"Servicios">
-type Cliente = Tables<"Clientes">
 import RegistrosCard from "./RegistrosCard";
 import { supabase } from "./utils/ClientSupabase";
 import { IoDownloadOutline } from "react-icons/io5";
-import { FaRegFilePdf } from "react-icons/fa6";
 import { useNavigate } from "react-router-dom";
 
+type Servicio = Tables<"Servicios">
+type Cliente = Tables<"Clientes">
 
-export const CardContainer = styled.div /*style*/`
+export const CardContainer = styled.div`
 width: 24.625rem;
 min-height:fit-content;
 height: 80vh;
@@ -38,12 +34,12 @@ flex-direction:column;
 gap:1rem;
 
 `
-export const CardInputs = styled.input /*style*/ `
+export const CardInputs = styled.input`
 width: 19.815rem;
 height:2.513rem;
 `
 
-export const DetallesTitulo = styled.h1 /*style*/ `
+export const DetallesTitulo = styled.h1`
  
 font-style: normal;
 font-weight: 700;
@@ -55,7 +51,7 @@ color: #000000;
 margin-bottom:unset;
 margin-top:0;
 `
-export const InputsContainer = styled(FormatoInputs) /*style*/ `
+export const InputsContainer = styled(FormatoInputs)`
 flex-direction:column;
 display:flex;
 justify-content:left;
@@ -103,7 +99,7 @@ export const mainStyleNoArrow = {
     paddingLeft: ".5rem",
 } as any;
 
-export const DetailsTitle = styled.h2 /*style*/ `
+export const DetailsTitle = styled.h2`
  
 font-style: normal;
 font-weight: 400;
@@ -120,7 +116,7 @@ type StyledButtonProps = {
     posy?: string
 }
 
-export const StyledButton = styled.button<StyledButtonProps> /*style*/`
+export const StyledButton = styled.button<StyledButtonProps>`
 all:unset;
   background-color: ${props => (props.clicado ? '#0D4E80' : 'gray')};
    
@@ -154,7 +150,7 @@ export const ReturnButton = styled.button/*style*/ `
 `
 
 
-const ServiciosCardContainer = styled.div /*style*/ `
+const ServiciosCardContainer = styled.div`
 display:flex;
 flex-direction:column;
 position: relative;
@@ -171,7 +167,7 @@ right:13%;
 padding-top:4.925rem;
 }
 `
-const AddResponsableCard = styled.div /*style*/ `
+const AddResponsableCard = styled.div`
 width: 24.625rem; 
 height: 5.875rem; 
 background: #FFFFFF;
@@ -185,7 +181,7 @@ align-items:center;
 cursor: pointer;
 }
 `
-const TextoAddCard = styled.h1 /*style*/`
+const TextoAddCard = styled.h1`
 height:min-content;
 margin:unset;
  
@@ -199,8 +195,7 @@ text-align: center;
 color: #727272;
 `;
 
-const PdfMailButotn = styled.div<StyledButtonProps> /*style*/`
-  
+const PdfMailButton = styled.div<StyledButtonProps>`
   width: 32%; 
   height: 90px; 
   top: 153px;
@@ -214,7 +209,7 @@ const PdfMailButotn = styled.div<StyledButtonProps> /*style*/`
   border-color:black;
 
   p{
-  fontSize:"18px";
+  font-size:"18px";
   color:#727272;
   font-weight:600;
   }
@@ -299,15 +294,11 @@ const ServiciosCard = () => {
                 setClienteId(servicio[0]?.Clientes?.id as number)
                 setTipoServicio(servicio[0]?.tipo_servicio as string)
                 if (servicio?.[0]?.tipo_plaga_array_id !== null) {
-                    setPlagaSelected(() => [...servicio?.[0]?.tipo_plaga_array_id] ?? []);
+                    setPlagaSelected(() => [...servicio?.[0]?.tipo_plaga_array_id]);
                 }
                 else {
                     setPlagaSelected([])
-
                 }
-
-
-
             }
 
         }
@@ -670,7 +661,7 @@ const ServiciosCard = () => {
                         ></RegistrosCard>
                     </div>
 
-                    <PdfMailButotn
+                    <PdfMailButton
                         posy="4.925"
                     >
                         <p>Registro de aplicación</p>
@@ -683,15 +674,12 @@ const ServiciosCard = () => {
                             >Descargar PDF</p>
                         </div>
 
-                    </PdfMailButotn>
-                    <PdfMailButotn
+                    </PdfMailButton>
+                    <PdfMailButton
                         posy="12.3125"
-                    ></PdfMailButotn>
+                    />
 
                 </div>
-
-
-
             </ServiciosCardContainer>
             <ReturnButton>Regresar</ReturnButton>
             <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { window.location.reload() }) }}>
