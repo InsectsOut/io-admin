@@ -1,0 +1,36 @@
+
+export const PestControlData = [
+  {
+    folio: 'ABC123',
+    plagicida: 'Fumigador X',
+    tipo_de_plaga: 'Cucarachas',
+    created_at: '2024-04-23T10:00:00Z',
+    updated_at: '2024-04-23T10:30:00Z',
+    tipo_aplicacion: 'Aspersión',
+    area_aplicacion: 'Jardín',
+    dosificacion: 150,
+    unidades: 'g',
+  },
+  {
+    folio: 'XYZ789',
+    plagicida: 'Veneno Y',
+    tipo_de_plaga: 'Arañas',
+    created_at: '2024-04-22T09:30:00Z',
+    updated_at: '2024-04-22T10:15:00Z',
+    tipo_aplicacion: 'Aspersión',
+    area_aplicacion: 'Cocina',
+    dosificacion: 100,
+    unidades: 'ml',
+  },
+  {
+    folio: 'DEF456',
+    plagicida: 'Insecticida Z',
+    tipo_de_plaga: 'Hormigas',
+    created_at: '2024-04-21T08:45:00Z',
+    updated_at: '2024-04-21T09:20:00Z',
+    tipo_aplicacion: 'Goteo en gel',
+    area_aplicacion: 'Patio trasero',
+    dosificacion: 200,
+    unidades: 'g',
+  },
+];
