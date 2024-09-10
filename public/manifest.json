@@ -1,0 +1,24 @@
+
+{
+    "name": "Insects Out Software",
+    "short_name": "Insects Out",
+    "description": "Software de Operación Para Control de Plagas",
+    "start_url": ".",
+    "display": "standalone",
+    "background_color": "#ffffff",
+    "theme_color": "#000000",
+    "icons": [
+      {
+        "src": "../src/assets/icono1A.png",
+        "sizes": "180x180",
+        "type": "image/png"
+      },
+      {
+        "src": "../src/assets/icono1B.png",
+        "sizes": "120x120",
+        "type": "image/png"
+      }
+
+    ]
+  }
+  

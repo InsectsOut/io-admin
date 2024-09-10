@@ -1,0 +1,52 @@
+{
+  "name": "io-reportes",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "build2": "vite build",
+    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@fontsource/dm-sans": "^5.0.18",
+    "@fontsource/open-sans": "^5.0.28",
+    "@fullcalendar/core": "^6.1.14",
+    "@fullcalendar/daygrid": "^6.1.14",
+    "@fullcalendar/interaction": "^6.0.2",
+    "@fullcalendar/react": "^6.1.14",
+    "@fullcalendar/timegrid": "^6.0.2",
+    "@react-pdf/renderer": "^3.4.4",
+    "@supabase/supabase-js": "^2.39.7",
+    "install": "^0.13.0",
+    "npm": "^10.8.1",
+    "react": "^18.2.0",
+    "react-datepicker": "^6.1.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.12.0",
+    "react-router-dom": "^6.20.0",
+    "react-select": "^5.8.0",
+    "styled-components": "^6.1.1",
+    "ts-pattern": "^5.0.8",
+    "workbox-background-sync": "^7.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.43",
+    "@types/react-datepicker": "^6.0.1",
+    "@types/react-dom": "^18.2.17",
+    "@types/workbox-expiration": "^5.0.0",
+    "@types/workbox-precaching": "^5.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.14.0",
+    "@typescript-eslint/parser": "^6.14.0",
+    "@vitejs/plugin-react-swc": "^3.5.0",
+    "eslint": "^8.55.0",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.5",
+    "typescript": "^5.3.3",
+    "vite": "^5.0.8",
+    "vite-plugin-purgecss-updated-v5": "^1.2.1",
+    "workbox-precaching": "^7.0.0"
+  }
+}
