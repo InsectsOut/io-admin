@@ -15,6 +15,7 @@ import MyDocument from "./Constancia";
 import { PDFViewer } from "@react-pdf/renderer";
 import Calendar from "./Calendar";
 import EmpleadosCard from "./EmpleadosCard";
+import CreateEmployee from "./CreateEmployee";
 
 
 
@@ -32,7 +33,7 @@ const AppRoutes = () => {
                 throw new Error(error.message)
             }
             setSessionData(data?.session)
-
+            console.log(data);
         }
 
         catch (err) {
@@ -53,7 +54,7 @@ const AppRoutes = () => {
 
         })
     }
-
+   
 
     useEffect(() => {
         authSupabase()
@@ -83,6 +84,7 @@ const AppRoutes = () => {
                     <Route path="/calendar" element={<Calendar />} />
                     <Route path="/empleados" element={<DocumentUploader />} />
                     <Route path="/empleados/:id" element={<EmpleadosCard />} />
+                    <Route path="/nuevo-empleado" element={<CreateEmployee />} />
                 </>
             }
 

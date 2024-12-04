@@ -65,7 +65,7 @@ align-items:center;
 margin-bottom:2rem;
 `
 
-const CreateServicioForm = styled.form `
+const CreateServicioForm = styled.form /*style*/`
 display:flex;
 gap:2rem;
 flex-direction:column;
@@ -73,6 +73,7 @@ color:#474747;
 height:99vh;
 .formatoInputs{
 display:flex;
+overflow:scroll;
 flex-direction:column;
 }
 .dateInput{
@@ -152,7 +153,7 @@ background: none;
 border-radius: 0.215379rem; 
 width:  ${props => (props.wid ?? "12.635625rem" )};
 `
-export const Horario = styled.input `
+export const Horario = styled.input /*style*/ `
  
 font-style: normal;
 font-weight: 400;
@@ -176,9 +177,16 @@ display:flex;
 flex-direction:column;
 
 `
-export const FechaInput = styled.div `
+export const FechaInput = styled.div /*style*/ `
 display:flex;
 flex-direction:column;
+
+.dateInputContainer{
+background:white;
+border: 0.071793rem solid #727272; 
+border-radius: 0.215379rem; 
+
+}
 `
 
 const CreateServiceForm = () => {
@@ -265,7 +273,7 @@ const CreateServiceForm = () => {
                         horario_servicio: selectedTime,
                         observaciones: observaciones2,
                         frecuencia_recomendada: frecuencia,
-                        direccion_id: 7,
+                        direccion_id: 34,
                         orden_compra: ordenDeCommpra,
                         tipo_servicio: tipoServicio,
                         tipo_folio: estadoFacturacion,
@@ -363,7 +371,7 @@ const CreateServiceForm = () => {
         <CreateContainer>
             <Titulo>Servicios</Titulo>
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo servicio, complete el siguiente formulario.</FormHeader>
-                <CreateServicioForm>
+                <CreateServicioForm className="oli">
                     <FormatoInputs>
                         <FormLabels >Nombre del Cliente</FormLabels>
                         <select value={clienteId} onChange={handleClientClick} style={{ all: "unset", background: "#FFFFFF", color: "#474747", height: "2.513rem", width: "12.635625rem", border: "0.072rem solid #727272", borderRadius: "0.215rem", display: "flex", alignItems: "center", paddingLeft: ".5rem", fontSize: ".9rem" }}>
@@ -376,7 +384,11 @@ const CreateServiceForm = () => {
                     <FormatoInputs className="dateInput">
                         <FechaInput>
                             <FormLabels >Fecha</FormLabels>
-                            <DateInput placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" ></DateInput>
+                            <div className="dateInputContainer">
+                            <DateInput
+                            
+                            placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" ></DateInput>
+                            </div>
                         </FechaInput>
                         <TimeInput>
                             <FormLabels >Horario</FormLabels>

@@ -4,13 +4,18 @@ import { MdEditSquare } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { supabase } from "./utils/ClientSupabase";
 
 
+type DownloaderProps = {
+ editable?:boolean
 
-const DownloaderContainer = styled.div /*style*/ `
+}
+
+const DownloaderContainer = styled.div<DownloaderProps> /*style*/  `
 width:95%;
 max-width:85%;
-background:white;
+background:${props => (props.editable ? "rgb(211,211,211)": "white")};
 color:black;
 display:flex;
 align-items:center;
@@ -26,6 +31,15 @@ justify-content:flex-end;
 gap:1rem;
 align-items:center;
 }
+position:relative;
+.editorInput{
+ background: white;
+ border-radius: 0.25rem;
+ margin-left:.5rem;
+color:black;
+ font-size:1rem;
+
+}
 `
 const FileName = styled.p /*style*/ `
 margin:0;
@@ -33,23 +47,97 @@ width:100%;
 margin-left:.5rem;
 
 `
+
+const EditorContainer =styled.div /*style*/ `
+background:red;
+position:absolute;
+width:100%;
+`
 type styledDownloaderProps = {
     file_url: string;
     file_name:string;
+    file_id:number
 
 }
 
 const FileDownloader: React.FC<styledDownloaderProps> = (props) => {
+    const [editorOpen,setEditorOpen] = useState<boolean>(false)
+    const [fileNombre,setFileNombre] = useState<string>("")
+
+    const openEditor = () =>{
+        setEditorOpen(prev =>!prev)
+    }
+
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) =>{
+        let cambio = event.target.value;
+         setFileNombre(cambio);
+    }
     
     const downloadFile = (url:string) =>{
+        if (!editorOpen){
         window.location.href = url;
+        }
+    }
+
+    const editFileName = async () => {
+        try {
+            
+            let query = supabase
+            const {data,error} = await query
+            .from("Documentos_empleados")
+            .update([
+                {
+                    nombre: fileNombre,
+                   
+                },
+            ] as  any)
+            .filter("id", "eq", props.file_id)
+            .select()
+            openEditor();
+            if(error){
+                window.alert(`Error al actualizar el dato error`)
+                console.log(error)
+            }
+
+            //location.reload()
+        }
+   
+        catch(err){
+            console.error(err)
+        }
     }
     return (
         <>
-            <DownloaderContainer >
+            <DownloaderContainer 
+            editable={editorOpen}
+            >
+                
+                {/* {editorOpen && 
+                <EditorContainer>
+                    <p>Editor de documentos</p>
+                    <input
+                    placeholder="Nombre del Archivo"
+                    />
+                </EditorContainer>
+            } */}
+            {editorOpen &&
+            <>
+                <input
+            className="editorInput"
+            type="text"
+            placeholder={props.file_name}
+            onChange={handleNameChange}
+            onBlur={editFileName}
+/>
+             </>
+            }
+                 {!editorOpen &&
                 <FileName>{props.file_name}</FileName>
+                 }
                 <div className="iconsContainer">
-                <FaEdit size={25} style={{ color: 'black' , cursor:"pointer"}}></FaEdit>
+                <FaEdit size={25} style={{ color: 'black' , cursor:"pointer"}}
+                onClick={openEditor}
+                ></FaEdit>
                 < FaFileDownload onClick={()=>{downloadFile(props.file_url)}} size={23}  style={{ color: 'black' , cursor:"pointer"}}></FaFileDownload>
                 </div>
             </DownloaderContainer>

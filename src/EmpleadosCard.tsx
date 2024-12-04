@@ -16,6 +16,8 @@ import { supabase } from "./utils/ClientSupabase";
 import FileUpload from "./Uploader";
 import FileDownloader from "./FileDownloader";
 import { DateInput } from "./CreateServiceForm";
+import { useNavigate } from 'react-router-dom'
+
 
 type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
@@ -209,6 +211,7 @@ const EmpleadosCard = () => {
     const [valueFromChildre, setValueFromChildren] = useState<string>("")
     const [file_title, setFile_Title] = useState<string>(valueFromChildre)
     const [empleados, setEmpleados] = useState<Empleado_Con_Docs[]>([])
+    const [docs, setDocs] = useState<DocsEmpleado[]>([])
     const [empladoStatus, setEmpleadoStatus] = useState<boolean>(true)
     const [empladoStatusString, setEmpleadoStatusString] = useState<string>("")
     const [fecha_nacimiento, setFechaDeNacimiento] = useState<Date | null>()
@@ -222,6 +225,7 @@ const EmpleadosCard = () => {
     const [numCuenta, setNumCuenta] = useState<number | null>()
     const [esCapacitacion, setEsCapacitacion] = useState<boolean>(false);
     const [mostrarCapacitaciones,setMostrarCapacitaciones] = useState<boolean>(false)
+    const navigate = useNavigate()
 
 
     const handleMostrarCapacitaciones = () =>{
@@ -355,26 +359,33 @@ const EmpleadosCard = () => {
         try {
             let query = supabase
             const { data, error } = await query
-                .from("Documentos_empleados")
-                .select(`*, Empleados!inner(*)`)
-                .eq("id_empleado", id)
+                .from("Empleados")
+                .select(`*`)
+                .eq("id", id)
 
             if (!error) {
+                const { data: docsDat, error:docsError } = await query
+                .from("Documentos_empleados")
+                .select(`*`)
+                .eq("id_empleado", id)
+                if (!docsError){
+                    setEmpleados(docsDat as any)
+                }
                 console.log(data)
-                setEmpleados(data as any)
-                setNombre(data[0]?.Empleados?.nombre ?? "")
-                setTelefono(data[0]?.Empleados?.telefono as any)
-                setPuesto(data[0]?.Empleados?.puesto as string)
-                setEmpleadoStatus(data[0]?.Empleados?.activo as boolean)
-                setFechaDeNacimiento(data[0]?.Empleados?.fecha_nacimiento as Date | any)
-                setIneNumber(data[0]?.Empleados?.ine as string)
-                setCurp(data[0]?.Empleados?.curp as string)
-                setImss(data[0]?.Empleados?.imss as string)
+               
+                setNombre(data[0]?.nombre ?? "")
+                setTelefono(data[0]?.telefono as any)
+                setPuesto(data[0]?.puesto as string)
+                setEmpleadoStatus(data[0]?.activo as boolean)
+                setFechaDeNacimiento(data[0]?.fecha_nacimiento as Date | any)
+                setIneNumber(data[0]?.ine as string)
+                setCurp(data[0]?.curp as string)
+                setImss(data[0]?.imss as string)
                 //@ts-ignore
-                setNumCuenta(data[0]?.Empleados?.cuenta_bancaria as any)
-                setNumlicencia(data[0]?.Empleados?.licencia_de_conducir as number)
-                setVigenciaDeConducirStart(data[0]?.Empleados?.vigencia_conducir_start as Date | any)
-                setVigenciaDeConducirEnd(data[0]?.Empleados?.vigencia_conducir_end as Date | any)
+                setNumCuenta(data[0]?.cuenta_bancaria as any)
+                setNumlicencia(data[0]?.licencia_de_conducir as number)
+                setVigenciaDeConducirStart(data[0]?.vigencia_conducir_start as Date | any)
+                setVigenciaDeConducirEnd(data[0]?.vigencia_conducir_end as Date | any)
             }
             console.log(error)
         }
@@ -383,17 +394,17 @@ const EmpleadosCard = () => {
             console.log(err)
         }
     }
-    const fetchEmpleadosConDocs = async (id: any) => {
+    const fetchDocs = async (id: any) => {
         try {
             let query = supabase
             const { data, error } = await query
                 .from("Documentos_empleados")
-                .select(`*, Empleados!inner(*)`)
+                .select(`*`)
                 .eq("id_empleado", id)
 
             if (!error) {
                 console.log(data)
-                setEmpleados(data as any)
+                setDocs(data)
 
             }
             console.log(error)
@@ -421,6 +432,8 @@ const EmpleadosCard = () => {
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
                 .select();
+                location.reload()
+
 
             if (error) {
                 console.log(error)
@@ -452,6 +465,7 @@ const EmpleadosCard = () => {
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
                 .select();
+                location.reload()
 
             if (error) {
                 console.log(error)
@@ -514,10 +528,12 @@ const EmpleadosCard = () => {
         fetchEmpleados(id)
     },
         [])
-    // useEffect(() => {
-    //     fetchEmpleadosConDocs(id)
-    // },
-    //     [empleados])
+    useEffect(() => {
+        fetchDocs(id)
+    },[])
+    // TODO QUE LOS DOCUMENTOS SE LLAMEN DE UN LUGAR DIFERENTE PARA NO INTERFERIR
+    // CON EL FLUJO 
+   
 
 
 
@@ -539,7 +555,7 @@ const EmpleadosCard = () => {
                             style={{ background: infoTab === "trabajo" ? "white" : "#0D4E80", color: infoTab === "trabajo" ? "#0D4E80" : "white" }}
                         ><p>Trabajo</p></div>
                         <div className="workInfo infoButtons"
-                            onClick={(e) => { setInfoTag(e, "docs") }}
+                            onClick={(e) => { setInfoTag(e, "docs"); fetchDocs(id) }}
                             style={{ background: infoTab === "docs" ? "white" : "#0D4E80", color: infoTab === "docs" ? "#0D4E80" : "white" }}
                         ><p>Docs</p></div>
                     </div>
@@ -747,17 +763,21 @@ const EmpleadosCard = () => {
                                 </div>
                                 {uploaderOpen &&
                                     <FileUpload
-                                        onChange={(e) => { uploadImage(e, file_title, esCapacitacion) }}
+                                    onChange={async (e) => {
+                                        await uploadImage(e, file_title, esCapacitacion);
+                                        fetchDocs(id);
+                                      }}
                                         onValueChange={handleValueChange}
                                         onDocTypeChange={handleDocTypeChange}
                                     ></FileUpload>
                                 }
-                                {empleados
+                                {docs
                                  //@ts-ignore
                                     .filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)  // Filter employees where es_capacitacion is true
                                     .map((docs) => (
                                         !uploaderOpen && (
                                             <FileDownloader
+                                                file_id={docs.id}
                                                 key={docs.id}  // Add a unique key prop
                                                 file_url={docs.url as string}  // Access file URL
                                                 file_name={docs.nombre as string}  // Access file name

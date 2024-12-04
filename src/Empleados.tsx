@@ -150,7 +150,7 @@ const Empleados = () => {
 
     useEffect(() => {
         FetchEmpleados()
-    }, [])
+    }, [empleadosFijos])
 
     const FetchEmpleados = async () => {
         try {
@@ -472,7 +472,7 @@ const Empleados = () => {
                     onPageChange={handlePageChange}
                 />
 
-                <CreateButton style={{width:"10%"}} to="/nuevo-cliente" >Nuevo Empleado</CreateButton>
+                <CreateButton style={{width:"10%"}} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
 
             </ServiciosSelectContainer>
         </>

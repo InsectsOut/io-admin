@@ -8,7 +8,7 @@ import { PumpIcon } from "./Inicio";
 import { GrLogout } from "react-icons/gr";
 import { FaSprayCan } from "react-icons/fa";
 import { supabase } from "./utils/ClientSupabase";
-
+import { BsPersonSquare } from "react-icons/bs";
 
 
 const MenuContainer = styled.div <{ open: boolean }>/*style*/ `
@@ -94,8 +94,8 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen}) => {
         <button
         style={{fontSize:".9rem"}}
         className="servicios-button"
-        onClick={() => {handleLogOut()}}
-        ><GrLogout size={40}/>Cerrar sesión</button>
+        onClick={() => {navigate("/Clientes")}}
+        ><FaRegCalendarAlt size={40}/>Calendario</button>
         </div>
         <div
          className="servicios-button-container"
@@ -103,8 +103,17 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen}) => {
         <button
         style={{fontSize:".9rem"}}
         className="servicios-button"
-        onClick={() => {navigate("/Clientes")}}
-        ><FaRegCalendarAlt size={40}/>Calendario</button>
+        onClick={() => {navigate("/empleados")}}
+        ><BsPersonSquare size={40}/>Empleados</button>
+        </div>
+        <div
+         className="servicios-button-container"
+        >
+        <button
+        style={{fontSize:".9rem"}}
+        className="servicios-button"
+        onClick={() => {handleLogOut()}}
+        ><GrLogout size={40}/>Cerrar sesión</button>
         </div>
         </>
     }
