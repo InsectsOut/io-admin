@@ -16,7 +16,6 @@ type Cliente = Tables<"Clientes">;
 type ServicioConClientes = Servicio & {
   Clientes: Cliente | null;
   Empleados: Empleado | any;
-  aplicador_Responsable?: string;
 };
 
 interface FilterEventsProps {
@@ -174,7 +173,7 @@ const Calendar = () => {
 
     if (selectedAplicador !== undefined && selectedAplicador !== 0) {
       filtered = filtered.filter(
-        (servicio) => servicio.Empleados.id === selectedAplicador
+        (servicio) => servicio.Empleados?.id === selectedAplicador
       );
     }
 
@@ -306,7 +305,7 @@ const Calendar = () => {
                   style={{ ...mainStyle }}
                 >
                   <option value={0}>Filtrar por Aplicador</option>
-                  {empleados.map((item) => (
+                  {empleados?.map((item) => (
                     <option key={item?.id} value={item?.id}>
                       {item?.nombre}
                     </option>

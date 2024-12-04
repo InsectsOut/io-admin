@@ -134,9 +134,12 @@ font-size: 1.077rem;
 line-height: 1.375rem;
 color: #474747;
 `
+interface DateInputProps {
+    width?: string;
+  }
 
-export const DateInput = styled(StyledDatePicker) `
- 
+export const DateInput= styled(StyledDatePicker)<{wid?:string,height?:string}> /*style*/`
+ all:unset;
 font-style: normal;
 font-weight: 400;
 font-size: 15px;
@@ -144,11 +147,10 @@ line-height: 20px;
 text-align:left;
 padding-left:.5rem;
 color: #838383;
-width: 12.635625rem;
-height: 2.5125rem; 
-background: #FFFFFF;
-border: 0.071793rem solid #727272; 
+height:  ${props => (props.height ?? "2.5125rem" )}; 
+background: none;
 border-radius: 0.215379rem; 
+width:  ${props => (props.wid ?? "12.635625rem" )};
 `
 export const Horario = styled.input `
  

@@ -302,7 +302,6 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
         if (dirección?.length > 0) {
             setDireccionesRegistro(true)
             setDireccionFormOpen(false)
-            console.log("hlasd")
 
         }
 

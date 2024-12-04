@@ -38,6 +38,8 @@ const Empleados = () => {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [deletedEmpleado, setDeletedEmpleado] = useState<any>([])
     const [empleados, setEmpleados] = useState<Empleados[]>()
+    const [empleadosFijos, setEmpleadosFijos] =  useState<Empleados[]>()
+    const [estatus, setEstatus] = useState<boolean>()
 
 
     // const [totalPages, setTotalPages] = useState<number>(1);
@@ -73,23 +75,28 @@ const Empleados = () => {
     }
 
     const handleRotation = () => {
-        setText("Cliente")
+        setText("Estatus")
 
         setIsRotated((prev) => !prev);
     }
 
     const handleRotation2 = () => {
-        setText("Tipo")
+        setText("Puesto")
+
+        setIsRotated2((prev) => !prev);
+    }
+    const handleRotation3 = async () => {
+        await setText("limpiar")
 
         setIsRotated2((prev) => !prev);
     }
 
 
     const returnRotation = () => {
-        if (text !== "Cliente") {
+        if (text !== "Estatus") {
             setIsRotated(false)
         }
-        if (text !== "Tipo") {
+        if (text !== "Puesto") {
             setIsRotated2(false)
         }
     }
@@ -159,6 +166,8 @@ const Empleados = () => {
             if (data) {
                 // console.log("Recividos datos de clientes");
                 setEmpleados(data)
+                setEmpleadosFijos(data)
+                setModalVisible(false)
             }
 
         }
@@ -173,18 +182,22 @@ const Empleados = () => {
         let parametros = "" as any || ""
 
         switch (text) {
-            case "Cliente":
-                filtroQuery = "id"
-                parametros = clientId
-                setBarraBusqueda("")
-                break;
-
-            case "Tipo":
-                filtroQuery = "tipo_cliente"
+            case "Estatus":
+                filtroQuery = "activo"
                 parametros = selectedOptions
                 setBarraBusqueda("")
                 break;
 
+            case "Puesto":
+                filtroQuery = "puesto"
+                parametros = selectedOptions
+                setBarraBusqueda("")
+                break;
+
+            case "limpiar":
+            filtroQuery = ""
+            parametros = "" as any || ""
+                break;
             default:
                 filtroQuery = "";
                 parametros = null;
@@ -194,7 +207,7 @@ const Empleados = () => {
         try {
 
             let query = supabase
-                .from("Clientes")
+                .from("Empleados")
                 .select("*", { count: "exact" })
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
@@ -202,12 +215,12 @@ const Empleados = () => {
                 query = query.eq(filtroQuery, parametros);
             }
 
-            const { data: cliente, count } = await query
+            const { data: empleado, count } = await query
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
 
-            if (cliente) {
-                SetClientes(cliente)
+            if (empleado) {
+                setEmpleados(empleado)
                 setModalVisible(false)
 
             }
@@ -216,6 +229,7 @@ const Empleados = () => {
             console.log("Error al filtrar los clientes ", error)
         }
     }
+    
 
     useEffect(() => {
         filtrarEmpleados()
@@ -305,7 +319,7 @@ const Empleados = () => {
                     />
                     <SearchButton
                         type="button"
-                        onClick={() => { fetchClientes(); setModalVisible(false); }}
+                        onClick={() => { filtrarEmpleados(); setModalVisible(false); }}
                     >Buscar
                     </SearchButton>
                 </SearchBarForm>
@@ -314,7 +328,6 @@ const Empleados = () => {
                         onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
                     >Estatus <FlechaAbajo
                             className={isRotated ? "rotated" : ""}
-
                         /> </FiltrosLista>
                     <FiltrosLista
                         onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
@@ -329,37 +342,34 @@ const Empleados = () => {
                             style={{ top: modalPosition.top, left: modalPosition.left }}
 
                         >
-                            {text === "Cliente" && (
+                            {text === "Estatus" && (
                                 <>
                                     <ModalContentTop
                                         open={modalVisible}
                                     >
+                                        <EstatusForma>
+                                            <div className="optionsContainer" id="realizadoContainer">
+                                                <input type="radio" className="checked" id="residencial" name="choice" value="TRUE" onChange={handleModalCheck} />
+                                                <label id="realizado2" htmlFor="residencial">Activo</label>
+                                            </div>
+                                            <div className="optionsContainer" id="noRealizadoContainer">
+                                                <input type="radio" className="checked" id="industrial" name="choice" value="FALSE" onChange={handleModalCheck} />
+                                                <label id="noRealizado2" htmlFor="industrial">Inactivo</label>
+                                            </div>
 
-                                        {allClientes && (
-                                            <ClientList>
-                                                {allClientes
-                                                    .slice()
-                                                    .sort((a, b) => {
-                                                        const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
-                                                        const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
-                                                        return nameA.localeCompare(nameB);
-                                                    })
-                                                    .map((cliente) => (
-                                                        <ClientName key={cliente.id}
-                                                            onClick={() => { handleClientClick(cliente.id) }}
-                                                            style={getClientNameStyle(cliente.id)}
-                                                        >{cliente.nombre
-                                                            } {cliente.apellidos}</ClientName>
-                                                    ))}
-                                            </ClientList>
-                                        )}
-
+                                        </EstatusForma>
                                     </ModalContentTop>
                                     <ModalContentBottom
                                         open={modalVisible}
                                     >
                                         <div className="filtroActionButtons">
-                                            <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
+                                        <button className="actionButtonsStyles" id="limpiar" onClick={() => {
+                                                     FetchEmpleados()
+                                                    .then(() => {
+                                                        setCurrentPage(1);
+                                                        setIsRotated(false);
+                                                    });
+                                            }}>Limpiar</button>
                                             <button className="actionButtonsStyles" id="aplicar"
                                                 type="button"
                                                 onClick={() => {
@@ -374,43 +384,35 @@ const Empleados = () => {
                                     </ModalContentBottom>
                                 </>
                             )}
-                            {text === "Tipo" && (
+                            {text === "Puesto" && (
                                 <>
                                     <ModalContentTop
                                         open={modalVisible}
                                     >
                                         <EstatusForma>
-                                            <div className="optionsContainer" id="realizadoContainer">
-                                                <input type="radio" className="checked" id="residencial" name="choice" value="Residencial" onChange={handleModalCheck} />
-                                                <label id="realizado2" htmlFor="residencial">Residencial</label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="industrial" name="choice" value="Industrial" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="industrial">Industrial</label>
-                                            </div>
-                                            <div className="optionsContainer" id="realizadoContainer">
-                                                <input type="radio" className="checked" id="comercial" name="choice" value="Comercial" onChange={handleModalCheck} />
-                                                <label id="realizado2" htmlFor="comercial">Comercial</label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="gubernamental" name="choice" value="Gubernamental" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="gubernamental">Gubernamental </label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="hoteleria" name="choice" value="Hotelería" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="hoteleria">Hotelería </label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="escolar" name="choice" value="Escolar" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="escolar">Escolar </label>
-                                            </div>
+                                            {empleadosFijos
+                                                ?.filter((empleado, index, self) =>
+                                                    index === self.findIndex((e) => e.puesto === empleado.puesto) // Ensure unique puesto
+                                                )
+                                                .map((empleado) => (
+                                                    <div className="optionsContainer" id="realizadoContainer" key={empleado.id}> {/* Add a unique key prop */}
+                                                        <input type="radio" className="checked" id={`residencial-${empleado.id}`} name="choice" value={empleado?.puesto as string} onChange={handleModalCheck} />
+                                                        <label id="realizado2" htmlFor={`residencial-${empleado.id}`}>{empleado.puesto}</label>
+                                                    </div>
+                                                ))}
                                         </EstatusForma>
                                     </ModalContentTop>
                                     <ModalContentBottom
                                         open={modalVisible}
                                     >
                                         <div className="filtroActionButtons">
-                                            <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
+                                            <button className="actionButtonsStyles" id="limpiar" onClick={() => {
+                                                     FetchEmpleados()
+                                                    .then(() => {
+                                                        setCurrentPage(1);
+                                                        setIsRotated2(false);
+                                                    });
+                                            }}>Limpiar</button>
                                             <button className="actionButtonsStyles" id="aplicar" onClick={() => {
                                                 filtrarEmpleados()
                                                     .then(() => {
@@ -470,7 +472,7 @@ const Empleados = () => {
                     onPageChange={handlePageChange}
                 />
 
-                <CreateButton to="/nuevo-cliente" >Nuevo Empleado</CreateButton>
+                <CreateButton style={{width:"10%"}} to="/nuevo-cliente" >Nuevo Empleado</CreateButton>
 
             </ServiciosSelectContainer>
         </>

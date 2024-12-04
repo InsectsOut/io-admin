@@ -127,7 +127,7 @@ const Login: React.FC<loginProps> = ({ setToken }) => {
 
       else {
         await setToken(data)
-        localStorage.setItem('token', JSON.stringify(data))
+        //localStorage.setItem('token', JSON.stringify(data))
         if (await supabase.auth.getUser()) {
           navigate("/inicio")
 

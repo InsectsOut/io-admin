@@ -294,7 +294,7 @@ const ServiciosCard = () => {
                 setClienteId(servicio[0]?.Clientes?.id as number)
                 setTipoServicio(servicio[0]?.tipo_servicio as string)
                 if (servicio?.[0]?.tipo_plaga_array_id !== null) {
-                    setPlagaSelected(() => [...servicio?.[0]?.tipo_plaga_array_id]);
+                    setPlagaSelected(() => [...(servicio?.[0]?.tipo_plaga_array_id ?? [])]);
                 }
                 else {
                     setPlagaSelected([])
@@ -566,18 +566,19 @@ const ServiciosCard = () => {
                     <InputsContainer>
                         <FechaInput>
                             <DetailsTitle >Fecha</DetailsTitle>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row", width: "26.125rem" }}>
-                                <DateInput placeholderText={servicios[0]?.fecha_servicio} selected={selectedDate} onChange={(date) => { setSelectedDate(date); setClicked(true) }} dateFormat="YYY/MM/dd" ></DateInput>
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row",width:"13.413rem",background: "white",border:" 0.071793rem solid #727272",borderRadius: "0.215379rem"}}>
+                                <DateInput placeholderText={servicios[0]?.fecha_servicio} selected={selectedDate} onChange={(date) => { setSelectedDate(date); setClicked(true); }} dateFormat="YYY/MM/dd" ></DateInput>
 
                             </div>
+                         
 
                         </FechaInput>
                         <TimeInput
-                            style={{ marginTop: "1rem" }}
+                            style={{ marginTop: "1rem",width:"13.413rem" }}
                         >
                             <DetailsTitle >Horario</DetailsTitle>
                             <Horario
-
+                                 style={{ width:"13.413rem",padding:0 }}
                                 type="time"
                                 onChange={handleTimeChange}
                                 value={

@@ -16,7 +16,7 @@ export type Database = {
           email: string
           id: number
           nombre: string
-          responsable_id: number | null
+          responsable_id: number
           telefono: string
           tipo_cliente: string
           update_at: string
@@ -27,7 +27,7 @@ export type Database = {
           email: string
           id?: number
           nombre: string
-          responsable_id?: number | null
+          responsable_id: number
           telefono: string
           tipo_cliente: string
           update_at?: string
@@ -38,7 +38,7 @@ export type Database = {
           email?: string
           id?: number
           nombre?: string
-          responsable_id?: number | null
+          responsable_id?: number
           telefono?: string
           tipo_cliente?: string
           update_at?: string
@@ -50,14 +50,13 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "Responsables"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       Direcciones: {
         Row: {
           calle: string
           ciudad: string
-          cliente_id: number
           codigo_postal: string
           colonia: string
           created_at: string
@@ -66,13 +65,12 @@ export type Database = {
           numero_ext: string
           numero_int: string | null
           piso: string | null
-          ubicacion: string | null
           udpated_at: string
+          cliente_id: number | null
         }
         Insert: {
           calle: string
           ciudad: string
-          cliente_id: number
           codigo_postal: string
           colonia: string
           created_at?: string
@@ -81,13 +79,12 @@ export type Database = {
           numero_ext: string
           numero_int?: string | null
           piso?: string | null
-          ubicacion?: string | null
           udpated_at?: string
+          cliente_id: number | null
         }
         Update: {
           calle?: string
           ciudad?: string
-          cliente_id?: number
           codigo_postal?: string
           colonia?: string
           created_at?: string
@@ -96,8 +93,8 @@ export type Database = {
           numero_ext?: string
           numero_int?: string | null
           piso?: string | null
-          ubicacion?: string | null
           udpated_at?: string
+          cliente_id: number | null
         }
         Relationships: [
           {
@@ -109,151 +106,98 @@ export type Database = {
           },
         ]
       }
-      Documentos_empleados: {
+      plaguicidas: {
         Row: {
-          created_at: string
-          id: number
-          id_empleado: number | null
-          nombre: string | null
-          url: string | null
+          id: number,
+          nombre: string | null,
+          registro: string | null,
+          presentacion: string | null,
+          ingrediente_activo: string | null,
+          dosis_min: string | null,
+          dosis_max: string | null
         }
         Insert: {
-          created_at?: string
-          id?: number
-          id_empleado?: number | null
-          nombre?: string | null
-          url?: string | null
+          id: number,
+          nombre: string | null,
+          registro: string | null,
+          presentacion: string | null,
+          ingrediente_activo: string | null,
+          dosis_min: string | null,
+          dosis_max: string | null
         }
         Update: {
-          created_at?: string
-          id?: number
-          id_empleado?: number | null
-          nombre?: string | null
-          url?: string | null
+          id?: number,
+          nombre?: string | null,
+          registro?: string | null,
+          presentacion?: string | null,
+          ingrediente_activo?: string | null,
+          dosis_min?: string | null,
+          dosis_max?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "Documentos empleados_id_empleado_fkey"
-            columns: ["id_empleado"]
-            isOneToOne: false
-            referencedRelation: "Empleados"
-            referencedColumns: ["id"]
-          },
+
         ]
       }
       Empleados: {
         Row: {
           activo: boolean
           created_at: string
-          curp: string | null
-          direccion: number | null
-          fecha_nacimiento: string | null
           id: number
-          imss: string | null
-          ine: string | null
-          licencia_de_conducir: number | null
           nombre: string
-          puesto: string | null
-          telefono: number | null
-          tipo_rol: Database["public"]["Enums"]["RolesEmpleado"] | null
           updated_at: string | null
-          user_id: string | null
-          vigencia_conducir_end: string | null
-          vigencia_conducir_start: string | null
+          puesto?: string |null
         }
         Insert: {
           activo?: boolean
           created_at?: string
-          curp?: string | null
-          direccion?: number | null
-          fecha_nacimiento?: string | null
           id?: number
-          imss?: string | null
-          ine?: string | null
-          licencia_de_conducir?: number | null
           nombre: string
-          puesto?: string | null
-          telefono?: number | null
-          tipo_rol?: Database["public"]["Enums"]["RolesEmpleado"] | null
           updated_at?: string | null
-          user_id?: string | null
-          vigencia_conducir_end?: string | null
-          vigencia_conducir_start?: string | null
+          puesto?: string |null
         }
         Update: {
           activo?: boolean
           created_at?: string
-          curp?: string | null
-          direccion?: number | null
-          fecha_nacimiento?: string | null
           id?: number
-          imss?: string | null
-          ine?: string | null
-          licencia_de_conducir?: number | null
           nombre?: string
-          puesto?: string | null
-          telefono?: number | null
-          tipo_rol?: Database["public"]["Enums"]["RolesEmpleado"] | null
           updated_at?: string | null
-          user_id?: string | null
-          vigencia_conducir_end?: string | null
-          vigencia_conducir_start?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "Empleados_direccion_fkey"
-            columns: ["direccion"]
-            isOneToOne: false
-            referencedRelation: "Direcciones"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      Plagas: {
-        Row: {
-          created_at: string
-          id: number
-          plaga: string | null
-        }
-        Insert: {
-          created_at?: string
-          id?: number
-          plaga?: string | null
-        }
-        Update: {
-          created_at?: string
-          id?: number
-          plaga?: string | null
+          puesto?: string |null
         }
         Relationships: []
       }
-      plaguicidas: {
+      Productos: {
         Row: {
-          dosis_max: string | null
-          dosis_min: string | null
+          created_at: string
+          dosificacion: number | null
           id: number
-          ingrediente_activo: string | null
-          nombre: string | null
-          presentacion: string | null
-          registro: string | null
+          nombre: string
+          registro_cofepris: string | null
+          tags: string[] | null
+          tipo_producto: string
+          unidades: string | null
+          updated_at: string
         }
         Insert: {
-          dosis_max?: string | null
-          dosis_min?: string | null
+          created_at?: string
+          dosificacion?: number | null
           id?: number
-          ingrediente_activo?: string | null
-          nombre?: string | null
-          presentacion?: string | null
-          registro?: string | null
+          nombre: string
+          registro_cofepris?: string | null
+          tags?: string[] | null
+          tipo_producto: string
+          unidades?: string | null
+          updated_at?: string
         }
         Update: {
-          dosis_max?: string | null
-          dosis_min?: string | null
+          created_at?: string
+          dosificacion?: number | null
           id?: number
-          ingrediente_activo?: string | null
-          nombre?: string | null
-          presentacion?: string | null
-          registro?: string | null
+          nombre?: string
+          registro_cofepris?: string | null
+          tags?: string[] | null
+          tipo_producto?: string
+          unidades?: string | null
+          updated_at?: string
         }
         Relationships: []
       }
@@ -263,43 +207,45 @@ export type Database = {
           cantidad: number | null
           created_at: string
           id: number
-          producto_id: number | null
+          producto_id: number
           servicio_id: number
           tipo_aplicacion: string | null
-          tipo_plaga_id: number | null
-          unidad: string | null
           updated_at: string
+          unidad: string
+          tipo_plaga_id: number | null
+          plaguicida_id: number
         }
         Insert: {
           area_aplicacion?: string | null
           cantidad?: number | null
           created_at?: string
           id?: number
-          producto_id?: number | null
+          producto_id: number
           servicio_id: number
           tipo_aplicacion?: string | null
-          tipo_plaga_id?: number | null
-          unidad?: string | null
           updated_at?: string
+          unidad?: string | null
+          tipo_plaga_id: number | null
+          plaguicida_id: number
         }
         Update: {
           area_aplicacion?: string | null
           cantidad?: number | null
           created_at?: string
           id?: number
-          producto_id?: number | null
+          producto_id?: number
           servicio_id?: number
           tipo_aplicacion?: string | null
-          tipo_plaga_id?: number | null
-          unidad?: string | null
           updated_at?: string
+          unidad?: string | null
+          tipo_plaga_id: number | null
         }
         Relationships: [
           {
             foreignKeyName: "RegistroAplicacion_producto_id_fkey"
             columns: ["producto_id"]
             isOneToOne: false
-            referencedRelation: "plaguicidas"
+            referencedRelation: "Productos"
             referencedColumns: ["id"]
           },
           {
@@ -309,13 +255,14 @@ export type Database = {
             referencedRelation: "Servicios"
             referencedColumns: ["id"]
           },
+
           {
-            foreignKeyName: "RegistroAplicacion_tipo_plaga_id_fkey"
-            columns: ["tipo_plaga_id"]
+            foreignKeyName: "RegistroAplicacion_plaguicida_id_fkey"
+            columns: ["plaguicida_id"]
             isOneToOne: false
-            referencedRelation: "Plagas"
+            referencedRelation: "plaguicidas"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       Responsables: {
@@ -356,16 +303,15 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "Clientes"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
       Servicios: {
         Row: {
-          aplicador_Responsable: number | null
           cancelado: boolean | null
           cliente_id: number
-          created_at: string | null
-          direccion_id: number | null
+          created_at: string
+          direccion_id: number
           fecha_servicio: string
           folio: number
           frecuencia_recomendada: string | null
@@ -376,20 +322,20 @@ export type Database = {
           realizado: boolean | null
           responsable_id: number | null
           tipo_folio: string | null
-          tipo_plaga_array_id: number[] | null
-          tipo_plaga_id: number | null
           tipo_servicio: string | null
-          ubicacion: string | null
-          updated_at: string | null
+          updated_at: string
+          tipo_plaga: string | null
+          tipo_plaga_id: number | null
+          tipo_plaga_array_id: any | null
+
         }
         Insert: {
-          aplicador_Responsable?: number | null
           cancelado?: boolean | null
           cliente_id: number
-          created_at?: string | null
-          direccion_id?: number | null
+          created_at?: string
+          direccion_id: number
           fecha_servicio: string
-          folio?: number
+          folio: number
           frecuencia_recomendada?: string | null
           horario_servicio: string
           id?: number
@@ -398,18 +344,14 @@ export type Database = {
           realizado?: boolean | null
           responsable_id?: number | null
           tipo_folio?: string | null
-          tipo_plaga_array_id?: number[] | null
-          tipo_plaga_id?: number | null
           tipo_servicio?: string | null
-          ubicacion?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Update: {
-          aplicador_Responsable?: number | null
           cancelado?: boolean | null
           cliente_id?: number
-          created_at?: string | null
-          direccion_id?: number | null
+          created_at?: string
+          direccion_id?: number
           fecha_servicio?: string
           folio?: number
           frecuencia_recomendada?: string | null
@@ -420,27 +362,10 @@ export type Database = {
           realizado?: boolean | null
           responsable_id?: number | null
           tipo_folio?: string | null
-          tipo_plaga_array_id?: number[] | null
-          tipo_plaga_id?: number | null
           tipo_servicio?: string | null
-          ubicacion?: string | null
-          updated_at?: string | null
+          updated_at?: string
         }
         Relationships: [
-          {
-            foreignKeyName: "public_Servicios_aplicador_Responsable_fkey"
-            columns: ["aplicador_Responsable"]
-            isOneToOne: false
-            referencedRelation: "Empleados"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "public_Servicios_tipo_plaga_id_fkey"
-            columns: ["tipo_plaga_id"]
-            isOneToOne: false
-            referencedRelation: "Plagas"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "Servicios_cliente_id_fkey"
             columns: ["cliente_id"]
@@ -461,7 +386,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "Responsables"
             referencedColumns: ["id"]
-          },
+          }
         ]
       }
     }
@@ -472,7 +397,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      RolesEmpleado: "tecnico" | "administrador" | "superadmin"
+      [_ in never]: never
     }
     CompositeTypes: {
       [_ in never]: never
@@ -480,99 +405,82 @@ export type Database = {
   }
 }
 
-type PublicSchema = Database[Extract<keyof Database, "public">]
-
 export type Tables<
   PublicTableNameOrOptions extends
-    | keyof (PublicSchema["Tables"] & PublicSchema["Views"])
-    | { schema: keyof Database },
+  | keyof (Database["public"]["Tables"] & Database["public"]["Views"])
+  | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-        Database[PublicTableNameOrOptions["schema"]]["Views"])
-    : never = never,
+  ? keyof (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
+    Database[PublicTableNameOrOptions["schema"]]["Views"])
+  : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? (Database[PublicTableNameOrOptions["schema"]]["Tables"] &
-      Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+    Database[PublicTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
-    ? R
-    : never
-  : PublicTableNameOrOptions extends keyof (PublicSchema["Tables"] &
-        PublicSchema["Views"])
-    ? (PublicSchema["Tables"] &
-        PublicSchema["Views"])[PublicTableNameOrOptions] extends {
-        Row: infer R
-      }
-      ? R
-      : never
-    : never
+  ? R
+  : never
+  : PublicTableNameOrOptions extends keyof (Database["public"]["Tables"] &
+    Database["public"]["Views"])
+  ? (Database["public"]["Tables"] &
+    Database["public"]["Views"])[PublicTableNameOrOptions] extends {
+      Row: infer R
+    }
+  ? R
+  : never
+  : never
 
 export type TablesInsert<
   PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
+  | keyof Database["public"]["Tables"]
+  | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Insert: infer I
-    }
-    ? I
-    : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Insert: infer I
-      }
-      ? I
-      : never
-    : never
+    Insert: infer I
+  }
+  ? I
+  : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+    Insert: infer I
+  }
+  ? I
+  : never
+  : never
 
 export type TablesUpdate<
   PublicTableNameOrOptions extends
-    | keyof PublicSchema["Tables"]
-    | { schema: keyof Database },
+  | keyof Database["public"]["Tables"]
+  | { schema: keyof Database },
   TableName extends PublicTableNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
-    : never = never,
+  ? keyof Database[PublicTableNameOrOptions["schema"]]["Tables"]
+  : never = never
 > = PublicTableNameOrOptions extends { schema: keyof Database }
   ? Database[PublicTableNameOrOptions["schema"]]["Tables"][TableName] extends {
-      Update: infer U
-    }
-    ? U
-    : never
-  : PublicTableNameOrOptions extends keyof PublicSchema["Tables"]
-    ? PublicSchema["Tables"][PublicTableNameOrOptions] extends {
-        Update: infer U
-      }
-      ? U
-      : never
-    : never
+    Update: infer U
+  }
+  ? U
+  : never
+  : PublicTableNameOrOptions extends keyof Database["public"]["Tables"]
+  ? Database["public"]["Tables"][PublicTableNameOrOptions] extends {
+    Update: infer U
+  }
+  ? U
+  : never
+  : never
 
 export type Enums<
   PublicEnumNameOrOptions extends
-    | keyof PublicSchema["Enums"]
-    | { schema: keyof Database },
+  | keyof Database["public"]["Enums"]
+  | { schema: keyof Database },
   EnumName extends PublicEnumNameOrOptions extends { schema: keyof Database }
-    ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
-    : never = never,
+  ? keyof Database[PublicEnumNameOrOptions["schema"]]["Enums"]
+  : never = never
 > = PublicEnumNameOrOptions extends { schema: keyof Database }
   ? Database[PublicEnumNameOrOptions["schema"]]["Enums"][EnumName]
-  : PublicEnumNameOrOptions extends keyof PublicSchema["Enums"]
-    ? PublicSchema["Enums"][PublicEnumNameOrOptions]
-    : never
-
-export type CompositeTypes<
-  PublicCompositeTypeNameOrOptions extends
-    | keyof PublicSchema["CompositeTypes"]
-    | { schema: keyof Database },
-  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
-  }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
-    : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
-  : PublicCompositeTypeNameOrOptions extends keyof PublicSchema["CompositeTypes"]
-    ? PublicSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
-    : never
+  : PublicEnumNameOrOptions extends keyof Database["public"]["Enums"]
+  ? Database["public"]["Enums"][PublicEnumNameOrOptions]
+  : never
