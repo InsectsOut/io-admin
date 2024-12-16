@@ -10,7 +10,7 @@ import { supabase } from "./utils/ClientSupabase";
 type Cliente = Tables<"Clientes">
 type Empleados = Tables<"Empleados">
 
-const ClientesElement1 = styled(ServiciosElement1)`
+const ClientesElement1 = styled(ServiciosElement1) /*style*/`
 justify-content:unset;
 justify-content:left;
 &:hover{
@@ -18,8 +18,10 @@ cursor: pointer;
 transform: scale(1.05); 
 }
 `
-
-const Empleados = () => {
+interface empleadosProps {
+    organizacion?:string
+}
+const Empleados: React.FC<empleadosProps> = (props) => {
     const [isRotated, setIsRotated] = useState(false);
     const [isRotated2, setIsRotated2] = useState(false)
     const [text, setText] = useState("")
@@ -112,41 +114,7 @@ const Empleados = () => {
         setCurrentPage(page);
     };
 
-    const fetchClientes = async () => {
-        setText("")
-
-        if (barraBusqueda === "") {
-            const { count } = await supabase
-                .from("Clientes")
-                .select("id", { count: "exact" });
-            const totalPages = count && Math.ceil(count / itemsPerPage);
-            setTotalPages(totalPages || 0);
-        }
-        try {
-            let query = supabase
-                .from("Clientes")
-                .select("*", { count: "exact" })
-                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-            if (barraBusqueda) {
-                query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`)
-                const { data: cliente, count } = await query
-                if (cliente) {
-                    console.log(cliente)
-                    SetClientes(cliente);
-                    const totalPages = count && Math.ceil(count / itemsPerPage);
-                    setTotalPages(totalPages || 0);
-                }
-            }
-            const { data: cliente } = await query
-            if (cliente) {
-                SetClientes(cliente);
-            }
-        }
-
-        catch (err) {
-            console.log("Ocurrió un error al realizar la operacó", err)
-        }
-    }
+    
 
     useEffect(() => {
         FetchEmpleados()
@@ -158,7 +126,7 @@ const Empleados = () => {
             const { data, error } = await supabase
                 .from("Empleados")
                 .select("*")
-
+                .filter("organizacion","eq",props.organizacion)
             if (error) {
                 setEmpleados([])
                 console.log("Error consiguiendo los datos del cliente", error)
@@ -209,6 +177,7 @@ const Empleados = () => {
             let query = supabase
                 .from("Empleados")
                 .select("*", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
             if (filtroQuery && parametros !== null) {

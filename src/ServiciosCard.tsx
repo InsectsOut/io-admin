@@ -18,6 +18,8 @@ import { useNavigate } from "react-router-dom";
 
 type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
+type Direcciones = Tables<"Direcciones">
+
 
 export const CardContainer = styled.div`
 width: 24.625rem;
@@ -246,7 +248,7 @@ const ServiciosCard = () => {
     const [plagas, setPlagas] = useState<any[]>([])
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null)
     const [empleados, setEmpleados] = useState<any[]>([])
-    const [empleadoId, setEmpleadoID] = useState<number | null>(null)
+    const [empleadoId, setEmpleadoID] = useState<string>("")
     const [modalOpen, setModalOpen] = useState<boolean | null>(false)
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
@@ -254,6 +256,8 @@ const ServiciosCard = () => {
     const [dataFromRegistros, setDataFromRegistros] = useState<number>()
     const navigate = useNavigate()
     const [addButtonClicked, setAddButtonClicked] = useState(false)
+    const [direccion_id,setDireccion_id] = useState<string>("")
+    const [dirección,setDireccion] = useState<Direcciones[]>([])
 
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
@@ -283,8 +287,9 @@ const ServiciosCard = () => {
                 const initialDateString = servicio[0]?.fecha_servicio;
                 const initialDate = initialDateString ? new Date(initialDateString) : null;
                 setSelectedDate(initialDate)
-                const initialEmpleadoId = servicio[0]?.responsable_id ?? null;
-                setEmpleadoID(initialEmpleadoId)
+                const initialEmpleadoId = servicio[0]?.aplicador_Responsable ?? null;
+                console.log(initialEmpleadoId)
+                setEmpleadoID(initialEmpleadoId?.toString() ?? "")
                 const initialTime = servicio[0]?.horario_servicio ?? '00:00'
                 setSelectedTime(initialTime)
                 const initialTipoPlaga = servicio[0]?.tipo_plaga_id ?? null;
@@ -292,6 +297,7 @@ const ServiciosCard = () => {
                 setSelectedEstatus(servicio[0]?.realizado)
                 setEstatusString(servicio[0]?.realizado ? "Realizado" : "No realizado")
                 setClienteId(servicio[0]?.Clientes?.id as number)
+                console.log(servicio[0]?.tipo_servicio as string)
                 setTipoServicio(servicio[0]?.tipo_servicio as string)
                 if (servicio?.[0]?.tipo_plaga_array_id !== null) {
                     setPlagaSelected(() => [...(servicio?.[0]?.tipo_plaga_array_id ?? [])]);
@@ -371,10 +377,12 @@ const ServiciosCard = () => {
                             fecha_servicio: selectedDate,
                             horario_servicio: selectedTime,
                             tipo_servicio: tipoServicio,
-                            responsable_id: empleadoId,
+                            aplicador_Responsable: empleadoId,
                             realizado: estatus,
                             tipo_plaga_id: tipoPlaga,
-                            tipo_plaga_array_id: [...plagaSelected]
+                            tipo_plaga_array_id: [...plagaSelected],
+                            direccion_id:direccion_id
+
 
                         },
                     ] as any
@@ -398,7 +406,13 @@ const ServiciosCard = () => {
         FetchPlagas()
         FetchClientes()
         FetchServicios()
+       
     }, [])
+    useEffect(() => {
+        if (clienteId){
+        fetchDireccion(clienteId.toString())
+        }
+    }, [clienteId])
 
 
 
@@ -452,7 +466,7 @@ const ServiciosCard = () => {
 
     const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
-        setEmpleadoID(+event.target.value)
+        setEmpleadoID(event.target.value)
     }
 
     const appearModal = () => {
@@ -521,6 +535,33 @@ const ServiciosCard = () => {
         navigate(`/Servicios/pdf/${servicios[0].folio}`);
     };
 
+    const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const cambio = event.target.value
+        setDireccion_id(cambio)
+
+    }
+
+    const fetchDireccion = async (cliente_id: string) => {
+        try {
+            let query = supabase;
+            const { data, error } = await query
+            .from("Direcciones")
+            .select("*")
+            .filter("cliente_id","eq",cliente_id)
+            if (data){
+                setDireccion(data)
+                setDireccion_id(data[0].id.toString())
+
+            }
+            if (error){
+                console.log(error)
+            }
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
+
     return (
         <>
 
@@ -566,19 +607,19 @@ const ServiciosCard = () => {
                     <InputsContainer>
                         <FechaInput>
                             <DetailsTitle >Fecha</DetailsTitle>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row",width:"13.413rem",background: "white",border:" 0.071793rem solid #727272",borderRadius: "0.215379rem"}}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row", width: "13.413rem", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem" }}>
                                 <DateInput placeholderText={servicios[0]?.fecha_servicio} selected={selectedDate} onChange={(date) => { setSelectedDate(date); setClicked(true); }} dateFormat="YYY/MM/dd" ></DateInput>
 
                             </div>
-                         
+
 
                         </FechaInput>
                         <TimeInput
-                            style={{ marginTop: "1rem",width:"13.413rem" }}
+                            style={{ marginTop: "1rem", width: "13.413rem" }}
                         >
                             <DetailsTitle >Horario</DetailsTitle>
                             <Horario
-                                 style={{ width:"13.413rem",padding:0 }}
+                                style={{ width: "13.413rem", padding: 0 }}
                                 type="time"
                                 onChange={handleTimeChange}
                                 value={
@@ -587,6 +628,27 @@ const ServiciosCard = () => {
                                 step="9000" // Optional: Use a step of 15 minutes (900 seconds)
                             />
                         </TimeInput>
+                    </InputsContainer>
+                    <InputsContainer style={{ display: "inline-flex", width: "100%" }}>
+                        <div style={{ display: "flex", flexDirection: "row" }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem", width: "50%", flexDirection: "column", }}>
+                                <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
+                                <select
+                                    style={{ ...mainStyle, width: "13.538rem" }}
+                                    value={direccion_id}
+                                    onChange={handleDireccionChange}
+
+                                >
+
+                                    {dirección.map((options) => (
+                                        <option
+
+                                            value={options.id} key={options.id} >{options.calle} {options.ciudad} {options.colonia} {options.numero_ext} {options.codigo_postal}</option>
+                                    ))}
+                                </select>
+                            </div>
+
+                        </div>
                     </InputsContainer>
                     <InputsContainer style={{ display: "inline-flex", width: "100%" }}>
                         <div style={{ display: "flex", flexDirection: "row" }}>
@@ -613,18 +675,14 @@ const ServiciosCard = () => {
 
                         <DetailsTitle>Aplicador Responsable</DetailsTitle>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
-                            <select value={empleadoId?.toString()}
-                                style={mainStyle}
-
-                                onChange={handleResponsableChange}
-                            >
-                                <option hidden>Elegir al técnico responsable...</option>
+                            <select value={empleadoId} style={mainStyle} onChange={handleResponsableChange}>
+                                {!empleadoId && <option>Elegir al técnico responsable...</option>}
                                 {empleados.map((empleado) => (
-                                    <option
-                                        value={empleado.id} key={empleado.id} >{empleado.nombre}</option>
+                                    <option value={empleado.id} key={empleado.id}>
+                                        {empleado.nombre}
+                                    </option>
                                 ))}
                             </select>
-
                         </div>
 
                     </InputsContainer>
@@ -683,7 +741,7 @@ const ServiciosCard = () => {
                 </div>
             </ServiciosCardContainer>
             <ReturnButton>Regresar</ReturnButton>
-            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { window.location.reload() }) }}>
+            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => {location.reload()}) }}>
                 Guardar Cambios
             </StyledButton>
         </>

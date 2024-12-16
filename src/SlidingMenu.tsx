@@ -94,7 +94,7 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen}) => {
         <button
         style={{fontSize:".9rem"}}
         className="servicios-button"
-        onClick={() => {navigate("/Clientes")}}
+        onClick={() => {navigate("/calendar")}}
         ><FaRegCalendarAlt size={40}/>Calendario</button>
         </div>
         <div

@@ -12,6 +12,7 @@ import styled from "styled-components";
 type Servicio = Tables<"Servicios">;
 type Empleado = Tables<"Empleados">;
 type Cliente = Tables<"Clientes">;
+type Direcciones = Tables <"Direcciones">
 
 type ServicioConClientes = Servicio & {
   Clientes: Cliente | null;
@@ -87,23 +88,32 @@ const RelativeContainer = styled.div`
   position: relative;
 `;
 
-const Calendar = () => {
+interface calendarProps {
+  user_id?: string | null
+  organizacion?:string
+  }
+
+const Calendar: React.FC<calendarProps> = (props) => {
   const [servicios, setServicios] = useState<ServicioConClientes[]>([]);
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [filteredServicios, setFilteredServicios] = useState<ServicioConClientes[]>([]);
-  const [selectedClient, setSelectedClient] = useState<string>("");
+  const [selectedClient, setSelectedClient] = useState<number | undefined>(undefined);
   const [empleados, setEmpleados] = useState<Empleado[]>([]);
   const [selectedAplicador, setSelectedAplicador] = useState<number | undefined>(undefined);
   const [modalActive, setModalActive] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState(false);
+  
+
 
   const fetchServicios = async () => {
     try {
-      let query = await supabase.from("Servicios").select(`
+      let query = await supabase.from("Servicios")
+      .select(`
         *,
         Clientes(*),
         Empleados:aplicador_Responsable(*)
-      `);
+      `)
+      .filter("organizacion","eq",props.organizacion)
       const { data, error } = query;
       if (error) {
         console.log(error);
@@ -115,9 +125,13 @@ const Calendar = () => {
     }
   };
 
+  
+
   const fetchEmpleados = async () => {
     try {
-      let query = await supabase.from("Empleados").select(`*`);
+      let query = await supabase.from("Empleados")
+      .select(`*`)
+      .filter("organizacion","eq",props.organizacion)
       const { data, error } = query;
       if (error) {
         console.log(error);
@@ -140,9 +154,11 @@ const Calendar = () => {
       console.log(err);
     }
   };
+  
 
   const handleClienteChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedClient(event.target.value);
+    console.log(event.target.value)
+    setSelectedClient(parseInt(event.target.value));
   };
 
   const handleAplicadorChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -162,27 +178,29 @@ const Calendar = () => {
   };
 
   const applyFilter = () => {
+    console.log("Selected Client:", selectedClient); // Log to check the client filter value
+    console.log("Selected Aplicador:", selectedAplicador); // Log to check the aplicador filter value
+  
     let filtered = servicios;
-
-    if (selectedClient && selectedClient !== "Filtrar por cliente") {
+  
+    if (selectedClient !== undefined && selectedAplicador !== 0) {
       filtered = filtered.filter(
-        (servicio) =>
-          servicio.Clientes?.nombre + " " + servicio.Clientes?.apellidos === selectedClient
+        (servicio) => servicio.cliente_id === selectedClient
       );
     }
-
+  
     if (selectedAplicador !== undefined && selectedAplicador !== 0) {
       filtered = filtered.filter(
         (servicio) => servicio.Empleados?.id === selectedAplicador
       );
     }
-
+  
     setFilteredServicios(filtered);
   };
 
   const clearFilter = () => {
     setFilteredServicios(servicios);
-    setSelectedClient("");
+    setSelectedClient(undefined);
     setSelectedAplicador(undefined);
   };
 
@@ -294,7 +312,9 @@ const Calendar = () => {
                 >
                   <option>Filtrar por cliente</option>
                   {clientes.map((item) => (
-                    <option key={item.id}>
+                    <option key={item.id}
+                    value={item.id}
+                    >
                       {item.nombre} {item.apellidos}
                     </option>
                   ))}

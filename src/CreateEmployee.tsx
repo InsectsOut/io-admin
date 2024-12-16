@@ -177,7 +177,11 @@ display:flex;
 flex-direction:column;
 `
 
-const CreateEmployee = () => {
+interface createEmployeeProps{
+organizacion?:string
+}
+
+const CreateEmployee: React.FC<createEmployeeProps> = (props) => {
     const [_fetchError, _] = useState("");
     const [puesto, setPuesto] = useState<string>("")
     const [tipoCliente, setTipoCliente] = useState("")
@@ -198,7 +202,8 @@ const CreateEmployee = () => {
                         telefono: telefono,
                         nombre: nombre,
                         fecha_nacimiento: fecha_nacimiento,
-                        puesto:puesto
+                        puesto:puesto,
+                        organizacion:props.organizacion
                     },
                 ] as any)
                 .select();

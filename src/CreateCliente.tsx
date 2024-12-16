@@ -176,7 +176,12 @@ display:flex;
 flex-direction:column;
 `
 
-const CreateClientForm = () => {
+interface createClienteProps {
+    user_id?:string
+    organizacion?:string
+}
+
+const CreateClientForm: React.FC<createClienteProps> = (props) => {
     const [_fetchError, _] = useState("");
     const [email, setEmail] = useState("")
     const [tipoCliente, setTipoCliente] = useState("")
@@ -197,7 +202,9 @@ const CreateClientForm = () => {
                         telefono: telefono,
                         tipo_cliente: tipoCliente,
                         nombre: nombre,
-                        apellidos: apellido
+                        apellidos: apellido,
+                        user_id: props.user_id,
+                        organizacion:props.organizacion
                     },
                 ] as any)
                 .select();

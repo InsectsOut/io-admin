@@ -17,8 +17,12 @@ cursor: pointer;
 transform: scale(1.05); 
 }
 `
+interface clientesProps {
+    user_id?:string
+    organizacion?:string
+}
 
-const Clientes = () => {
+const Clientes:React.FC<clientesProps> = (props) => {
     const [isRotated, setIsRotated] = useState(false);
     const [isRotated2, setIsRotated2] = useState(false)
     const [text, setText] = useState("")
@@ -99,7 +103,8 @@ const Clientes = () => {
         if (barraBusqueda === "") {
             const { count } = await supabase
                 .from("Clientes")
-                .select("id", { count: "exact" });
+                .select("id", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
         }
@@ -107,6 +112,7 @@ const Clientes = () => {
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             if (barraBusqueda) {
                 query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`)
@@ -184,6 +190,7 @@ const Clientes = () => {
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
             if (filtroQuery && parametros !== null) {
