@@ -147,7 +147,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
     const filtrarEmpleados = async () => {
 
         let filtroQuery = ""
-        let parametros = "" as any || ""
+        let parametros = ""  
 
         switch (text) {
             case "Estatus":
@@ -164,11 +164,11 @@ const Empleados: React.FC<empleadosProps> = (props) => {
 
             case "limpiar":
             filtroQuery = ""
-            parametros = "" as any || ""
+            parametros = "" 
                 break;
             default:
                 filtroQuery = "";
-                parametros = null;
+                parametros = "";
                 break;
         }
 

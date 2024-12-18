@@ -373,6 +373,7 @@ const EmpleadosCard = () => {
                 }
                 console.log(data)
                
+                if (data){
                 setNombre(data[0]?.nombre ?? "")
                 setTelefono(data[0]?.telefono as any)
                 setPuesto(data[0]?.puesto as string)
@@ -386,6 +387,7 @@ const EmpleadosCard = () => {
                 setNumlicencia(data[0]?.licencia_de_conducir as number)
                 setVigenciaDeConducirStart(data[0]?.vigencia_conducir_start as Date | any)
                 setVigenciaDeConducirEnd(data[0]?.vigencia_conducir_end as Date | any)
+                }
             }
             console.log(error)
         }
@@ -404,10 +406,12 @@ const EmpleadosCard = () => {
 
             if (!error) {
                 console.log(data)
-                setDocs(data)
-
+               setDocs(data)
+            
             }
             console.log(error)
+
+          
         }
 
         catch (err) {
@@ -523,16 +527,21 @@ const EmpleadosCard = () => {
 
     }
 
+    const triggerFromChild = () => {
+        fetchDocs(id)
+    };
+
+
 
     useEffect(() => {
         fetchEmpleados(id)
     },
         [])
     useEffect(() => {
-        fetchDocs(id)
+      fetchDocs(id)
+    
+    
     },[])
-    // TODO QUE LOS DOCUMENTOS SE LLAMEN DE UN LUGAR DIFERENTE PARA NO INTERFERIR
-    // CON EL FLUJO 
    
 
 
@@ -773,14 +782,15 @@ const EmpleadosCard = () => {
                                 }
                                 {docs
                                  //@ts-ignore
-                                    .filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)  // Filter employees where es_capacitacion is true
+                                    .filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)  
                                     .map((docs) => (
                                         !uploaderOpen && (
                                             <FileDownloader
                                                 file_id={docs.id}
-                                                key={docs.id}  // Add a unique key prop
-                                                file_url={docs.url as string}  // Access file URL
-                                                file_name={docs.nombre as string}  // Access file name
+                                                triggerFunction={triggerFromChild}
+                                                key={docs.id}  
+                                                file_url={docs.url as string}  
+                                                file_name={docs.nombre as string}
                                             />
                                         )
                                     ))}

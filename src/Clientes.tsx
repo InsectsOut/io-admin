@@ -13,8 +13,7 @@ const ClientesElement1 = styled(ServiciosElement1)`
 justify-content:unset;
 justify-content:left;
 &:hover{
-cursor: pointer;
-transform: scale(1.05); 
+
 }
 `
 interface clientesProps {
@@ -164,7 +163,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
     const filtrarClientes = async () => {
 
         let filtroQuery = ""
-        let parametros = "" as any || ""
+        let parametros = "" as any 
 
         switch (text) {
             case "Cliente":
@@ -255,11 +254,11 @@ const Clientes:React.FC<clientesProps> = (props) => {
 
             if (error) {
                 console.log("There was an error ", error)
-            }
-
-            if (clientes) {
+                return
+            }       
                 console.log("cliente eliminado", clientes)
-            }
+                location.reload()
+           
         }
 
         catch (err) {

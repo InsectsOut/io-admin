@@ -57,6 +57,7 @@ type styledDownloaderProps = {
     file_url: string;
     file_name:string;
     file_id:number
+    triggerFunction: () => void;
 
 }
 
@@ -127,7 +128,15 @@ const FileDownloader: React.FC<styledDownloaderProps> = (props) => {
             type="text"
             placeholder={props.file_name}
             onChange={handleNameChange}
-            onBlur={editFileName}
+            onBlur={async () => {
+                try {
+                  await editFileName();
+                  props.triggerFunction();
+                } catch (error) {
+                  // Handle the error
+                  console.error('Error:', error);
+                }
+              }}
 />
              </>
             }

@@ -18,9 +18,9 @@ import DireccionCard from "./DireccionCard";
 
 type Cliente = Tables<"Clientes">
 
-const ClientCardContainer = styled(CardContainer)`
-height:30.625rem;
-
+const ClientCardContainer = styled(CardContainer) /*style*/`
+height:fit-content;
+padding-bottom:2rem;
 `
 export const BodyContainer = styled.div`
 display:flex;
@@ -73,7 +73,7 @@ const TextoAddCard = styled.h1 /*style*/`
 `;
 
 const ClientesCard = () => {
-    const [, setCliente] = useState<Cliente[] | null>([])
+    const [cliente, setCliente] = useState<Cliente[] | null>([])
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
     const [email, setEmail] = useState<string>("")
@@ -85,6 +85,63 @@ const ClientesCard = () => {
     const [responsableExists, setResponsableExists] = useState<boolean | null>(false)
     const [, setResponsableId] = useState<number | null>()
     const [updater, setUpdater] = useState(false)
+
+
+    const insertResponsable = async (elCliente:Cliente[]) => {
+        const  nombreCompleto = `${elCliente?.[0]?.nombre} ${elCliente?.[0]?.apellidos} `
+   
+        if (elCliente[0].responsable_id){
+            return
+        }
+        if (!elCliente[0].responsable_id){
+            if(elCliente){
+            
+            try {
+                const { data, error } = await supabase
+                    .from("Responsables")
+                    .insert([{
+                        cliente_id:id,
+                        email: elCliente[0]?.email ,
+                        nombre: nombreCompleto,
+                        puesto: "",
+                        telefono: elCliente[0]?.telefono
+
+                    },
+                    ] as any
+                    )
+                    .select()
+                if (error) {
+                    console.log("Error while trying to update ", error)
+                }
+                else {
+                    console.log("data updated succesfully ", data)
+                    const { data:response, error:err } = await supabase
+                    .from("Clientes")
+                    .update([{
+                        responsable_id:data?.[0]?.id
+                    }
+                    ,
+                    ] as any
+                    )
+                    .filter("id", "eq", `${id}`)
+                    .select()
+                }
+
+            }
+            catch (err) {
+                console.log("Error while fetching", err)
+            }
+        }
+        else {
+            return
+        }
+        }
+
+        else {
+            return
+        }
+ 
+    }
 
     const handleChildStateChange = () => {
         setClicked(true)
@@ -128,16 +185,29 @@ const ClientesCard = () => {
                 .select("*")
                 .filter("id", "eq", `${id}`)
             const { data: cliente } = await query
+            
+          
             if (cliente) {
-                setCliente(cliente)
-                setNombre(cliente[0]?.nombre)
-                setApellido(cliente[0]?.apellidos)
-                setTelefono(cliente[0]?.telefono)
-                setEmail(cliente[0]?.email)
-                setTipoCliente(cliente[0]?.tipo_cliente || "")
-                setResponsableId(cliente[0]?.responsable_id)
-                if (cliente[0]?.responsable_id) {
+                const { nombre, apellidos, telefono, email, tipo_cliente, responsable_id } = cliente[0];
+
+                
+                setCliente(cliente);
+                setNombre(nombre);
+                setApellido(apellidos);
+                setTelefono(telefono);
+                setEmail(email);
+                setTipoCliente(tipo_cliente || "");
+                setResponsableId(responsable_id);
+                
+                if (responsable_id) {
                     setResponsableExists(true)
+                    return;
+                }
+               
+                if (!responsable_id){
+                    setResponsableExists(false)
+                    insertResponsable(cliente);
+                    return
                 }
 
             }
@@ -149,7 +219,12 @@ const ClientesCard = () => {
 
     useEffect(() => {
         fetchClientes()
-    }, [])
+    }, []);
+    // useEffect(() => {
+    //     fetchClientes().then(() => {
+    //         insertResponsable();
+    //     });
+    // }, []);
     const handleTipoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
         const cambio = event.target.value
@@ -196,10 +271,10 @@ const ClientesCard = () => {
                     <InputsContainer>
                         <div style={{ display: "inline-flex", width: "26.124rem" }}>
                             <div
-                                style={{ width: "11.728rem" }}
+                                style={{ width: tipoCliente !=="Residencial" ? "20.44rem" : "11.728rem" }}
                             >
                                 <DetailsTitle>Nombre</DetailsTitle>
-                                <CardInputs style={{ ...inputWidthStyle, width: "85%" }}
+                                <CardInputs style={{ ...inputWidthStyle, width: tipoCliente ==="Residencial"? "85%": "19.815rem" }}
                                     id="textInputs"
                                     className="textInputs"
                                     onChange={handleNameChange}
@@ -207,6 +282,7 @@ const ClientesCard = () => {
                                 >
                                 </CardInputs>
                             </div>
+                            {tipoCliente === "Residencial" &&
                             <div
                                 style={{ width: "11.728rem" }}>
                                 <DetailsTitle>Apellido</DetailsTitle>
@@ -218,6 +294,7 @@ const ClientesCard = () => {
                                 >
                                 </CardInputs>
                             </div>
+                            }
                         </div>
                     </InputsContainer>
                     <InputsContainer>
@@ -238,7 +315,7 @@ const ClientesCard = () => {
                         <CardInputs
                             style={inputWidthStyle}
                             className="textInputs"
-                            type="email"
+                            type="text"
                             onChange={handleEmailChange}
                             value={email}
                         >
@@ -259,6 +336,7 @@ const ClientesCard = () => {
 
                         </select>
                     </InputsContainer>
+                    {tipoCliente !== "Residencial" &&
                     <InputsContainer>
                         <DetailsTitle>
                             Responsable
@@ -266,14 +344,15 @@ const ClientesCard = () => {
                         <CardInputs
                             style={inputWidthStyle}
                             className="textInputs"
-                            type="email"
+                            type="text"
                             readOnly
                             value={responsable}
                         >
                         </CardInputs>
                     </InputsContainer>
+                    }
                 </ClientCardContainer>
-                {responsableExists && (
+                {responsableExists && tipoCliente !== "Residencial" && (
                     <>
                         <ResponsableCard
                             updaterPass={updater}
@@ -283,7 +362,7 @@ const ClientesCard = () => {
 
                     </>
                 )}
-                {!responsableExists && (
+                {!responsableExists && tipoCliente !== "Residencial" &&(
                     <AddResponsableCard style={{ alignSelf: "center" }}
                         onClick={() => { setResponsableExists(true) }}
                     >

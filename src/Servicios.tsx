@@ -445,7 +445,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [clientId, setClientId] = useState(0)
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
-  const itemsPerPage: number = 9;
+  const itemsPerPage: number = 8;
   const [aplicar, setAplicar] = useState(true)
   const [paginasNofilter, setPaginasNoFilter] = useState<number | null>()
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
@@ -559,7 +559,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const formatDate = (date: Date) => date.toISOString().split('T')[0];  // For date only (YYYY-MM-DD)
 
 
-  const filterServicios = async (text:string) => {
+  const filterServicios = async (text: string) => {
     let filtroQuery = "";
     let paramteros = null;
 
@@ -592,46 +592,46 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     }
 
     try {
-  let query = supabase
-    .from("Servicios")
-    .select(`*, Clientes!inner(*)`, { count: "exact" })
-    .filter("organizacion", "eq", props.organizacion)
-    .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+      let query = supabase
+        .from("Servicios")
+        .select(`*, Clientes!inner(*)`, { count: "exact" })
+        .filter("organizacion", "eq", props.organizacion)
+        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-  // Apply the date range filter if it's set
-  if (filtroQuery === "fecha_servicio" && paramteros && Array.isArray(paramteros) && paramteros.length === 2) {
-    const [startDate, endDate] = paramteros;
-    // Format the dates before passing them to the query
-    const formattedStartDate = formatDate(startDate);
-    const formattedEndDate = formatDate(endDate);
+      // Apply the date range filter if it's set
+      if (filtroQuery === "fecha_servicio" && paramteros && Array.isArray(paramteros) && paramteros.length === 2) {
+        const [startDate, endDate] = paramteros;
+        // Format the dates before passing them to the query
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
 
-    query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
-  }
+        query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
+      }
 
-  // Apply other filters
-  if (filtroQuery && paramteros !== null && filtroQuery !== "fecha_servicio") {
-    query = query.eq(filtroQuery, paramteros);
-  }
+      // Apply other filters
+      if (filtroQuery && paramteros !== null && filtroQuery !== "fecha_servicio") {
+        query = query.eq(filtroQuery, paramteros);
+      }
 
-  const { error, data: servicios, count } = await query;
+      const { error, data: servicios, count } = await query;
 
-  const totalPages = count && Math.ceil(count / itemsPerPage);
-  setTotalPages(totalPages || 0);
+      const totalPages = count && Math.ceil(count / itemsPerPage);
+      setTotalPages(totalPages || 0);
 
-  if (error) {
-    setFetchError("No se pudieron conseguir los datos de servicio");
-    setServicios([]);
-    console.error("Error fetching data:", error);
-  }
+      if (error) {
+        setFetchError("No se pudieron conseguir los datos de servicio");
+        setServicios([]);
+        console.error("Error fetching data:", error);
+      }
 
-  if (servicios) {
-    setServicios(servicios);
-    setFetchError("");
-  }
-  setModalVisible(false);
-} catch (error) {
-  console.error("An unexpected error occurred:", error);
-}
+      if (servicios) {
+        setServicios(servicios);
+        setFetchError("");
+      }
+      setModalVisible(false);
+    } catch (error) {
+      console.error("An unexpected error occurred:", error);
+    }
   }
 
 
@@ -778,16 +778,16 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     setDeleteModalVisible(false)
   }
 
-  const handleSetText = async () =>{
+  const handleSetText = async () => {
     console.log(textModal)
     const text = textModal
- if (textModal){
-  if (text){
-    setText(text)
-  filterServicios(text)
-  }
- }
- 
+    if (textModal) {
+      if (text) {
+        setText(text)
+        filterServicios(text)
+      }
+    }
+
   }
 
 
@@ -894,7 +894,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                         onClick={() => {
                           handleSetText()
                             .then(() => {
-                             // filterServicios()
+                              // filterServicios()
                               handlePageSetter();
                               setIsRotated(false);
                             });
@@ -927,12 +927,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                         onClick={() => { handleClearSelection(); }}
                       >Limpiar</button>
                       <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                         handleSetText()
-                         .then(() => {
-                          // filterServicios()
-                           handlePageSetter();
-                           setIsRotated2(false);
-                         });
+                        handleSetText()
+                          .then(() => {
+                            // filterServicios()
+                            handlePageSetter();
+                            setIsRotated2(false);
+                          });
                       }}>Aplicar</button>
                     </div>
                   </ModalContentBottom>
@@ -947,11 +947,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       <p style={{ color: "#727272", marginBottom: "0" }}>Selecciona una fecha</p>
                       <div className="dateFilterInputs">
                         <div className="dateTexts">
-                          <StyledDatePicker selected={startDate || today} onChange={date => setStartDate(date)} dateFormat="dd/MM/YYY" ></StyledDatePicker>
+                          <StyledDatePicker selected={startDate || today} onChange={date => setStartDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
                           <p>Inicial</p>
                         </div >
                         <div className="dateTexts">
-                          <StyledDatePicker selected={endDate || today} onChange={date => setEndDate(date)} dateFormat="dd/MM/YY" ></StyledDatePicker>
+                          <StyledDatePicker selected={endDate || today} onChange={date => setEndDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
                           <p>Final</p>
                         </div>
                       </div>
@@ -974,11 +974,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       </button>
                       <button type="button" className="actionButtonsStyles" id="aplicar" onClick={() => {
                         handleSetText()
-                        .then(() => {
-                          //filterServicios()
-                          handlePageSetter();
-                          setIsRotated3(false);
-                        });
+                          .then(() => {
+                            //filterServicios()
+                            handlePageSetter();
+                            setIsRotated3(false);
+                          });
                       }}>Aplicar</button>
                     </div>
                   </ModalContentBottom>
@@ -1012,12 +1012,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                         onClick={() => { handleClearSelection() }}
                       >Limpiar</button>
                       <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                         handleSetText()
-                         .then(() => {
-                          //filterServicios()
-                           handlePageSetter();
-                           setIsRotated4(false);
-                         });
+                        handleSetText()
+                          .then(() => {
+                            //filterServicios()
+                            handlePageSetter();
+                            setIsRotated4(false);
+                          });
                       }}>Aplicar</button>
                     </div>
                   </ModalContentBottom>
@@ -1027,49 +1027,53 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
           )}
         </FiltrosContainer>
         <ServiciosSelectContainer>
-          {servicios.map((servicio) => (
-            <ServiciosElement
-              key={servicio.id}
-            >
 
-              <ServiciosElement1 style={{ textAlign: "left" }}>
-                <FolioLink className="primerSector" style={{ minWidth: "28.6%", maxHeight: "3.351rem", maxWidth: "28.6%", textAlign: "left", marginLeft: "1rem" }} to={`${location.pathname}/${servicio.folio}`}>
-                  #Folio: {servicio.folio}
-                </FolioLink>
-                <div
-                  style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "50%" }}
-                >
-                  <FolioLink
-                    to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
-                </div>
-                <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
-              </ServiciosElement1>
-              <ServiciosElement2>
-                <h3 className="primerSector"
-                  style={{ fontWeight: "bold" }}
-                >Fecha: </h3>
-                <h3 className="primerSector">{servicio.fecha_servicio} </h3>
-              </ServiciosElement2>
-              <ServiciosElement3>
-                <h3 className="primerSector"
-                  style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                >  Estatus : {servicio.realizado ? 'Realizado' : 'No realizado'}
-                </h3>
-                <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
-              </ServiciosElement3>
-              <ServiciosElement4>
-                <button id="borrarServicio"
-                  // onClick={() =>
-                  //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
-                  // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
-                  onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
-                  style={{ fontWeight: "bold", fontSize: "105%" }}
-                >
-                  X
-                </button>
-              </ServiciosElement4>
-            </ServiciosElement>
-          ))}
+
+          {servicios
+            .sort((a, b) => new Date(b.fecha_servicio).getTime() - new Date(a.fecha_servicio).getTime())
+            .map((servicio) => (
+              <ServiciosElement
+                key={servicio.id}
+              >
+
+                <ServiciosElement1 style={{ textAlign: "left" }}>
+                  <FolioLink className="primerSector" style={{ minWidth: "28.6%", maxHeight: "3.351rem", maxWidth: "28.6%", textAlign: "left", marginLeft: "1rem" }} to={`${location.pathname}/${servicio.folio}`}>
+                    #Folio: {servicio.folio}
+                  </FolioLink>
+                  <div
+                    style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "50%" }}
+                  >
+                    <FolioLink
+                      to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
+                  </div>
+                  <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
+                </ServiciosElement1>
+                <ServiciosElement2>
+                  <h3 className="primerSector"
+                    style={{ fontWeight: "bold" }}
+                  >Fecha: </h3>
+                  <h3 className="primerSector">{servicio.fecha_servicio} </h3>
+                </ServiciosElement2>
+                <ServiciosElement3>
+                  <h3 className="primerSector"
+                    style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
+                  >  Estatus : {servicio.realizado ? 'Realizado' : 'No realizado'}
+                  </h3>
+                  <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
+                </ServiciosElement3>
+                <ServiciosElement4>
+                  <button id="borrarServicio"
+                    // onClick={() =>
+                    //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
+                    // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                    onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
+                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                  >
+                    X
+                  </button>
+                </ServiciosElement4>
+              </ServiciosElement>
+            ))}
           <PaginationComponent
             currentPage={currentPage}
             totalPages={totalPages}

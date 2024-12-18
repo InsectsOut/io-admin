@@ -391,7 +391,7 @@ const MyDocument = () => {
                                 <View style={{ width: "30%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>Hora Salida</Text>
                                 </View>
-                                <Text style={styles.fechaUnderline}> 14:30</Text>
+                                <Text style={styles.fechaUnderline}></Text>
                             </View>
                         </View>
                     </View>
@@ -490,7 +490,7 @@ const MyDocument = () => {
                                             <Text>{registro?.plaguicidas?.registro}</Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>902F37A80</Text>
+                                            <Text></Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.cantidad} {registro?.unidad}</Text>
