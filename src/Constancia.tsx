@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "column",
         width: "100vw",
-       // fontFamily: 'Open Sans',
+        // fontFamily: 'Open Sans',
         position: "relative",
         transform: "scale(1)"
 
@@ -540,18 +540,18 @@ const MyDocument = () => {
                             <View style={styles.checkboxContainer}>
                                 {otraFrecuencia ? (
                                     <>
-                                    <View style={[styles.checkbox, { backgroundColor: 'black' }]}/>
+                                        <View style={[styles.checkbox, { backgroundColor: 'black' }]} />
                                         <Text style={styles.label}>{frecuencia_recomendada}</Text>
-                                        </>
-                                    
+                                    </>
+
                                 ) : (
-                         
+
                                     <>
-                                    <View style={[styles.checkbox, { backgroundColor: 'white' }]}/>
+                                        <View style={[styles.checkbox, { backgroundColor: 'white' }]} />
                                         <Text style={styles.label}>Otro</Text>
-                                        </>
-                                     
-    
+                                    </>
+
+
                                 )}
                             </View>
 
