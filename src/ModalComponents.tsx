@@ -226,14 +226,16 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
             if (data) {
                 console.log(data)
                 const [registro] = data
+           
                 setCantidad(registro.cantidad ?? 0)
                 setArea_aplicacion(registro.area_aplicacion ?? "")
-                setProductoId(registro?.producto_id)
+                setProductoId(registro?.producto_id ?? -1)
                 setServicioId(servicioId)
                 setTipo_aplicacion(registro?.tipo_aplicacion as string)
-                setUnidad(registro?.unidad)
+                setUnidad(registro?.unidad ?? "")
                 setRegistroId(registro?.id)
                 setTipoPlaga(registro?.tipo_plaga_id)
+              
             }
         }
 

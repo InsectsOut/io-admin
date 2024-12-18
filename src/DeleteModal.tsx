@@ -136,7 +136,7 @@ interface cardProps {
     btnText?: string,
     puesto?: string
 }
-const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apellido, del, titulo, btnText, puesto}) => {
+const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apellido, del, titulo, btnText, puesto }) => {
 
     return (
         <DeleteModal>
@@ -145,45 +145,50 @@ const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apell
                     onClick={closeModal}
                 >X</CloseButton>
                 <Titulo>{titulo}</Titulo>
-                {window.location.pathname === "/empleados" &&(
-                <ServicioInfo>
-                    <div className="nombre">
-                        <SubTitles>Nombre: {nombre}</SubTitles>
-                    </div>
-                    <div className="fecha">
-                        <SubTitles>Puesto: {puesto}</SubTitles>
-                    </div>
-                </ServicioInfo>
+                {window.location.pathname === "/empleados" && (
+                    <ServicioInfo>
+                        <div className="nombre">
+                            <SubTitles>Nombre: {nombre}</SubTitles>
+                        </div>
+                        <div className="fecha">
+                            <SubTitles>Puesto: {puesto}</SubTitles>
+                        </div>
+                    </ServicioInfo>
                 )}
-                {window.location.pathname === "/Clientes" &&(
-                <ServicioInfo>
-                    <div className="folio">
-                        <SubTitles>Folio: {folio}</SubTitles>
-                    </div>
-                    <div className="nombre">
-                        <SubTitles>Nombre: {nombre} {apellido}</SubTitles>
-                    </div>
-                    <div className="fecha">
-                        <SubTitles>Fecha: {fecha}</SubTitles>
-                    </div>
-                </ServicioInfo>
+                {window.location.pathname === "/Clientes" && (
+                    <ServicioInfo>
+                        <div className="folio">
+                            <SubTitles>Folio: {folio}</SubTitles>
+                        </div>
+                        <div className="nombre">
+                            <SubTitles>Nombre: {nombre} {apellido}</SubTitles>
+                        </div>
+                        <div className="fecha">
+                            <SubTitles>Fecha: {fecha}</SubTitles>
+                        </div>
+                    </ServicioInfo>
                 )}
-                {window.location.pathname === "/Servicios" &&(
-                <ServicioInfo>
-                    <div className="folio">
-                        <SubTitles>Folio: {folio}</SubTitles>
-                    </div>
-                    <div className="nombre">
-                        <SubTitles>Nombre: {nombre} {apellido}</SubTitles>
-                    </div>
-                    <div className="fecha">
-                        <SubTitles>Fecha: {fecha}</SubTitles>
-                    </div>
-                </ServicioInfo>
+                {window.location.pathname === "/Servicios" && (
+                    <ServicioInfo>
+                        <div className="folio">
+                            <SubTitles>Folio: {folio}</SubTitles>
+                        </div>
+                        <div className="nombre">
+                            <SubTitles>Nombre: {nombre} {apellido}</SubTitles>
+                        </div>
+                        <div className="fecha">
+                            <SubTitles>Fecha: {fecha}</SubTitles>
+                        </div>
+                    </ServicioInfo>
                 )}
                 <DeleteButton
-                    onClick={del}
-                >{btnText}</DeleteButton>
+                    onClick={() => {
+                        del?.();      
+                        closeModal?.(); 
+                    }}
+                >
+                    {btnText}
+                </DeleteButton>
             </ModalContent>
         </DeleteModal>
 

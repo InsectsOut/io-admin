@@ -36,9 +36,15 @@ background: #FFFFFF;
 border:${props => (props.open ? '1px solid #CFCACA' : 'none')}; 
 box-shadow: 0px 6.08511px 6.08511px rgba(0, 0, 0, 0.25);
 border-radius: 7.60638px;
-
-
-
+.dateFilterInputs{
+display:flex;
+}
+.dateTexts{
+color:#0D4E80;
+p{
+margin:0;
+ }
+}
 `
 export const Titulo = styled.h1 /*style*/ `
  
@@ -246,14 +252,15 @@ margin-right:1rem;
 `
 
 export const StyledDatePicker = styled(DatePicker) /*style*/`
-  width: 100%; 
+  width: 95%; 
   margin-top: 1rem;
   background:white;
   color:#727272;
   text-align:center;
   border:none;
-  font-size:1.25rem;
+  font-size:1rem;
   margin-top:.25rem;
+
 
   &:hover{
     cursor:pointer;
@@ -408,7 +415,11 @@ transform: scale(1.05);
 
 type QueryType = "Cliente" | "Tipo" | "fecha" | "estatus" | "";
 
-export const Servicios = () => {
+interface serviciosProps {
+  organizacion?: string;
+}
+
+export const Servicios: React.FC<serviciosProps> = (props) => {
   type TipoFiltro = "nombres" | "folio" | "";
 
 
@@ -422,6 +433,8 @@ export const Servicios = () => {
   const [isRotated4, setIsRotated4] = useState(false);
   const [text, setText] = useState<QueryType>("");
   const [selectedDate, setSelectedDate] = useState<null | Date>(null);
+  const [startDate, setStartDate] = useState<null | Date>(null)
+  const [endDate, setEndDate] = useState<null | Date>(null)
   const today = new Date();
   const [_fetchError, setFetchError] = useState("");
   const [barraBusqueda, setBarraBusqueda] = useState("");
@@ -477,6 +490,7 @@ export const Servicios = () => {
       const { count } = await supabase
         .from("Servicios")
         .select("id", { count: "exact" })
+        .filter("organizacion", "eq", props.organizacion)
       // setPaginasNoFilter(count)
 
 
@@ -491,6 +505,7 @@ export const Servicios = () => {
       let query = supabase
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
+        .filter("organizacion", "eq", props.organizacion)
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
       if (barraBusqueda !== "") {
         query = isNaN(parseInt(barraBusqueda))
@@ -541,8 +556,10 @@ export const Servicios = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+  const formatDate = (date: Date) => date.toISOString().split('T')[0];  // For date only (YYYY-MM-DD)
 
-  const filterServicios = async () => {
+
+  const filterServicios = async (text: string) => {
     let filtroQuery = "";
     let paramteros = null;
 
@@ -556,7 +573,13 @@ export const Servicios = () => {
         paramteros = selectedOptions;
         break;
       case "fecha":
-        // Additional logic for filtering by fecha (if needed)
+        if (startDate && endDate) {
+          filtroQuery = "fecha_servicio"; // Assuming your column name in the database is 'fecha' for the service date
+          paramteros = [startDate, endDate]; // Use an array for start and end date
+        } else {
+          filtroQuery = ""; // If no dates are provided, clear the filter
+          paramteros = null;
+        }
         break;
       case "estatus":
         filtroQuery = "realizado";
@@ -572,9 +595,21 @@ export const Servicios = () => {
       let query = supabase
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
+        .filter("organizacion", "eq", props.organizacion)
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-      if (filtroQuery && paramteros !== null) {
+      // Apply the date range filter if it's set
+      if (filtroQuery === "fecha_servicio" && paramteros && Array.isArray(paramteros) && paramteros.length === 2) {
+        const [startDate, endDate] = paramteros;
+        // Format the dates before passing them to the query
+        const formattedStartDate = formatDate(startDate);
+        const formattedEndDate = formatDate(endDate);
+
+        query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
+      }
+
+      // Apply other filters
+      if (filtroQuery && paramteros !== null && filtroQuery !== "fecha_servicio") {
         query = query.eq(filtroQuery, paramteros);
       }
 
@@ -597,11 +632,11 @@ export const Servicios = () => {
     } catch (error) {
       console.error("An unexpected error occurred:", error);
     }
-  };
+  }
 
 
   useEffect(() => {
-    filterServicios()
+    filterServicios(text)
   }, [currentPage])
 
   const deleteServicio = async (servicioId: number) => {
@@ -743,6 +778,18 @@ export const Servicios = () => {
     setDeleteModalVisible(false)
   }
 
+  const handleSetText = async () => {
+    console.log(textModal)
+    const text = textModal
+    if (textModal) {
+      if (text) {
+        setText(text)
+        filterServicios(text)
+      }
+    }
+
+  }
+
 
 
   return (
@@ -845,9 +892,9 @@ export const Servicios = () => {
                       >Limpiar</button>
                       <button className="actionButtonsStyles" id="aplicar"
                         onClick={() => {
-                          setText("Cliente");
-                          filterServicios()
+                          handleSetText()
                             .then(() => {
+                              // filterServicios()
                               handlePageSetter();
                               setIsRotated(false);
                             });
@@ -880,9 +927,9 @@ export const Servicios = () => {
                         onClick={() => { handleClearSelection(); }}
                       >Limpiar</button>
                       <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                        setText("Tipo")
-                        filterServicios()
+                        handleSetText()
                           .then(() => {
+                            // filterServicios()
                             handlePageSetter();
                             setIsRotated2(false);
                           });
@@ -897,8 +944,17 @@ export const Servicios = () => {
                     open={modalVisible}
                   >
                     <div>
-                      <h2 style={{ color: "#727272", marginBottom: "0" }}>Selecciona una fecha</h2>
-                      <StyledDatePicker selected={selectedDate || today} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                      <p style={{ color: "#727272", marginBottom: "0" }}>Selecciona una fecha</p>
+                      <div className="dateFilterInputs">
+                        <div className="dateTexts">
+                          <StyledDatePicker selected={startDate || today} onChange={date => setStartDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                          <p>Inicial</p>
+                        </div >
+                        <div className="dateTexts">
+                          <StyledDatePicker selected={endDate || today} onChange={date => setEndDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                          <p>Final</p>
+                        </div>
+                      </div>
                     </div>
 
                   </ModalContentTop>
@@ -906,8 +962,24 @@ export const Servicios = () => {
                     open={modalVisible}
                   >
                     <div className="filtroActionButtons">
-                      <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
-                      <button className="actionButtonsStyles" id="aplicar">Aplicar</button>
+                      <button
+                        onClick={() => {
+                          setStartDate(new Date());
+                          setEndDate(new Date());
+                        }}
+                        className="actionButtonsStyles"
+                        id="limpiar"
+                      >
+                        Limpiar
+                      </button>
+                      <button type="button" className="actionButtonsStyles" id="aplicar" onClick={() => {
+                        handleSetText()
+                          .then(() => {
+                            //filterServicios()
+                            handlePageSetter();
+                            setIsRotated3(false);
+                          });
+                      }}>Aplicar</button>
                     </div>
                   </ModalContentBottom>
                 </>
@@ -940,9 +1012,9 @@ export const Servicios = () => {
                         onClick={() => { handleClearSelection() }}
                       >Limpiar</button>
                       <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                        setText("estatus")
-                        filterServicios()
+                        handleSetText()
                           .then(() => {
+                            //filterServicios()
                             handlePageSetter();
                             setIsRotated4(false);
                           });
@@ -955,49 +1027,53 @@ export const Servicios = () => {
           )}
         </FiltrosContainer>
         <ServiciosSelectContainer>
-          {servicios.map((servicio) => (
-            <ServiciosElement
-              key={servicio.id}
-            >
 
-              <ServiciosElement1 style={{ textAlign: "left" }}>
-                <FolioLink className="primerSector" style={{ minWidth: "28.6%", maxHeight: "3.351rem", maxWidth: "28.6%", textAlign: "left", marginLeft: "1rem" }} to={`${location.pathname}/${servicio.folio}`}>
-                  #Folio: {servicio.folio}
-                </FolioLink>
-                <div
-                  style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "50%" }}
-                >
-                  <FolioLink
-                    to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
-                </div>
-                <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
-              </ServiciosElement1>
-              <ServiciosElement2>
-                <h3 className="primerSector"
-                  style={{ fontWeight: "bold" }}
-                >Fecha: </h3>
-                <h3 className="primerSector">{servicio.fecha_servicio} </h3>
-              </ServiciosElement2>
-              <ServiciosElement3>
-                <h3 className="primerSector"
-                  style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                >  Estatus : {servicio.realizado ? 'Realizado' : 'No realizado'}
-                </h3>
-                <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
-              </ServiciosElement3>
-              <ServiciosElement4>
-                <button id="borrarServicio"
-                  // onClick={() =>
-                  //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
-                  // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
-                  onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
-                  style={{ fontWeight: "bold", fontSize: "105%" }}
-                >
-                  X
-                </button>
-              </ServiciosElement4>
-            </ServiciosElement>
-          ))}
+
+          {servicios
+            .sort((a, b) => new Date(b.fecha_servicio).getTime() - new Date(a.fecha_servicio).getTime())
+            .map((servicio) => (
+              <ServiciosElement
+                key={servicio.id}
+              >
+
+                <ServiciosElement1 style={{ textAlign: "left" }}>
+                  <FolioLink className="primerSector" style={{ minWidth: "28.6%", maxHeight: "3.351rem", maxWidth: "28.6%", textAlign: "left", marginLeft: "1rem" }} to={`${location.pathname}/${servicio.folio}`}>
+                    #Folio: {servicio.folio}
+                  </FolioLink>
+                  <div
+                    style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "50%" }}
+                  >
+                    <FolioLink
+                      to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
+                  </div>
+                  <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
+                </ServiciosElement1>
+                <ServiciosElement2>
+                  <h3 className="primerSector"
+                    style={{ fontWeight: "bold" }}
+                  >Fecha: </h3>
+                  <h3 className="primerSector">{servicio.fecha_servicio} </h3>
+                </ServiciosElement2>
+                <ServiciosElement3>
+                  <h3 className="primerSector"
+                    style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
+                  >  Estatus : {servicio.realizado ? 'Realizado' : 'No realizado'}
+                  </h3>
+                  <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
+                </ServiciosElement3>
+                <ServiciosElement4>
+                  <button id="borrarServicio"
+                    // onClick={() =>
+                    //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
+                    // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                    onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
+                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                  >
+                    X
+                  </button>
+                </ServiciosElement4>
+              </ServiciosElement>
+            ))}
           <PaginationComponent
             currentPage={currentPage}
             totalPages={totalPages}

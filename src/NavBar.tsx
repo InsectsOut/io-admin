@@ -88,7 +88,7 @@ function NavBar() {
               </Li>
             </IconsContainer>
           </NavContainer>
-          <SlidingMenu isOpen={modalOpen} />
+          <SlidingMenu isOpen={modalOpen} closing={openModal} />
         </>
       )}
     </>

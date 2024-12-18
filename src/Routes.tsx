@@ -15,6 +15,7 @@ import MyDocument from "./Constancia";
 import { PDFViewer } from "@react-pdf/renderer";
 import Calendar from "./Calendar";
 import EmpleadosCard from "./EmpleadosCard";
+import CreateEmployee from "./CreateEmployee";
 
 
 
@@ -22,23 +23,31 @@ const AppRoutes = () => {
     const navigate = useNavigate()
     const [token, setToken] = useState<any>(null)
     const [session, setSessionData] = useState<any>()
+    const [user_id,setUser_id] = useState<string >("")
+    const [org,setOrg] = useState<string>("")
+    const [loading, setLoading] = useState<boolean>(true); // Add loading state to prevent premature rendering
+
 
 
     const getSession = async () => {
-
         try {
-            const { data, error } = await supabase.auth.getSession()
+            const { data, error } = await supabase.auth.getSession();
             if (error) {
-                throw new Error(error.message)
+                throw new Error(error.message);
             }
-            setSessionData(data?.session)
 
-        }
+            setSessionData(data?.session);
+            const userId = data?.session?.user?.id ?? "";
+            setUser_id(userId);
+            localStorage.setItem("user_id", data?.session?.user?.id??  "");
 
-        catch (err) {
-            console.log(err)
+            await fetchOrganización(userId);
+        } catch (err) {
+            console.log(err);
+        } finally {
+            setLoading(false); // Set loading to false once session and org are fetched
         }
-    }
+    };
 
 
     const authSupabase = () => {
@@ -54,12 +63,36 @@ const AppRoutes = () => {
         })
     }
 
-
+    const fetchOrganización = async (user_id:string | null) =>{
+        try {
+            let query = supabase;
+            const { data, error } = await query
+            .from("Empleados")
+            .select("organizacion")
+            .filter("user_id","eq",user_id)
+         //@ts-ignore
+         setOrg(data?.[0]?.organizacion ??  "")
+          //@ts-ignore
+         localStorage.setItem("org", data?.[0]?.organizacion ??  "");
+        }
+        catch(err){
+            console.log(err)
+        }
+    }
+   
+    
     useEffect(() => {
         authSupabase()
         getSession()
-
     }, [navigate])
+
+    useEffect(() => {
+        fetchOrganización(localStorage.getItem("user_id") ?? "")
+    }, [])
+
+    if (loading) {
+        return <div>Loading...</div>;
+    }
 
 
 
@@ -73,16 +106,30 @@ const AppRoutes = () => {
             {session &&
                 <>
                     <Route path="/inicio" element={<><Dashboard /></>}></Route>
-                    <Route path="/Servicios" element={<><Servicios /></>}></Route>
-                    <Route path="/Clientes" element={<><Clientes /></>}></Route>
+                    <Route path="/Servicios" element={<><Servicios organizacion={localStorage.getItem("org") ?? ""} /></>}></Route>
+                    <Route path="/Clientes" element={<><Clientes
+                    organizacion={localStorage.getItem("org") ?? ""}
+                    /></>}></Route>
                     <Route path="/Servicios/:folio" element={<><ServiciosCard /></>}></Route>
                     <Route path="/Clientes/:id" element={<><ClientesCard /></>}></Route>
-                    <Route path="/nuevo-servicio" element={<><CreateServiceForm /></>}></Route>
-                    <Route path="/nuevo-cliente" element={<><CreateClientForm /></>}></Route>
+                    <Route path="/nuevo-servicio" element={<><CreateServiceForm 
+                    user_id={localStorage.getItem("user_id") ?? ""}
+                    /></>}></Route>
+                    <Route path="/nuevo-cliente" element={<><CreateClientForm 
+                    organizacion={localStorage.getItem("org") ?? ""}
+                    user_id={localStorage.getItem("user_id") ?? ""}
+                    /></>}></Route>
                     <Route path="/Servicios/pdf/:folio" element={<MyDocument />} />
-                    <Route path="/calendar" element={<Calendar />} />
-                    <Route path="/empleados" element={<DocumentUploader />} />
+                    <Route path="/calendar" element={<Calendar
+                    organizacion={localStorage.getItem("org") ?? ""}
+                    />} />
+                    <Route path="/empleados" element={<DocumentUploader 
+                    organizacion={localStorage.getItem("org") ?? ""}
+                    />} />
                     <Route path="/empleados/:id" element={<EmpleadosCard />} />
+                    <Route path="/nuevo-empleado" element={<CreateEmployee
+                    organizacion={localStorage.getItem("org") ?? ""}
+                    />} />
                 </>
             }
 

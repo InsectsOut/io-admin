@@ -6,6 +6,7 @@ import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from 'react-router-dom'
 import { CardInputs } from "./ServiciosCard";
 import { supabase } from "./utils/ClientSupabase";
+import { DateInput } from "./CreateServiceForm";
 
 const SearchButtonLink = styled.button`
 width: 4.5rem;
@@ -132,21 +133,21 @@ line-height: 1.375rem;
 color: #474747;
 `
 
-export const DateInput = styled(StyledDatePicker)`
+// export const DateInput = styled(StyledDatePicker)`
  
-font-style: normal;
-font-weight: 400;
-font-size: 15px;
-line-height: 20px;
-text-align:left;
-padding-left:.5rem;
-color: #838383;
-width: 12.635625rem;
-height: 2.5125rem; 
-background: #FFFFFF;
-border: 0.071793rem solid #727272; 
-border-radius: 0.215379rem; 
-`
+// font-style: normal;
+// font-weight: 400;
+// font-size: 15px;
+// line-height: 20px;
+// text-align:left;
+// padding-left:.5rem;
+// color: #838383;
+// width: 12.635625rem;
+// height: 2.5125rem; 
+// background: #FFFFFF;
+// border: 0.071793rem solid #727272; 
+// border-radius: 0.215379rem; 
+// `
 export const Horario = styled.input`
  
 font-style: normal;
@@ -176,34 +177,32 @@ display:flex;
 flex-direction:column;
 `
 
-interface createClienteProps {
-    user_id?:string
-    organizacion?:string
+interface createEmployeeProps{
+organizacion?:string
 }
 
-const CreateClientForm: React.FC<createClienteProps> = (props) => {
+const CreateEmployee: React.FC<createEmployeeProps> = (props) => {
     const [_fetchError, _] = useState("");
-    const [email, setEmail] = useState("")
+    const [puesto, setPuesto] = useState<string>("")
     const [tipoCliente, setTipoCliente] = useState("")
     const [telefono, setTelefono] = useState("")
     const [_servicioFolio, SetServicioFolio] = useState<number | null>(null)
     const [nombre, setNombre] = useState<string>("")
     const [apellido, setApellido] = useState<string>("")
     const navigate = useNavigate()
+    const[fecha_nacimiento,setFechaDeNacimiento]=useState<Date |null>()
 
-    const addCliente = async () => {
+    const addEmpleado = async () => {
         try {
             const { data, error } = await supabase
-                .from("Clientes")
+                .from("Empleados")
                 .insert([
                     {
 
-                        email: email,
                         telefono: telefono,
-                        tipo_cliente: tipoCliente,
                         nombre: nombre,
-                        apellidos: apellido,
-                        user_id: props.user_id,
+                        fecha_nacimiento: fecha_nacimiento,
+                        puesto:puesto,
                         organizacion:props.organizacion
                     },
                 ] as any)
@@ -214,14 +213,14 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
             } else {
                 console.log("Data inserted successfully:", data);
 
-                let clienteId = data?.[0]?.id
-                if (clienteId) {
+                let empleadoId = data?.[0]?.id
+                if (empleadoId) {
 
-                    navigate(`/Clientes/${clienteId}`)
+                    navigate(`/empleados/${empleadoId}`)
 
                 }
                 console.log("hola")
-                SetServicioFolio(clienteId)
+                SetServicioFolio(empleadoId)
             }
         } catch (err) {
             console.error("Error adding servicio:", err);
@@ -230,8 +229,8 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
 
 
     const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const emailChange = event.target.value
-        setEmail(emailChange)
+        const puestoChange = event.target.value
+        setPuesto(puestoChange)
     }
 
     const handleTipoCliente = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -250,26 +249,27 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
         setNombre(cambio)
 
     }
-    const handleApellidosChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const cambio = event.target.value
-        setApellido(cambio)
+
+    const handleFechaDeNacimientoChange = (date: Date | null) => {
+        console.log(date)
+        setFechaDeNacimiento(date)
     }
 
     return (
         <CreateContainer id="createContainer">
             <Titulo>Clientes</Titulo>
-            <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo cliente, complete el siguiente formulario.</FormHeader>
+            <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo empleado, complete el siguiente formulario.</FormHeader>
                 <CreateServicioForm id="createClientForm">
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
                         <div style={{ width: "45%" }} >
-                            <FormLabels >Nombre del Cliente</FormLabels>
+                            <FormLabels >Nombre</FormLabels>
                             <CardInputs
                                 value={nombre}
                                 onChange={handleNameChange}
                                 id="textInputs"
                                 className="textInputs" />
                         </div>
-                        <div style={{ width: "45%" }} >
+                        {/* <div style={{ width: "45%" }} >
                             <FormLabels >Apellidos</FormLabels>
                             <CardInputs
                                 value={apellido}
@@ -277,20 +277,11 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
                                 id="textInputs"
                                 className="textInputs"
                             />
-                        </div>
+                        </div> */}
 
                     </FormatoInputs>
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
 
-                        <div style={{ width: "45%" }}>
-                            <FormLabels >E-mail de contacto</FormLabels>
-                            <CardInputs
-                                className="textInputs"
-                                type="text"
-                                value={email}
-                                onChange={handleEmailChange}
-                            ></CardInputs>
-                        </div>
                         <div style={{ width: "45%" }}>
                             <FormLabels >Teléfono</FormLabels>
                             <CardInputs
@@ -303,17 +294,32 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
                     </FormatoInputs>
 
                     <FormatoInputs style={{ width: "19.815rem" }}>
-                        <FormLabels >Tipo de Cliente:</FormLabels>
-                        <select value={tipoCliente} onChange={handleTipoCliente} className="textInputs arrowChange"
-                        >
-                            <option value="" disabled selected hidden>Elegir el tipo de servicio...</option>
-                            <option value="Residencial" >Residencial</option>
-                            <option value="Industrial" >Industrial</option>
-                            <option value="Comercial" >Comercial</option>
-                            <option value="Gubernamental" >Gubernamental</option>
-                            <option value="Hotelería" >Hotelería</option>
-                            <option value="Escolar" >Escolar</option>
-                        </select>
+                        <FormLabels >Feha de Nacimiento:</FormLabels>
+                        <div style={{ width: "100%", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", height: "2.638rem", margin: 0, display: "flex", alignItems: "center" }}>
+                                                <DateInput
+                                                    //@ts-ignore
+                                                    wid="6.91rem"
+                                                    height="2.638rem"
+                                                    wrapperClassName="datepicker"
+                                                    dateFormat="YYYY-MM-dd"
+                                                    onChange={(date) => { handleFechaDeNacimientoChange(date); }}
+                                                    selected={fecha_nacimiento}
+                                                  
+                                                >
+                                                </DateInput>
+                                            </div>
+                    </FormatoInputs>
+                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <div style={{ width: "100%" }}>
+                            <FormLabels >Puesto</FormLabels>
+                            <CardInputs
+                                className="textInputs"
+                                type="text"
+                                value={puesto}
+                                onChange={handleEmailChange}
+                            ></CardInputs>
+                        </div>
+                        
                     </FormatoInputs>
                     {/* <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Responsable:</FormLabels>
@@ -328,7 +334,7 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
                     </FormatoInputs> */}
 
                     <div className="buttonRegistrar" style={{ width: "100%", display: "flex", justifyContent: "right", position: "absolute", bottom: "0", right: "1rem", marginBottom: "1rem" }}>
-                        <SearchButtonLink type="button" onClick={addCliente}>Registrar</SearchButtonLink>
+                        <SearchButtonLink type="button" onClick={addEmpleado}>Registrar</SearchButtonLink>
                     </div>
                 </CreateServicioForm>
             </CreateFormContainer>
@@ -336,4 +342,4 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
     )
 }
 
-export default CreateClientForm
+export default CreateEmployee

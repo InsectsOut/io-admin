@@ -1,4 +1,9 @@
+import { useEffect, useState } from 'react';
 import styled from 'styled-components';
+import { Tables } from './database-types';
+type Direcciones = Tables <"Direcciones">
+import { supabase } from './utils/ClientSupabase';
+
 
 const Backdrop = styled.div`
   position: fixed;
@@ -104,7 +109,35 @@ const EventModal: React.FC<EventModalProps> = ({
   eventAplicadorResponsable,
   eventTipoPlaga,
   eventUbicacion,
+
 }) => {
+  const [direccion,setDireccion] = useState<Direcciones[]>([])
+
+  const fetchDireccion = async (direccion_id:number) => {
+    try {
+      let query = await supabase
+      .from("Direcciones")
+      .select(`*`)
+      .filter("id","eq",direccion_id)
+      const { data, error } = query;
+      if (error) {
+        console.log(error);
+      }
+      if (data){
+      setDireccion(data);
+      console.log(data)
+      }
+    } catch (err) {
+      console.log(err);
+    }
+  };
+
+  useEffect(()=> {
+    if (eventDireccion){
+    fetchDireccion(eventDireccion)
+    }
+
+  },[eventDireccion])
   return (
     <>
       {isOpen && (
@@ -117,7 +150,7 @@ const EventModal: React.FC<EventModalProps> = ({
             {eventDescription && <p><strong>Observaciones:</strong> {eventDescription}</p>}
             {eventFolio && <p><strong>Folio:</strong> {eventFolio}</p>}
             {eventFrecuencia && <p><strong>Frecuencia Recomendada:</strong> {eventFrecuencia}</p>}
-            {eventDireccion && <p><strong>Direccion ID:</strong> {eventDireccion}</p>}
+            {eventDireccion && <p><strong>Direccion:</strong> {direccion[0]?.calle} {direccion[0]?.ciudad} {direccion[0]?.colonia} {direccion[0]?.numero_ext} {direccion[0]?.codigo_postal}</p>}
             {eventTipoServicio && <p><strong>Tipo de Servicio:</strong> {eventTipoServicio}</p>}
             {eventTipoFolio && <p><strong>Tipo de Folio:</strong> {eventTipoFolio}</p>}
             {eventRealizado !== undefined && <p><strong>Realizado:</strong> {eventRealizado ? 'Sí' : 'No'}</p>}

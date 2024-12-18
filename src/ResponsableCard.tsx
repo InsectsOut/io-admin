@@ -51,7 +51,8 @@ interface ResponsableCardProps {
 
 
 const ResponsableCardContainer = styled(CardContainer) /*style*/ `
-height: 25.563rem;
+height:fit-content;
+padding-bottom:2rem;
 margin:unset;
 `
 const inputWidthStyle = {

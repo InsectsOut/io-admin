@@ -10,6 +10,7 @@ type Cliente = Tables<"Clientes">
 type Responsables = Tables<"Responsables">
 type Registros = Tables<"RegistroAplicacion">
 type plaguicidas = Tables<"plaguicidas">
+type Direcciones = Tables<"Direcciones">
 
 
 
@@ -262,8 +263,9 @@ const MyDocument = () => {
     const { folio } = useParams();
     const [registroAp, setRegistroAp] = useState<RegistrosPlaguicidas[]>([])
     const [servicioId, setServicioId] = useState<number | undefined>(servicio?.[0]?.id)
-    console.log('folio from params:', folio);
-
+    const [direccion, setDireccion] = useState<Direcciones[]>([])
+    const [frecuencia_recomendada, setFrecuencia_recomendada] = useState<string>("")
+    const [otraFrecuencia, setOtraFrecuencia] = useState<boolean>(false)
     const fetchServicio = async () => {
         try {
             const { data: serv, error: error } = await supabase
@@ -274,9 +276,22 @@ const MyDocument = () => {
             if (!serv) {
                 console.error(error)
             }
-            setServicio(serv as any)
-            setServicioId(serv?.[0]?.id)
-            console.log(serv)
+            if (serv) {
+                setServicio(serv as any)
+                setServicioId(serv?.[0]?.id)
+                fetchDireccion(serv[0]?.direccion_id ?? 0)
+                if (serv[0]?.frecuencia_recomendada) {
+                    setFrecuencia_recomendada(serv[0]?.frecuencia_recomendada)
+                    console.log(serv[0]?.frecuencia_recomendada)
+                    if (serv[0]?.frecuencia_recomendada !== "Quincenal" && serv[0]?.frecuencia_recomendada !== "Semanal" && serv[0]?.frecuencia_recomendada !== "Mensual" && serv[0]?.frecuencia_recomendada !== "Unico") {
+
+                        setOtraFrecuencia(true)
+
+                    }
+
+
+                }
+            }
 
         }
 
@@ -303,6 +318,26 @@ const MyDocument = () => {
             console.log(err)
         }
     }
+
+    const fetchDireccion = async (direccion_id: number) => {
+        try {
+            let query = await supabase
+                .from("Direcciones")
+                .select(`*`)
+                .filter("id", "eq", direccion_id)
+            const { data, error } = query;
+            if (error) {
+                console.log(error);
+            }
+            if (data) {
+                setDireccion(data);
+                console.log(data)
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
 
     useEffect(() => {
         fetchServicio()
@@ -356,7 +391,7 @@ const MyDocument = () => {
                                 <View style={{ width: "30%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>Hora Salida</Text>
                                 </View>
-                                <Text style={styles.fechaUnderline}> 14:30</Text>
+                                <Text style={styles.fechaUnderline}></Text>
                             </View>
                         </View>
                     </View>
@@ -375,7 +410,7 @@ const MyDocument = () => {
                                 <View style={{ width: "16%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>DIRECCION</Text>
                                 </View>
-                                <Text style={{ ...styles.fechaUnderline, width: "84%" }}> {servicio[0]?.direccion_id} </Text>
+                                <Text style={{ ...styles.fechaUnderline, width: "84%" }}>{direccion[0]?.calle} {direccion[0]?.ciudad} {direccion[0]?.colonia} {direccion[0]?.numero_ext} {direccion[0]?.codigo_postal}</Text>
                             </View>
                             <View style={{ ...styles.fechaElement, width: "100%" }}>
                                 <View style={{ width: "16%" }}>
@@ -455,7 +490,7 @@ const MyDocument = () => {
                                             <Text>{registro?.plaguicidas?.registro}</Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>902F37A80</Text>
+                                            <Text></Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.cantidad} {registro?.unidad}</Text>
@@ -484,24 +519,42 @@ const MyDocument = () => {
                     </View>
                     <View style={styles.section}>
                         <View style={styles.checkboxContainer}>
-                            <View style={[styles.checkbox, { backgroundColor: 'white' }]} />
+                            <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Semanal" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Semanal</Text>
                         </View>
                         <View style={styles.checkboxContainer}>
-                            <View style={[styles.checkbox, { backgroundColor: 'white', }]} />
+                            <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Quincenal" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Quincenal</Text>
                         </View>
                         <View style={styles.checkboxContainer}>
-                            <View style={[styles.checkbox, { backgroundColor: 'white', }]} />
+                            <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Mensual" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Mensual</Text>
                         </View>
                         <View style={styles.checkboxContainer}>
-                            <View style={[styles.checkbox, { backgroundColor: 'white', }]} />
+                            <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Unico" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Único puntual</Text>
                         </View>
+
                         <View style={styles.checkboxContainer}>
-                            <View style={[styles.checkbox, { backgroundColor: 'white', }]} />
-                            <Text style={styles.label}>Otro</Text>
+
+                            <View style={styles.checkboxContainer}>
+                                {otraFrecuencia ? (
+                                    <>
+                                    <View style={[styles.checkbox, { backgroundColor: 'black' }]}/>
+                                        <Text style={styles.label}>{frecuencia_recomendada}</Text>
+                                        </>
+                                    
+                                ) : (
+                         
+                                    <>
+                                    <View style={[styles.checkbox, { backgroundColor: 'white' }]}/>
+                                        <Text style={styles.label}>Otro</Text>
+                                        </>
+                                     
+    
+                                )}
+                            </View>
+
                         </View>
 
                     </View>

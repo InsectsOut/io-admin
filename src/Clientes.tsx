@@ -13,12 +13,15 @@ const ClientesElement1 = styled(ServiciosElement1)`
 justify-content:unset;
 justify-content:left;
 &:hover{
-cursor: pointer;
-transform: scale(1.05); 
+
 }
 `
+interface clientesProps {
+    user_id?:string
+    organizacion?:string
+}
 
-const Clientes = () => {
+const Clientes:React.FC<clientesProps> = (props) => {
     const [isRotated, setIsRotated] = useState(false);
     const [isRotated2, setIsRotated2] = useState(false)
     const [text, setText] = useState("")
@@ -99,7 +102,8 @@ const Clientes = () => {
         if (barraBusqueda === "") {
             const { count } = await supabase
                 .from("Clientes")
-                .select("id", { count: "exact" });
+                .select("id", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
         }
@@ -107,6 +111,7 @@ const Clientes = () => {
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             if (barraBusqueda) {
                 query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`)
@@ -158,7 +163,7 @@ const Clientes = () => {
     const filtrarClientes = async () => {
 
         let filtroQuery = ""
-        let parametros = "" as any || ""
+        let parametros = "" as any 
 
         switch (text) {
             case "Cliente":
@@ -184,6 +189,7 @@ const Clientes = () => {
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
+                .filter("organizacion","eq",props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
             if (filtroQuery && parametros !== null) {
@@ -248,11 +254,11 @@ const Clientes = () => {
 
             if (error) {
                 console.log("There was an error ", error)
-            }
-
-            if (clientes) {
+                return
+            }       
                 console.log("cliente eliminado", clientes)
-            }
+                location.reload()
+           
         }
 
         catch (err) {
