@@ -282,6 +282,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
                     del={() => deleteCliente(deletedClient?.id)}
                     titulo="¿Seguro quiere eliminar al cliente?"
                     btnText="Eliminar Cliente"
+                    tipo={deletedClient?.tipo_cliente}
                 ></DelModal>
             )}
 

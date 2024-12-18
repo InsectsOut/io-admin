@@ -134,9 +134,10 @@ interface cardProps {
     del: () => void,
     titulo?: string,
     btnText?: string,
-    puesto?: string
+    puesto?: string,
+    tipo?: string
 }
-const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apellido, del, titulo, btnText, puesto }) => {
+const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apellido, del, titulo, btnText, puesto,tipo }) => {
 
     return (
         <DeleteModal>
@@ -157,14 +158,11 @@ const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apell
                 )}
                 {window.location.pathname === "/Clientes" && (
                     <ServicioInfo>
-                        <div className="folio">
-                            <SubTitles>Folio: {folio}</SubTitles>
-                        </div>
                         <div className="nombre">
                             <SubTitles>Nombre: {nombre} {apellido}</SubTitles>
                         </div>
                         <div className="fecha">
-                            <SubTitles>Fecha: {fecha}</SubTitles>
+                            <SubTitles>Giro comercial: {tipo}</SubTitles>
                         </div>
                     </ServicioInfo>
                 )}

@@ -14,10 +14,10 @@ type Direcciones = Tables<"Direcciones">
 
 
 
-Font.register({
-    family: 'Open Sans',
-    src: 'http://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3aCWcynf_cDxXwCLxiixG1c.ttf',
-});
+// Font.register({
+//     family: 'Open Sans',
+//     src: 'http://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3aCWcynf_cDxXwCLxiixG1c.ttf',
+// });
 
 
 const styles = StyleSheet.create({
@@ -29,7 +29,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: "column",
         width: "100vw",
-        fontFamily: 'Open Sans',
+        // fontFamily: 'Open Sans',
         position: "relative",
         transform: "scale(1)"
 
@@ -540,18 +540,18 @@ const MyDocument = () => {
                             <View style={styles.checkboxContainer}>
                                 {otraFrecuencia ? (
                                     <>
-                                    <View style={[styles.checkbox, { backgroundColor: 'black' }]}/>
+                                        <View style={[styles.checkbox, { backgroundColor: 'black' }]} />
                                         <Text style={styles.label}>{frecuencia_recomendada}</Text>
-                                        </>
-                                    
+                                    </>
+
                                 ) : (
-                         
+
                                     <>
-                                    <View style={[styles.checkbox, { backgroundColor: 'white' }]}/>
+                                        <View style={[styles.checkbox, { backgroundColor: 'white' }]} />
                                         <Text style={styles.label}>Otro</Text>
-                                        </>
-                                     
-    
+                                    </>
+
+
                                 )}
                             </View>
 
