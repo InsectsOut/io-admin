@@ -558,7 +558,7 @@ const MyDocument = () => {
                         </View>
 
                     </View>
-                    <View style={{ ...styles.fechaTitle, width: "100%", backgroundColor: "white", alignItems: "center", justifyContent: "center", color: "red", fontSize: "8px", marginTop: "30px" }} >
+                    <View style={{ ...styles.fechaTitle, width: "100%", backgroundColor: "white", alignItems: "center", justifyContent: "center", color: "red", fontSize: "8px", marginTop: "15px" }} >
                         <Text style={{ paddingLeft: "3px", height: "100%" }}>GARANTIA DE ACUERDO AL TIEMPO SUGERIDO PARA REALIZAR EL PROXIMO SERVICIO Y CUMPLIR CON LAS RECOMENDACIONES SIGUIENTES:</Text>
                     </View>
 
