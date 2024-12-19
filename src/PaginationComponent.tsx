@@ -5,9 +5,9 @@ import { MdFirstPage } from "react-icons/md";
 
 //falta cambiar la pagina a 1 cuando vaya a buscar algo mas 
 const NumPaginas = styled.div`
-position: absolute;
+
 width: 10.25rem;
-top:51rem;
+
 height: 1.732rem;
 display:flex;
 justify-content:left;

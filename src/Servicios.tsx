@@ -22,6 +22,12 @@ display:flex;
 flex-direction:column;
 `
 
+export const LowerActionButtons = styled.div /*style*/ `
+width:100% ;
+display:flex;
+align-items:center;
+justify-content:space-between;
+`
 
 
 
@@ -305,6 +311,7 @@ display:flex;
 width:100%;
 height: 3.35125rem;
 background:#F0F0F0;
+
 `
 export const ServiciosElement1 = styled.div /*style*/ `
 display:flex;
@@ -395,8 +402,7 @@ font-style: normal;
 font-weight: 700;
 font-size: 1.005rem;
 align-self: flex-end;
-top: 51rem;
-position: absolute;
+
 
 &:hover{
 cursor: pointer;
@@ -1074,6 +1080,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                 </ServiciosElement4>
               </ServiciosElement>
             ))}
+
+          <LowerActionButtons className="lowerActionButtons">
           <PaginationComponent
             currentPage={currentPage}
             totalPages={totalPages}
@@ -1081,6 +1089,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
           />
 
           <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
+          </LowerActionButtons>
+         
 
         </ServiciosSelectContainer>
       </ServiciosContainer>
