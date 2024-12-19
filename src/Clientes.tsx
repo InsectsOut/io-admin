@@ -6,6 +6,7 @@ import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
 import DelModal from "./DeleteModal";
+import { LowerActionButtons } from "./Servicios";
 
 type Cliente = Tables<"Clientes">
 
@@ -454,6 +455,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
                         </ServiciosElement4>
                     </ServiciosElement>
                 ))}
+                <LowerActionButtons >
                 <PaginationComponent
                     currentPage={currentPage}
                     totalPages={totalPages}
@@ -461,6 +463,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
                 />
 
                 <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
+                </LowerActionButtons>
 
             </ServiciosSelectContainer>
         </>

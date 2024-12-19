@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Tables } from "./database-types";
-import { ClientList, ClientName, CreateButton, EstatusForma, FiltrosContainer, FiltrosLista, FlechaAbajo, FolioLink, ModalContainer, ModalContentBottom, ModalContentTop, SearchBar, SearchBarForm, SearchButton, ServiciosContainer, ServiciosElement, ServiciosElement1, ServiciosElement2, ServiciosElement3, ServiciosElement4, ServiciosSelectContainer, Titulo } from "./Servicios";
+import { ClientList, ClientName, CreateButton, EstatusForma, FiltrosContainer, FiltrosLista, FlechaAbajo, FolioLink, LowerActionButtons, ModalContainer, ModalContentBottom, ModalContentTop, SearchBar, SearchBarForm, SearchButton, ServiciosContainer, ServiciosElement, ServiciosElement1, ServiciosElement2, ServiciosElement3, ServiciosElement4, ServiciosSelectContainer, Titulo } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
@@ -435,13 +435,15 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                         </ServiciosElement4>
                     </ServiciosElement>
                 ))}
+                <LowerActionButtons>
                 <PaginationComponent
                     currentPage={currentPage}
                     totalPages={totalPages}
                     onPageChange={handlePageChange}
                 />
 
-                <CreateButton style={{width:"10%"}} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
+                <CreateButton style={{width:"11.5%"}} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
+                </LowerActionButtons>
 
             </ServiciosSelectContainer>
         </>
