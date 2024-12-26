@@ -6,6 +6,7 @@ import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
 import DelModal from "./DeleteModal";
 import { supabase } from "./utils/ClientSupabase";
+import { FiltrosLeft } from "./Servicios";
 
 type Cliente = Tables<"Clientes">
 type Empleados = Tables<"Empleados">
@@ -293,6 +294,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                     </SearchButton>
                 </SearchBarForm>
                 <FiltrosContainer>
+                    <FiltrosLeft>
                     <FiltrosLista
                         onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
                     >Estatus <FlechaAbajo
@@ -395,7 +397,16 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                             )}
                         </ModalContainer>
                     )}
+                    </FiltrosLeft>
+                    <div>
+                    <PaginationComponent
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    onPageChange={handlePageChange}
+                />
+                </div>
                 </FiltrosContainer>
+                
 
             </ServiciosContainer>
             <ServiciosSelectContainer>
@@ -436,14 +447,13 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                     </ServiciosElement>
                 ))}
                 <LowerActionButtons>
-                <PaginationComponent
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                />
+                
 
+                <div style={{ width:"82.485625rem",height:"2.25rem",position:"absolute", top:"90%"}}>
                 <CreateButton style={{width:"11.5%"}} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
+                </div>
                 </LowerActionButtons>
+                
 
             </ServiciosSelectContainer>
         </>

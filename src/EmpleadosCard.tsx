@@ -317,6 +317,7 @@ const EmpleadosCard = () => {
                     upsert: false
                 })
             console.log(data)
+            //TODO CAMBIAR URL POR VARIABLE DE DESARROLLO
             url = "https://stnrrgqnedpadgelrkbx.supabase.co/storage/v1/object/public/documentos_empleados/" + data?.path
             try {
 

@@ -4,17 +4,16 @@ import { MdOutlineLastPage } from "react-icons/md";
 import { MdFirstPage } from "react-icons/md";
 
 //falta cambiar la pagina a 1 cuando vaya a buscar algo mas 
-const NumPaginas = styled.div`
-
+const NumPaginas = styled.div /*style*/`
+margin-right:3.875rem;
 width: 10.25rem;
-
 height: 1.732rem;
 display:flex;
 justify-content:left;
 gap:1rem;
 `
 
-const PageButt = styled.button`
+const PageButt = styled.button /*style*/`
 all:unset;
 display:flex;
 justify-content:center;
