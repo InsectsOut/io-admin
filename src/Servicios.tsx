@@ -21,7 +21,6 @@ width:100vw;
 display:flex;
 flex-direction:column;
 `
-
 export const LowerActionButtons = styled.div /*style*/ `
 width:100% ;
 display:flex;
@@ -75,6 +74,8 @@ padding: 0;
 margin-left:5.875rem;
 display:flex;
 gap:.5rem;
+justify-content:space-between;
+
 `
 export const FiltrosLista = styled.li /*style*/ `
 width: max-content;
@@ -397,11 +398,11 @@ min-height:  2.25rem;
 height: 2.25rem;
 background: #0D4E80;
 border-radius: 0.359rem;
- 
+position:absolute; 
 font-style: normal;
 font-weight: 700;
 font-size: 1.005rem;
-align-self: flex-end;
+right:0%;
 
 
 &:hover{
@@ -417,6 +418,11 @@ all:unset;
 cursor: pointer;
 transform: scale(1.05); 
 }
+`
+
+export const FiltrosLeft = styled.div /*style*/ `
+display:flex;
+gap:.5rem;
 `
 
 type QueryType = "Cliente" | "Tipo" | "fecha" | "estatus" | "";
@@ -837,6 +843,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
           </SearchButton>
         </SearchBarForm>
         <FiltrosContainer>
+        <FiltrosLeft >
           <FiltrosLista
             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotation(); }}
           >Cliente <FlechaAbajo
@@ -1031,6 +1038,14 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
               )}
             </ModalContainer>
           )}
+         </FiltrosLeft>
+          <div>
+           <PaginationComponent
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={handlePageChange}
+          />
+          </div>
         </FiltrosContainer>
         <ServiciosSelectContainer>
 
@@ -1082,14 +1097,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
             ))}
 
           <LowerActionButtons className="lowerActionButtons">
-          <PaginationComponent
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-
+         
+          <div style={{ width:"82.485625rem",height:"2.25rem",position:"absolute", top:"90%"}}>
           <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
+          </div>
           </LowerActionButtons>
+          
          
 
         </ServiciosSelectContainer>

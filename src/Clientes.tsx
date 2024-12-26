@@ -7,6 +7,7 @@ import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
 import DelModal from "./DeleteModal";
 import { LowerActionButtons } from "./Servicios";
+import { FiltrosLeft } from "./Servicios";
 
 type Cliente = Tables<"Clientes">
 
@@ -18,11 +19,11 @@ justify-content:left;
 }
 `
 interface clientesProps {
-    user_id?:string
-    organizacion?:string
+    user_id?: string
+    organizacion?: string
 }
 
-const Clientes:React.FC<clientesProps> = (props) => {
+const Clientes: React.FC<clientesProps> = (props) => {
     const [isRotated, setIsRotated] = useState(false);
     const [isRotated2, setIsRotated2] = useState(false)
     const [text, setText] = useState("")
@@ -104,7 +105,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
             const { count } = await supabase
                 .from("Clientes")
                 .select("id", { count: "exact" })
-                .filter("organizacion","eq",props.organizacion)
+                .filter("organizacion", "eq", props.organizacion)
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
         }
@@ -112,7 +113,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
-                .filter("organizacion","eq",props.organizacion)
+                .filter("organizacion", "eq", props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
             if (barraBusqueda) {
                 query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`)
@@ -164,7 +165,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
     const filtrarClientes = async () => {
 
         let filtroQuery = ""
-        let parametros = "" as any 
+        let parametros = "" as any
 
         switch (text) {
             case "Cliente":
@@ -190,7 +191,7 @@ const Clientes:React.FC<clientesProps> = (props) => {
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
-                .filter("organizacion","eq",props.organizacion)
+                .filter("organizacion", "eq", props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
             if (filtroQuery && parametros !== null) {
@@ -256,10 +257,10 @@ const Clientes:React.FC<clientesProps> = (props) => {
             if (error) {
                 console.log("There was an error ", error)
                 return
-            }       
-                console.log("cliente eliminado", clientes)
-                location.reload()
-           
+            }
+            console.log("cliente eliminado", clientes)
+            location.reload()
+
         }
 
         catch (err) {
@@ -308,120 +309,123 @@ const Clientes:React.FC<clientesProps> = (props) => {
                     </SearchButton>
                 </SearchBarForm>
                 <FiltrosContainer>
-                    <FiltrosLista
-                        onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
-                    >Cliente <FlechaAbajo
-                            className={isRotated ? "rotated" : ""}
+                    <FiltrosLeft>
+                        <FiltrosLista
+                            onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
+                        >Cliente <FlechaAbajo
+                                className={isRotated ? "rotated" : ""}
 
-                        /> </FiltrosLista>
-                    <FiltrosLista
-                        onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
-                    >Tipo de Cliente <FlechaAbajo
-                            className={isRotated2 ? "rotated2" : ""}
-                        />
-                    </FiltrosLista>
-                    {modalVisible && (
+                            /> </FiltrosLista>
+                        <FiltrosLista
+                            onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
+                        >Tipo de Cliente <FlechaAbajo
+                                className={isRotated2 ? "rotated2" : ""}
+                            />
+                        </FiltrosLista>
+                        {modalVisible && (
 
-                        <ModalContainer
-                            open={modalVisible}
-                            style={{ top: modalPosition.top, left: modalPosition.left }}
+                            <ModalContainer
+                                open={modalVisible}
+                                style={{ top: modalPosition.top, left: modalPosition.left }}
 
-                        >
-                            {text === "Cliente" && (
-                                <>
-                                    <ModalContentTop
-                                        open={modalVisible}
-                                    >
+                            >
+                                {text === "Cliente" && (
+                                    <>
+                                        <ModalContentTop
+                                            open={modalVisible}
+                                        >
 
-                                        {allClientes && (
-                                            <ClientList>
-                                                {allClientes
-                                                    .slice()
-                                                    .sort((a, b) => {
-                                                        const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
-                                                        const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
-                                                        return nameA.localeCompare(nameB);
-                                                    })
-                                                    .map((cliente) => (
-                                                        <ClientName key={cliente.id}
-                                                            onClick={() => { handleClientClick(cliente.id) }}
-                                                            style={getClientNameStyle(cliente.id)}
-                                                        >{cliente.nombre
-                                                            } {cliente.apellidos}</ClientName>
-                                                    ))}
-                                            </ClientList>
-                                        )}
+                                            {allClientes && (
+                                                <ClientList>
+                                                    {allClientes
+                                                        .slice()
+                                                        .sort((a, b) => {
+                                                            const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
+                                                            const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
+                                                            return nameA.localeCompare(nameB);
+                                                        })
+                                                        .map((cliente) => (
+                                                            <ClientName key={cliente.id}
+                                                                onClick={() => { handleClientClick(cliente.id) }}
+                                                                style={getClientNameStyle(cliente.id)}
+                                                            >{cliente.nombre
+                                                                } {cliente.apellidos}</ClientName>
+                                                        ))}
+                                                </ClientList>
+                                            )}
 
-                                    </ModalContentTop>
-                                    <ModalContentBottom
-                                        open={modalVisible}
-                                    >
-                                        <div className="filtroActionButtons">
-                                            <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
-                                            <button className="actionButtonsStyles" id="aplicar"
-                                                type="button"
-                                                onClick={() => {
+                                        </ModalContentTop>
+                                        <ModalContentBottom
+                                            open={modalVisible}
+                                        >
+                                            <div className="filtroActionButtons">
+                                                <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
+                                                <button className="actionButtonsStyles" id="aplicar"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        filtrarClientes()
+                                                            .then(() => {
+                                                                setCurrentPage(1);
+                                                                setIsRotated(false);
+                                                            });
+                                                    }}
+                                                >Aplicar</button>
+                                            </div>
+                                        </ModalContentBottom>
+                                    </>
+                                )}
+                                {text === "Tipo" && (
+                                    <>
+                                        <ModalContentTop
+                                            open={modalVisible}
+                                        >
+                                            <EstatusForma>
+                                                <div className="optionsContainer" id="realizadoContainer">
+                                                    <input type="radio" className="checked" id="residencial" name="choice" value="Residencial" onChange={handleModalCheck} />
+                                                    <label id="realizado2" htmlFor="residencial">Residencial</label>
+                                                </div>
+                                                <div className="optionsContainer" id="noRealizadoContainer">
+                                                    <input type="radio" className="checked" id="industrial" name="choice" value="Industrial" onChange={handleModalCheck} />
+                                                    <label id="noRealizado2" htmlFor="industrial">Industrial</label>
+                                                </div>
+                                                <div className="optionsContainer" id="realizadoContainer">
+                                                    <input type="radio" className="checked" id="comercial" name="choice" value="Comercial" onChange={handleModalCheck} />
+                                                    <label id="realizado2" htmlFor="comercial">Comercial</label>
+                                                </div>
+                                                <div className="optionsContainer" id="noRealizadoContainer">
+                                                    <input type="radio" className="checked" id="gubernamental" name="choice" value="Gubernamental" onChange={handleModalCheck} />
+                                                    <label id="noRealizado2" htmlFor="gubernamental">Gubernamental </label>
+                                                </div>
+                                                <div className="optionsContainer" id="noRealizadoContainer">
+                                                    <input type="radio" className="checked" id="hoteleria" name="choice" value="Hotelería" onChange={handleModalCheck} />
+                                                    <label id="noRealizado2" htmlFor="hoteleria">Hotelería </label>
+                                                </div>
+                                                <div className="optionsContainer" id="noRealizadoContainer">
+                                                    <input type="radio" className="checked" id="escolar" name="choice" value="Escolar" onChange={handleModalCheck} />
+                                                    <label id="noRealizado2" htmlFor="escolar">Escolar </label>
+                                                </div>
+                                            </EstatusForma>
+                                        </ModalContentTop>
+                                        <ModalContentBottom
+                                            open={modalVisible}
+                                        >
+                                            <div className="filtroActionButtons">
+                                                <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
+                                                <button className="actionButtonsStyles" id="aplicar" onClick={() => {
                                                     filtrarClientes()
                                                         .then(() => {
                                                             setCurrentPage(1);
-                                                            setIsRotated(false);
+                                                            setIsRotated2(false);
                                                         });
-                                                }}
-                                            >Aplicar</button>
-                                        </div>
-                                    </ModalContentBottom>
-                                </>
-                            )}
-                            {text === "Tipo" && (
-                                <>
-                                    <ModalContentTop
-                                        open={modalVisible}
-                                    >
-                                        <EstatusForma>
-                                            <div className="optionsContainer" id="realizadoContainer">
-                                                <input type="radio" className="checked" id="residencial" name="choice" value="Residencial" onChange={handleModalCheck} />
-                                                <label id="realizado2" htmlFor="residencial">Residencial</label>
+                                                }}>Aplicar</button>
                                             </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="industrial" name="choice" value="Industrial" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="industrial">Industrial</label>
-                                            </div>
-                                            <div className="optionsContainer" id="realizadoContainer">
-                                                <input type="radio" className="checked" id="comercial" name="choice" value="Comercial" onChange={handleModalCheck} />
-                                                <label id="realizado2" htmlFor="comercial">Comercial</label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="gubernamental" name="choice" value="Gubernamental" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="gubernamental">Gubernamental </label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="hoteleria" name="choice" value="Hotelería" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="hoteleria">Hotelería </label>
-                                            </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="escolar" name="choice" value="Escolar" onChange={handleModalCheck} />
-                                                <label id="noRealizado2" htmlFor="escolar">Escolar </label>
-                                            </div>
-                                        </EstatusForma>
-                                    </ModalContentTop>
-                                    <ModalContentBottom
-                                        open={modalVisible}
-                                    >
-                                        <div className="filtroActionButtons">
-                                            <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
-                                            <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                                                filtrarClientes()
-                                                    .then(() => {
-                                                        setCurrentPage(1);
-                                                        setIsRotated2(false);
-                                                    });
-                                            }}>Aplicar</button>
-                                        </div>
-                                    </ModalContentBottom>
-                                </>
-                            )}
-                        </ModalContainer>
-                    )}
+                                        </ModalContentBottom>
+                                    </>
+                                )}
+                            </ModalContainer>
+
+                        )}
+                    </FiltrosLeft>
                 </FiltrosContainer>
 
             </ServiciosContainer>
@@ -454,15 +458,21 @@ const Clientes:React.FC<clientesProps> = (props) => {
                             </button>
                         </ServiciosElement4>
                     </ServiciosElement>
-                ))}
-                <LowerActionButtons >
-                <PaginationComponent
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                />
 
-                <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
+
+                ))}
+
+                <LowerActionButtons >
+                    <div>
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </div>
+                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%" }}>
+                        <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
+                    </div>
                 </LowerActionButtons>
 
             </ServiciosSelectContainer>
