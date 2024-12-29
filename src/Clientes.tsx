@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./utils/ClientSupabase";
-import { Tables } from "./database-types";
+import { Tables } from "../src/supabase/Database";
 import { ClientList, ClientName, CreateButton, EstatusForma, FiltrosContainer, FiltrosLista, FlechaAbajo, FolioLink, ModalContainer, ModalContentBottom, ModalContentTop, SearchBar, SearchBarForm, SearchButton, ServiciosContainer, ServiciosElement, ServiciosElement1, ServiciosElement2, ServiciosElement3, ServiciosElement4, ServiciosSelectContainer, Titulo } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";

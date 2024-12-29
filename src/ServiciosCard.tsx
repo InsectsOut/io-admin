@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { Tables } from "./database-types";
+import { Tables } from "../src/supabase/Database";
 import { FormatoInputs } from "./CreateServiceForm";
 import { Titulo } from "./Servicios";
 import { useParams } from 'react-router-dom';

@@ -1,17 +1,33 @@
 import styled from "styled-components";
 import { ServiciosContainer } from "./Servicios";
 import { Titulo } from "./Servicios";
-import { Tables } from "./database-types";
+import { Enums, Tables } from "../src/supabase/Database";
 import { useEffect, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from 'react-router-dom'
 import { supabase } from "./utils/ClientSupabase";
-import { C } from "@fullcalendar/core/internal-common";
+
 type Cliente = Tables<"Clientes">
 type Responsable = Tables<"Responsables">
 type Direcciones = Tables<"Direcciones">
 
-const SearchButtonLink = styled.button `
+/** Frecuencias validas para un servicio */
+const frecuencias: Enums<"FrecuenciaServicio">[] = [
+    "Ninguna",
+    "Semanal",
+    "Quincenal",
+    "Mensual",
+    "Bimestral",
+    "Trimestral",
+    "Semestral",
+    "Anual"
+];
+
+const isFrecuencia = (value: any): value is Enums<"FrecuenciaServicio"> => {
+    return frecuencias.includes(value);
+};
+
+const SearchButtonLink = styled.button`
 width: 4.5rem;
 height: 2.188rem;
 background: #0D4E80;
@@ -32,7 +48,7 @@ color:white;
     color:white;
   }
 `
-const CreateFormContainer = styled.div `
+const CreateFormContainer = styled.div`
 background:red;
 width: 60.3125%;
 background:red;
@@ -44,13 +60,13 @@ height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
 `
 
-const CreateContainer = styled(ServiciosContainer) `
+const CreateContainer = styled(ServiciosContainer)`
 .createForm{
 align-self:center;
 }
 `
 
-const FormHeader = styled.div `
+const FormHeader = styled.div`
 width:100%;
 height:6.25rem ;
 background:#6B8AAC;
@@ -85,7 +101,7 @@ flex-direction:column;
    }
 `
 
-export const FormatoInputs = styled.div `
+export const FormatoInputs = styled.div`
     text-align:left;
     margin-left:6.25rem;
    display:flex;
@@ -129,7 +145,7 @@ height:1rem;
 }
  
 `
-const FormLabels = styled.label `
+const FormLabels = styled.label`
  
 font-style: normal;
 font-weight: 700;
@@ -139,9 +155,9 @@ color: #474747;
 `
 interface DateInputProps {
     width?: string;
-  }
+}
 
-export const DateInput= styled(StyledDatePicker)<{wid?:string,height?:string}> /*style*/`
+export const DateInput = styled(StyledDatePicker) <{ wid?: string, height?: string }> /*style*/`
  all:unset;
 font-style: normal;
 font-weight: 400;
@@ -150,10 +166,10 @@ line-height: 20px;
 text-align:left;
 padding-left:.5rem;
 color: #838383;
-height:  ${props => (props.height ?? "2.5125rem" )}; 
+height:  ${props => (props.height ?? "2.5125rem")}; 
 background: none;
 border-radius: 0.215379rem; 
-width:  ${props => (props.wid ?? "12.635625rem" )};
+width:  ${props => (props.wid ?? "12.635625rem")};
 `
 export const Horario = styled.input /*style*/ `
  
@@ -174,7 +190,7 @@ margin-top: .25rem;
   filter: invert(100%);
 }
 `
-export const TimeInput = styled.div `
+export const TimeInput = styled.div`
 display:flex;
 flex-direction:column;
 
@@ -191,10 +207,10 @@ border-radius: 0.215379rem;
 }
 `
 interface createServicioProps {
-user_id?: string | null
+    user_id?: string | null
 }
 
-const CreateServiceForm : React.FC<createServicioProps>= (props) => {
+const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const [clienteId, setClienteId] = useState<number | undefined>()
     const [clientes, setClientes] = useState<Cliente[]>([])
     const [selectedDate, setSelectedDate] = useState<null | Date>(null);
@@ -202,33 +218,30 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
     const [selectedTime, setSelectedTime] = useState<string>('00:00');
     const [responsables, setResponsables] = useState<Responsable[]>([])
     const [observaciones2, setObservaciones] = useState("")
-    const [frecuencia, setFrecuencia] = useState("")
+    const [frecuencia, setFrecuencia] = useState<Enums<"FrecuenciaServicio">>("Ninguna")
     const [estadoFacturacion, setEstadoFacturacion] = useState("")
     const [tipoServicio, setTipoServicio] = useState("")
     const [responsableId, setResponsableId] = useState<number | undefined>()
     const [ordenDeCommpra, setOrdeDeCompra] = useState("")
     const [_, SetServicioFolio] = useState<number | null>(null)
     const [otroSelected, setOtroSelected] = useState<boolean>(true)
-    const [organizacion,setOrganizacion] = useState<string>("")
-    const [direccion_id,setDireccion_id] = useState<string>("")
-    const [dirección,setDireccion] = useState<Direcciones[]>([])
+    const [organizacion, setOrganizacion] = useState<string>("")
+    const [direccion_id, setDireccion_id] = useState<string>("")
+    const [dirección, setDireccion] = useState<Direcciones[]>([])
     const navigate = useNavigate()
 
     const fetchResponsables = async () => {
         if (clienteId !== undefined) {
             try {
-
-
                 if (!clienteId) {
                     console.log("No matching id")
                     console.log(clienteId)
                 }
-                let query = supabase
+
+                const { error, data: responsable } = await supabase
                     .from("Responsables")
                     .select()
-                    .filter("cliente_id", "eq", `${clienteId}`)
-
-                const { error, data: responsable } = await query;
+                    .filter("cliente_id", "eq", `${clienteId}`);
 
                 if (error) {
                     console.log(error)
@@ -236,7 +249,6 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
                 }
                 if (responsable) {
                     setResponsables(responsable)
-
                 }
             }
 
@@ -249,11 +261,9 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
 
     const fetchClientes = async () => {
         try {
-            let query = supabase
+            const { error, data: clientes } = await supabase
                 .from("Clientes")
-                .select(`*`)
-
-            const { error, data: clientes } = await query;
+                .select(`*`);
 
             if (error) {
                 setFetchError("No se pudieron conseguir los datos de servicio");
@@ -286,9 +296,8 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
                         tipo_servicio: tipoServicio,
                         tipo_folio: estadoFacturacion,
                         responsable_id: responsableId,
-                        organizacion:organizacion,
-                        user_id:props.user_id
-
+                        organizacion: organizacion,
+                        user_id: props.user_id
                     },
                 ] as any)
                 .select();
@@ -311,39 +320,36 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
         }
     };
 
-    const fetchOrganización = async (user_id:string | null) =>{
+    const fetchOrganización = async (user_id: string | null) => {
         try {
-            let query = supabase;
-            const { data, error } = await query
-            .from("Empleados")
-            .select("organizacion")
-            .filter("user_id","eq",user_id)
-             //@ts-ignore
-            setOrganizacion(data?.[0]?.organizacion ??  "")
+            const { data } = await supabase
+                .from("Empleados")
+                .select("organizacion")
+                .filter("user_id", "eq", user_id)
+
+            //@ts-ignore
+            setOrganizacion(data?.[0]?.organizacion ?? "")
         }
-        catch(err){
+        catch (err) {
             console.log(err)
         }
     }
 
     const fetchDireccion = async (cliente_id: string) => {
         try {
-            let query = supabase;
-            const { data, error } = await query
-            .from("Direcciones")
-            .select("*")
-            .filter("cliente_id","eq",cliente_id)
-            if (data){
+            const { data, error } = await supabase
+                .from("Direcciones")
+                .select("*")
+                .filter("cliente_id", "eq", cliente_id)
+            if (data) {
                 console.log(data)
                 setDireccion(data)
-              //  setDireccion_id(data[0].cliente_id.toString())
-
             }
-            if (error){
+            if (error) {
                 console.log(error)
             }
         }
-        catch(err){
+        catch (err) {
             console.log(err)
         }
     }
@@ -374,13 +380,13 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
 
     const handleFrecuenciaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const frecuenciaChange = event.target.value
-        if (frecuenciaChange === "Otro") {
-            setFrecuencia("")
-            setOtroSelected(false)
-
+        if (isFrecuencia(frecuenciaChange)) {
+            setFrecuencia(frecuenciaChange)
         }
 
-        setFrecuencia(frecuenciaChange)
+        if (frecuenciaChange === "Ninguna") {
+            setOtroSelected(false)
+        }
 
     }
 
@@ -412,7 +418,7 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
     }
 
     useEffect(() => {
-        setFrecuencia("")
+        setFrecuencia("Ninguna")
         const otroAlternativeElement = document.getElementById("otroAlternative");
         if (otroAlternativeElement) {
             otroAlternativeElement.focus();
@@ -439,9 +445,7 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
                         <FechaInput>
                             <FormLabels >Fecha</FormLabels>
                             <div className="dateInputContainer">
-                            <DateInput
-                            
-                            placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" ></DateInput>
+                                <DateInput placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" />
                             </div>
                         </FechaInput>
                         <TimeInput>
@@ -454,54 +458,46 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
                             />
                         </TimeInput>
                     </FormatoInputs>
-                    
+
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Observaciones del Servicio</FormLabels>
                         <input className="textInputs"
-                            type="text"
-                            value={observaciones2}
                             onChange={handleObservacionesChange}
-                        ></input>
+                            value={observaciones2}
+                            type="text"
+                        />
                     </FormatoInputs>
                     <FormatoInputs style={{ width: "19.815rem" }}>
 
 
                         <FormLabels >Frecuencia recomendada:</FormLabels>
                         {otroSelected &&
-                            <>
-                                <select value={frecuencia} onChange={handleFrecuenciaChange} className="textInputs arrowChange"
-                                >
-                                    <option hidden >Elegir la frecuencia del servicio...</option>
-                                    <option value="Mensual" >Mensual</option>
-                                    <option value="Quincenal" >Quincenal</option>
-                                    <option value="Semanal" >Semanal</option>
-                                    <option value="Unico" >Único Puntual</option>
-                                    <option value="Otro">Otro </option>
-                                </select>
-                            </>
+                            <select value={frecuencia} onChange={handleFrecuenciaChange} className="textInputs arrowChange">
+                                <option hidden>Elegir la frecuencia del servicio...</option>
+                                {frecuencias.map((frecuencia) => (
+                                    <option key={frecuencia} value={frecuencia} selected={frecuencia === "Ninguna"}>
+                                        {frecuencia}
+                                    </option>
+                                ))}
+                            </select>
                         }
                         {!otroSelected &&
-                            <>
-                                <input id="otroAlternative" className="textInputs"
-                                    type="text"
-                                    placeholder="Escriba la frecuencia del servicio"
-                                    value={frecuencia}
-                                    onChange={handleFrecuenciaChange as any}
-                                    // onFocus={() => { setFrecuencia("") }}
-                                    onBlur={() => { frecuencia === "" ? setOtroSelected(true) : setOtroSelected(false); }}
-                                ></input>
-                            </>
+                            <input id="otroAlternative" className="textInputs"
+                                onBlur={() => setOtroSelected(frecuencia === "Ninguna")}
+                                onChange={handleFrecuenciaChange as any}
+                                placeholder="Escriba la frecuencia del servicio"
+                                value={frecuencia}
+                                type="text"
+                            />
                         }
                     </FormatoInputs>
 
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Dirección:</FormLabels>
-                        <select value={direccion_id} onChange={handleDireccionChange} className="textInputs arrowChange"
-                        >
-                            <option   >Elige la dirección</option>
+                        <select value={direccion_id} onChange={handleDireccionChange} className="textInputs arrowChange">
+                            <option>Elige la dirección</option>
                             {dirección.map((direccion) =>
                                 <option key={direccion.id} value={direccion.id}>{direccion.calle} {direccion.ciudad} {direccion.colonia} {direccion.numero_ext} {direccion.codigo_postal}</option>
-                              
                             )}
                         </select>
                     </FormatoInputs>
@@ -528,22 +524,20 @@ const CreateServiceForm : React.FC<createServicioProps>= (props) => {
                     </FormatoInputs>
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Responsable:</FormLabels>
-                        <select value={responsableId} onChange={handleResponsableChange} className="textInputs arrowChange"
-                        >
-                            <option  selected hidden>Elige al Responsable...</option>
+                        <select value={responsableId} onChange={handleResponsableChange} className="textInputs arrowChange">
+                            <option selected hidden>Elige al Responsable...</option>
                             {responsables.map((responsable) =>
                                 <option key={responsable.id} value={responsable.id}>{responsable.nombre}</option>
-
                             )}
                         </select>
                     </FormatoInputs>
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Orden de compra</FormLabels>
                         <input className="textInputs"
-                            type="text"
-                            value={ordenDeCommpra}
                             onChange={handleOrdenCompra}
-                        ></input>
+                            value={ordenDeCommpra}
+                            type="text"
+                        />
                     </FormatoInputs>
                     <div className="buttonRegistrar" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
                         <SearchButtonLink type="button" onClick={addServicio}>Registrar</SearchButtonLink>

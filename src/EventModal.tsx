@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
-import { Tables } from './database-types';
+import { Tables } from "../src/supabase/Database";
 type Direcciones = Tables <"Direcciones">
 import { supabase } from './utils/ClientSupabase';
 

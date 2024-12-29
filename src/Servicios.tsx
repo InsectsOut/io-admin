@@ -3,7 +3,7 @@ import styled from "styled-components"
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { FaEdit } from "react-icons/fa";
-import { Database, Tables } from "./database-types";
+import { Database, Tables } from "../src/supabase/Database";
 import PaginationComponent from './PaginationComponent';
 import { Link, useLocation } from 'react-router-dom';
 import { servicioOptions } from "./tipo_servicios";

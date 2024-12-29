@@ -5,14 +5,13 @@ import timegrid from "@fullcalendar/timegrid";
 import interaction from "@fullcalendar/interaction";
 import EventModal from "./EventModal";
 import { supabase } from "./utils/ClientSupabase";
-import { Tables } from "./database-types";
+import { Tables } from "../src/supabase/Database";
 import { mainStyle } from "./ServiciosCard";
 import styled from "styled-components";
 
 type Servicio = Tables<"Servicios">;
 type Empleado = Tables<"Empleados">;
 type Cliente = Tables<"Clientes">;
-type Direcciones = Tables <"Direcciones">
 
 type ServicioConClientes = Servicio & {
   Clientes: Cliente | null;
