@@ -273,15 +273,15 @@ const MyDocument = () => {
                 .filter("folio", "eq", folio)
 
             if (!serv) {
-                console.error(error)
+                console.error("No existe servicio relacionado a ese folio")
             }
             if (serv) {
-                setServicio(serv as any)
+                setServicio(serv as any ?? [])
                 setServicioId(serv?.[0]?.id)
                 fetchDireccion(serv[0]?.direccion_id ?? 0)
                 if (serv[0]?.frecuencia_recomendada) {
                     setFrecuencia_recomendada(serv[0]?.frecuencia_recomendada)
-                    console.log(serv[0]?.frecuencia_recomendada)
+                    
 
                     if (!["Quincenal", "Semanal", "Mensual", "Ninguna"].includes(serv[0]?.frecuencia_recomendada)) {
                         setOtraFrecuencia(true)
@@ -306,7 +306,6 @@ const MyDocument = () => {
                 console.error(error)
             }
             setRegistroAp(reg as any)
-            console.log("registros", reg)
 
         }
 
@@ -327,7 +326,6 @@ const MyDocument = () => {
             }
             if (data) {
                 setDireccion(data);
-                console.log(data)
             }
         } catch (err) {
             console.log(err);
@@ -544,7 +542,7 @@ const MyDocument = () => {
 
                                     <>
                                         <View style={[styles.checkbox, { backgroundColor: 'white' }]} />
-                                        <Text style={styles.label}>Otro</Text>
+                                        <Text style={styles.label}>Potro</Text>
                                     </>
 
 

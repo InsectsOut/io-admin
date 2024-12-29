@@ -221,12 +221,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const [frecuencia, setFrecuencia] = useState<Enums<"FrecuenciaServicio">>("Ninguna")
     const [estadoFacturacion, setEstadoFacturacion] = useState("")
     const [tipoServicio, setTipoServicio] = useState("")
-    const [responsableId, setResponsableId] = useState<number | undefined>()
+    const [responsableId, setResponsableId] = useState<number | null >(null)
     const [ordenDeCommpra, setOrdeDeCompra] = useState("")
     const [_, SetServicioFolio] = useState<number | null>(null)
     const [otroSelected, setOtroSelected] = useState<boolean>(true)
     const [organizacion, setOrganizacion] = useState<string>("")
-    const [direccion_id, setDireccion_id] = useState<string>("")
+    const [direccion_id, setDireccion_id] = useState<number | null>(null)
     const [dirección, setDireccion] = useState<Direcciones[]>([])
     const navigate = useNavigate()
 
@@ -249,6 +249,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 }
                 if (responsable) {
                     setResponsables(responsable)
+                    setResponsableId(responsable[0]?.id)
                 }
             }
 
@@ -406,7 +407,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
     }
     const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const cambio = event.target.value
+        const cambio = +event.target.value
         setDireccion_id(cambio)
 
     }
@@ -494,7 +495,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Dirección:</FormLabels>
-                        <select value={direccion_id} onChange={handleDireccionChange} className="textInputs arrowChange">
+                        <select value={direccion_id ?? undefined} onChange={handleDireccionChange} className="textInputs arrowChange">
                             <option>Elige la dirección</option>
                             {dirección.map((direccion) =>
                                 <option key={direccion.id} value={direccion.id}>{direccion.calle} {direccion.ciudad} {direccion.colonia} {direccion.numero_ext} {direccion.codigo_postal}</option>
@@ -522,15 +523,17 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                             <option value="Escolar" >Escolar</option>
                         </select>
                     </FormatoInputs>
+                    {tipoServicio !== "Residencial" &&
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Responsable:</FormLabels>
-                        <select value={responsableId} onChange={handleResponsableChange} className="textInputs arrowChange">
+                        <select value={responsableId ?? undefined} onChange={handleResponsableChange} className="textInputs arrowChange">
                             <option selected hidden>Elige al Responsable...</option>
                             {responsables.map((responsable) =>
                                 <option key={responsable.id} value={responsable.id}>{responsable.nombre}</option>
                             )}
                         </select>
                     </FormatoInputs>
+                        }
                     <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Orden de compra</FormLabels>
                         <input className="textInputs"
