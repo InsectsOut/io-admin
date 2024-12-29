@@ -8,7 +8,8 @@
     "build": "tsc && vite build",
     "build2": "vite build",
     "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "update-types": "pwsh -File ./update-types.ps1"
   },
   "dependencies": {
     "@fontsource/dm-sans": "^5.0.18",
@@ -29,6 +30,7 @@
     "react-router-dom": "^6.20.0",
     "react-select": "^5.8.0",
     "styled-components": "^6.1.1",
+    "supabase": "^2.1.1",
     "ts-pattern": "^5.0.8",
     "workbox-background-sync": "^7.0.0"
   },

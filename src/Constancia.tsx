@@ -2,7 +2,7 @@ import { Page, Text, Document, StyleSheet, View, Image, Font, PDFViewer } from '
 import logo from '../src/assets/logoGrande.png'
 import { supabase } from './utils/ClientSupabase';
 import { useEffect, useState } from 'react';
-import { Tables } from "./database-types";
+import { Enums, Tables } from "../src/supabase/Database";
 import { useParams } from 'react-router-dom';
 
 type Servicio = Tables<"Servicios">
@@ -251,7 +251,6 @@ const recommendationsMIP2 = [
 
 
 const MyDocument = () => {
-
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null,
         Responsables: Responsables
@@ -264,7 +263,7 @@ const MyDocument = () => {
     const [registroAp, setRegistroAp] = useState<RegistrosPlaguicidas[]>([])
     const [servicioId, setServicioId] = useState<number | undefined>(servicio?.[0]?.id)
     const [direccion, setDireccion] = useState<Direcciones[]>([])
-    const [frecuencia_recomendada, setFrecuencia_recomendada] = useState<string>("")
+    const [frecuencia_recomendada, setFrecuencia_recomendada] = useState<Enums<"FrecuenciaServicio">>("Ninguna")
     const [otraFrecuencia, setOtraFrecuencia] = useState<boolean>(false)
     const fetchServicio = async () => {
         try {
@@ -274,22 +273,19 @@ const MyDocument = () => {
                 .filter("folio", "eq", folio)
 
             if (!serv) {
-                console.error(error)
+                console.error("No existe servicio relacionado a ese folio")
             }
             if (serv) {
-                setServicio(serv as any)
+                setServicio(serv as any ?? [])
                 setServicioId(serv?.[0]?.id)
                 fetchDireccion(serv[0]?.direccion_id ?? 0)
                 if (serv[0]?.frecuencia_recomendada) {
                     setFrecuencia_recomendada(serv[0]?.frecuencia_recomendada)
-                    console.log(serv[0]?.frecuencia_recomendada)
-                    if (serv[0]?.frecuencia_recomendada !== "Quincenal" && serv[0]?.frecuencia_recomendada !== "Semanal" && serv[0]?.frecuencia_recomendada !== "Mensual" && serv[0]?.frecuencia_recomendada !== "Unico") {
+                    
 
+                    if (!["Quincenal", "Semanal", "Mensual", "Ninguna"].includes(serv[0]?.frecuencia_recomendada)) {
                         setOtraFrecuencia(true)
-
                     }
-
-
                 }
             }
 
@@ -310,7 +306,6 @@ const MyDocument = () => {
                 console.error(error)
             }
             setRegistroAp(reg as any)
-            console.log("registros", reg)
 
         }
 
@@ -331,7 +326,6 @@ const MyDocument = () => {
             }
             if (data) {
                 setDireccion(data);
-                console.log(data)
             }
         } catch (err) {
             console.log(err);
@@ -531,7 +525,7 @@ const MyDocument = () => {
                             <Text style={styles.label}>Mensual</Text>
                         </View>
                         <View style={styles.checkboxContainer}>
-                            <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Unico" ? 'black' : "white" }]} />
+                            <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Ninguna" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Único puntual</Text>
                         </View>
 
@@ -548,7 +542,7 @@ const MyDocument = () => {
 
                                     <>
                                         <View style={[styles.checkbox, { backgroundColor: 'white' }]} />
-                                        <Text style={styles.label}>Otro</Text>
+                                        <Text style={styles.label}>Potro</Text>
                                     </>
 
 

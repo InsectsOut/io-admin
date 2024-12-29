@@ -1,5 +1,5 @@
 import styled from "styled-components"
-import { Tables } from "./database-types";
+import { Tables } from "../src/supabase/Database";
 import { useParams } from 'react-router-dom';
 import { CardContainer } from "./ServiciosCard";
 import { DetailsTitle } from "./ServiciosCard";

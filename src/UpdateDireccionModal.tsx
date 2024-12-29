@@ -1,6 +1,6 @@
 import styled from "styled-components"
 import { RegistroModal } from "./ModalComponents"
-import { Database, Tables } from "./database-types";
+import { Database, Tables } from "../src/supabase/Database";
 import { useParams } from 'react-router-dom';
 import { DetailsTitle } from "./ServiciosCard";
 import { InputsContainer } from "./ServiciosCard";

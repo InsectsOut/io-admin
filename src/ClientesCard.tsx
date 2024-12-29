@@ -1,7 +1,7 @@
 import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react"
 import styled from "styled-components"
-import { Tables } from "./database-types";
+import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
 import { useParams } from 'react-router-dom';
 import { servicioOptions } from "./tipo_servicios";

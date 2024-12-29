@@ -1,7 +1,7 @@
 
 import { useEffect, useRef, useState } from "react"
 import styled from "styled-components"
-import { Tables } from "./database-types";
+import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
 import { MdFileUpload } from "react-icons/md";
 import { useParams } from 'react-router-dom';

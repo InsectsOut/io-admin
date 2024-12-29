@@ -1,6 +1,6 @@
 
 import styled from "styled-components"
-import { Database, Tables } from "./database-types";
+import { Database, Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
 import { createClient } from "@supabase/supabase-js";
 import { useParams } from 'react-router-dom';
