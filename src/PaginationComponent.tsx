@@ -5,12 +5,19 @@ import { MdFirstPage } from "react-icons/md";
 
 //falta cambiar la pagina a 1 cuando vaya a buscar algo mas 
 const NumPaginas = styled.div /*style*/`
-margin-right:3.875rem;
 width: 10.25rem;
 height: 1.732rem;
 display:flex;
-justify-content:left;
+justify-content:right;
 gap:1rem;
+@media (max-width: 820px) {
+  width:100%;
+  justify-content:space-between;
+  margin-bottom:1rem;
+  background:#F3F3F3;
+  border: 1px solid #F3F3F3;
+  border-radius:.5rem;
+}
 `
 
 const PageButt = styled.button /*style*/`
@@ -26,6 +33,14 @@ border: 0.836735px solid #838383;
 border-radius: 4.18367px;
 :hover{
 cursor: pointer;
+}
+@media (max-width: 820px) {
+  justify-content:space-between;
+  margin-bottom:1rem;
+  background:none;
+  border:none;
+  height: 1.732rem;
+max-height: 1.732rem;
 }
 `
 

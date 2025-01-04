@@ -9,6 +9,12 @@ import { Link, useLocation } from 'react-router-dom';
 import { servicioOptions } from "./tipo_servicios";
 import DelModal from "./DeleteModal";
 import { supabase } from "./utils/ClientSupabase";
+import { BsCalendarDate } from "react-icons/bs";
+import { FaRegCheckCircle } from "react-icons/fa";
+import { MdDoNotDisturb } from "react-icons/md";
+import { RiDeleteBin6Line } from "react-icons/ri";
+
+
 
 
 
@@ -20,6 +26,10 @@ export const ServiciosContainer = styled.div /*style*/ `
 width:100vw;
 display:flex;
 flex-direction:column;
+@media (max-width: 820px) {
+align-items:center;
+
+  }
 `
 export const LowerActionButtons = styled.div /*style*/ `
 width:100% ;
@@ -61,13 +71,24 @@ text-align:left;
 margin-left:5.875rem;
 margin-bottom:0;
 color: #0D4E80;
+@media (max-width: 820px) {
+  margin-left:0px;
+  margin-bottom:1rem;
+
+}
 `
 export const SearchBarForm = styled.form /*style*/ `
-align-self:flex-start;
 display:flex;
+align-self:flex-start;
 justify-content:flex-start;
 width:100% ;
 gap: .5rem;
+@media (max-width: 820px) {
+  margin-left:0px;
+  width:85% ;
+align-self:center;
+
+}
 `
 export const FiltrosContainer = styled.ul /*style*/ `
 padding: 0;
@@ -75,6 +96,12 @@ margin-left:5.875rem;
 display:flex;
 gap:.5rem;
 justify-content:space-between;
+width:85%;
+@media (max-width: 820px) {
+max-width:820px;
+margin-left:0px;
+}
+
 
 `
 export const FiltrosLista = styled.li /*style*/ `
@@ -149,6 +176,9 @@ box-shadow: inset 0px 4.82759px 4.82759px rgba(0, 0, 0, 0.25);
 border-radius: .375rem;
 margin-left:5.875rem;
 color:#838383;
+@media (max-width: 820px) {
+  margin-left:0px;
+}
 `
 export const SearchButton = styled.button /*style*/ `
 width: 4.5rem;
@@ -299,20 +329,23 @@ export const ClientName = styled.div /*style*/`
 `;
 
 export const ServiciosSelectContainer = styled.div /*style*/ `
-  width: 82.485625rem; 
+  width:85%; 
   height: 26.22625rem;
   background:white;
   margin-left:5.875rem;
   display:flex;
   flex-direction:column;
   gap:.5rem;
+  @media (max-width: 820px) {
+  margin-left:0px;
+}
 `
 export const ServiciosElement = styled.div /*style*/ `
 display:flex;
 width:100%;
 height: 3.35125rem;
 background:#F0F0F0;
-
+position: relative;
 `
 export const ServiciosElement1 = styled.div /*style*/ `
 display:flex;
@@ -369,14 +402,42 @@ color:#727272;
   padding-left:1rem;
 }
 `
-export const ServiciosElement4 = styled.div /*style*/ `
+export const ServiciosElement4 = styled.div<{screen_width?: number, swipeActiator?: boolean}> /*style*/ `
 display:flex;
 justify-content:left;
 align-items:center;
-width:5%;
+width:${props => (props.screen_width  && props.screen_width >= 820 ? "5%" : "15%" )};
 height: 3.35125rem;
+background:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "none" :"red" )};
 #borrarServicio{
   all:unset;
+  display:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "block" :"none" )};
+  width:2rem;
+  height:2rem;
+  background:#C1716E;
+  border-radius: 50%;
+  &:hover{
+  cursor: pointer;
+  transform:scale(1.15);
+  }
+}
+`
+export const ServiciosElement5 = styled.div<{screen_width?: number, swipeActiator?: boolean}> /*style*/ `
+display:flex;
+justify-content:center;
+align-items:center;
+position: absolute;
+width: ${(props) => props.swipeActiator ? "15%" : "0"};
+height: 3.35125rem;
+background:red;
+transition:   0.2s ease; /* Animate the right position */
+right:0;
+ /* Adding border and shadow for sliding effect */
+ border-right: ${(props) => (props.swipeActiator ? "4px solid rgba(0, 0, 0, 0.1)" : "none")}; /* Light border when swiped */
+  box-shadow: ${(props) => (props.swipeActiator ? "-4px 0 8px rgba(0, 0, 0, 0.2)" : "none")}; /* Shadow to simulate behind effect */
+#borrarServicio{
+  all:unset;
+  display:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "block" :"none" )};
   width:2rem;
   height:2rem;
   background:#C1716E;
@@ -404,13 +465,18 @@ font-weight: 700;
 font-size: 1.005rem;
 right:0%;
 
-
 &:hover{
 cursor: pointer;
 background-color: #2980b9; 
 transform: scale(1.05); 
 color:white;
 }
+@media (max-width: 820px) {
+
+margin-top:3rem;
+width:100%;
+}
+
 `
 export const FolioLink = styled(Link) /*style*/ `
 all:unset;
@@ -423,6 +489,15 @@ transform: scale(1.05);
 export const FiltrosLeft = styled.div /*style*/ `
 display:flex;
 gap:.5rem;
+width:100%;
+@media (max-width: 820px) {
+justify-content:space-between;
+}
+`
+export const FiltrosRight = styled.div /*style*/ `
+@media (max-width: 820px) {
+width:85%;
+}
 `
 
 type QueryType = "Cliente" | "Tipo" | "fecha" | "estatus" | "";
@@ -463,6 +538,68 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [deleteModalVisible, setDeleteModalVisible] = useState(false)
   const [deletedServicio, setDeletedServicio] = useState<any>([])
   const [textModal, setTextModal] = useState<QueryType>()
+  const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+  const [startX, setStartX] = useState(0);
+  const [startY, setStartY] = useState(0);
+  const [swipeDirection, setSwipeDirection] = useState("");
+  const [showSwipeDeleteMenu, setShowSwipeDeleteMenu] = useState<boolean>(false)
+  const [swipedItems, setSwipedItems] = useState<{ [key: number]: boolean }>({});
+  const [swipeData, setSwipeData] = useState<{ [key: number]: { startX: number, startY: number, swipeDirection: string } }>({});
+
+
+
+  const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
+    const touch = e.touches[0];
+    setSwipeData((prevState) => ({
+      ...prevState,
+      [id]: { startX: touch.clientX, startY: touch.clientY, swipeDirection: "" }, // Initialize swipe state for the item
+    }));
+  };
+
+  const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
+    const touch = e.touches[0];
+    const deltaX = touch.clientX - swipeData[id].startX;
+    const deltaY = touch.clientY - swipeData[id].startY;
+
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      // Horizontal swipe
+      setSwipeData((prevState) => ({
+        ...prevState,
+        [id]: { ...prevState[id], swipeDirection: deltaX > 0 ? "right" : "left" }, // Update swipe direction for the specific item
+      }));
+    } else {
+      // Vertical swipe
+      setSwipeData((prevState) => ({
+        ...prevState,
+        [id]: { ...prevState[id], swipeDirection: deltaY > 0 ? "down" : "up" }, // Update swipe direction for the specific item
+      }));
+    }
+  };
+
+  const handleTouchEnd = (id: number) => {
+    if (swipeData[id].swipeDirection === "left") {
+      console.log("Swiped left");
+      setSwipedItems((prevState) => ({
+        ...prevState,
+        [id]: true, // Mark the item as swiped
+      }));
+    } else if (swipeData[id].swipeDirection === "right") {
+      console.log("Swiped right");
+      setSwipedItems((prevState) => ({
+        ...prevState,
+        [id]: false, // Reset the swipe state for the item
+      }));
+    }
+
+    // Reset swipe direction for the item
+    setSwipeData((prevState) => ({
+      ...prevState,
+      [id]: { ...prevState[id], swipeDirection: "" },
+    }));
+  };
+
+
+
 
   type ServicioConClientes = Servicio & {
     Clientes: Cliente | null
@@ -711,6 +848,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const handleFiltrosClick = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
     const target = event.currentTarget as HTMLLIElement;
     const { top, left, height } = target.getBoundingClientRect();
+    console.log(target.id)
 
 
     const newPosition = {
@@ -721,10 +859,22 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     // If the modal is currently visible and the same element is clicked, hide the modal
     if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left) {
       setModalVisible(false);
-    } else {
+    } 
+    else  if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left -100) {
+      setModalVisible(false);
+    }
+    else {
       // Otherwise, show the modal at the new position
-      setModalPosition(newPosition);
-      setModalVisible(true);
+      if (window.innerWidth <= 820 && target.id === "estatusFilter") {
+        newPosition.left -= 100
+        console.log(newPosition.left)
+        setModalPosition(newPosition);
+        setModalVisible(true);
+      }
+      else {
+        setModalPosition(newPosition);
+        setModalVisible(true);
+      }
     }
   };
 
@@ -802,7 +952,14 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
   }
 
+  const handleDelete = (servicio:Servicio) => {
+    // Perform the delete action here
+    deleteServicioHandler(servicio).then(() => {
+      setDeleteModalVisible(true);
+    });
+  };
 
+ 
 
   return (
     <>
@@ -843,223 +1000,241 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
           </SearchButton>
         </SearchBarForm>
         <FiltrosContainer>
-        <FiltrosLeft >
-          <FiltrosLista
-            onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotation(); }}
-          >Cliente <FlechaAbajo
-              className={isRotated ? "rotated" : ""}
-            /> </FiltrosLista>
-          <FiltrosLista
-            onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotation2(); }}
-          >Tipo de servicio <FlechaAbajo
-              className={isRotated2 ? "rotated2" : ""}
-            /> </FiltrosLista>
-          <FiltrosLista
-            onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio3(); }}
-          >Fecha <FlechaAbajo
-              className={isRotated3 ? "rotated3" : ""}
-            /></FiltrosLista>
-          <FiltrosLista
-            onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio4(); }}
-          >Estatus <FlechaAbajo
-              className={isRotated4 ? "rotated4" : ""}
-            /></FiltrosLista>
-          {modalVisible && (
-            <ModalContainer
-              open={modalVisible}
-              style={{ top: modalPosition.top, left: modalPosition.left }}
-              ref={modalRef}
-            >
-              {textModal === "Cliente" && (
-                <>
-                  <ModalContentTop
-                    open={modalVisible}
-                  >
+          <FiltrosLeft >
+            <FiltrosLista
+              onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotation(); }}
+            >Cliente <FlechaAbajo
+                className={isRotated ? "rotated" : ""}
+              /> </FiltrosLista>
+            <FiltrosLista
+              onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotation2(); }}
+            >Tipo de servicio <FlechaAbajo
+                className={isRotated2 ? "rotated2" : ""}
+              /> </FiltrosLista>
+            <FiltrosLista
+              onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio3(); }}
+            >Fecha <FlechaAbajo
+                className={isRotated3 ? "rotated3" : ""}
+              /></FiltrosLista>
+            <FiltrosLista
+              id="estatusFilter"
+              onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio4(); }}
+            >Estatus <FlechaAbajo
+                className={isRotated4 ? "rotated4" : ""}
+              /></FiltrosLista>
+            {modalVisible && (
+              <ModalContainer
+                open={modalVisible}
+                style={{ top: modalPosition.top, left: modalPosition.left }}
+                ref={modalRef}
+              >
+                {textModal === "Cliente" && (
+                  <>
+                    <ModalContentTop
+                      open={modalVisible}
+                    >
 
-                    {clientes && (
-                      <ClientList>
-                        {clientes
-                          .slice()
-                          .sort((a, b) => {
-                            const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
-                            const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
-                            return nameA.localeCompare(nameB);
-                          })
-                          .map((cliente) => (
-                            <ClientName key={cliente.id}
-                              onClick={() => { handleClientClick(cliente.id) }}
-                              style={getClientNameStyle(cliente.id)}
-                            >{cliente.nombre
-                              } {cliente.apellidos}</ClientName>
-                          ))}
-                      </ClientList>
-                    )}
+                      {clientes && (
+                        <ClientList>
+                          {clientes
+                            .slice()
+                            .sort((a, b) => {
+                              const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
+                              const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
+                              return nameA.localeCompare(nameB);
+                            })
+                            .map((cliente) => (
+                              <ClientName key={cliente.id}
+                                onClick={() => { handleClientClick(cliente.id) }}
+                                style={getClientNameStyle(cliente.id)}
+                              >{cliente.nombre
+                                } {cliente.apellidos}</ClientName>
+                            ))}
+                        </ClientList>
+                      )}
 
-                  </ModalContentTop>
-                  <ModalContentBottom
-                    open={modalVisible}
-                  >
-                    <div className="filtroActionButtons">
-                      <button className="actionButtonsStyles" id="limpiar"
-                        onClick={() => { setClientId(0) }}
-                      >Limpiar</button>
-                      <button className="actionButtonsStyles" id="aplicar"
-                        onClick={() => {
+                    </ModalContentTop>
+                    <ModalContentBottom
+                      open={modalVisible}
+                    >
+                      <div className="filtroActionButtons">
+                        <button className="actionButtonsStyles" id="limpiar"
+                          onClick={() => { setClientId(0) }}
+                        >Limpiar</button>
+                        <button className="actionButtonsStyles" id="aplicar"
+                          onClick={() => {
+                            handleSetText()
+                              .then(() => {
+                                // filterServicios()
+                                handlePageSetter();
+                                setIsRotated(false);
+                              });
+                          }}>Aplicar</button>
+                      </div>
+                    </ModalContentBottom>
+                  </>
+                )}
+                {textModal === "Tipo" && (
+                  <>
+                    <ModalContentTop
+                      open={modalVisible}
+                    >
+                      <EstatusForma>
+                        {servicioOptions.map((tipo) =>
+                          <div key={tipo.id} className="optionsContainer" id="realizadoContainer">
+                            <input type="radio" className="checked" id={tipo.id.toLocaleString()} name="choice" value={tipo.value} onChange={handleModalCheck}
+                              checked={selectedOptions === tipo.value}
+                            />
+                            <label id="realizado2" htmlFor={tipo.id.toLocaleString()}>{tipo.label}</label>
+                          </div>
+                        )}
+                      </EstatusForma>
+                    </ModalContentTop>
+                    <ModalContentBottom
+                      open={modalVisible}
+                    >
+                      <div className="filtroActionButtons">
+                        <button className="actionButtonsStyles" id="limpiar"
+                          onClick={() => { handleClearSelection(); }}
+                        >Limpiar</button>
+                        <button className="actionButtonsStyles" id="aplicar" onClick={() => {
                           handleSetText()
                             .then(() => {
                               // filterServicios()
                               handlePageSetter();
-                              setIsRotated(false);
+                              setIsRotated2(false);
                             });
                         }}>Aplicar</button>
-                    </div>
-                  </ModalContentBottom>
-                </>
-              )}
-              {textModal === "Tipo" && (
-                <>
-                  <ModalContentTop
-                    open={modalVisible}
-                  >
-                    <EstatusForma>
-                      {servicioOptions.map((tipo) =>
-                        <div key={tipo.id} className="optionsContainer" id="realizadoContainer">
-                          <input type="radio" className="checked" id={tipo.id.toLocaleString()} name="choice" value={tipo.value} onChange={handleModalCheck}
-                            checked={selectedOptions === tipo.value}
-                          />
-                          <label id="realizado2" htmlFor={tipo.id.toLocaleString()}>{tipo.label}</label>
-                        </div>
-                      )}
-                    </EstatusForma>
-                  </ModalContentTop>
-                  <ModalContentBottom
-                    open={modalVisible}
-                  >
-                    <div className="filtroActionButtons">
-                      <button className="actionButtonsStyles" id="limpiar"
-                        onClick={() => { handleClearSelection(); }}
-                      >Limpiar</button>
-                      <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                        handleSetText()
-                          .then(() => {
-                            // filterServicios()
-                            handlePageSetter();
-                            setIsRotated2(false);
-                          });
-                      }}>Aplicar</button>
-                    </div>
-                  </ModalContentBottom>
-                </>
-              )}
-              {textModal === "fecha" && (
-                <>
-                  <ModalContentTop
-                    open={modalVisible}
-                  >
-                    <div>
-                      <p style={{ color: "#727272", marginBottom: "0" }}>Selecciona una fecha</p>
-                      <div className="dateFilterInputs">
-                        <div className="dateTexts">
-                          <StyledDatePicker selected={startDate || today} onChange={date => setStartDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
-                          <p>Inicial</p>
-                        </div >
-                        <div className="dateTexts">
-                          <StyledDatePicker selected={endDate || today} onChange={date => setEndDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
-                          <p>Final</p>
+                      </div>
+                    </ModalContentBottom>
+                  </>
+                )}
+                {textModal === "fecha" && (
+                  <>
+                    <ModalContentTop
+                      open={modalVisible}
+                    >
+                      <div>
+                        <p style={{ color: "#727272", marginBottom: "0" }}>Selecciona una fecha</p>
+                        <div className="dateFilterInputs">
+                          <div className="dateTexts">
+                            <StyledDatePicker selected={startDate || today} onChange={date => setStartDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                            <p>Inicial</p>
+                          </div >
+                          <div className="dateTexts">
+                            <StyledDatePicker selected={endDate || today} onChange={date => setEndDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                            <p>Final</p>
+                          </div>
                         </div>
                       </div>
-                    </div>
 
-                  </ModalContentTop>
-                  <ModalContentBottom
-                    open={modalVisible}
-                  >
-                    <div className="filtroActionButtons">
-                      <button
-                        onClick={() => {
-                          setStartDate(new Date());
-                          setEndDate(new Date());
-                        }}
-                        className="actionButtonsStyles"
-                        id="limpiar"
-                      >
-                        Limpiar
-                      </button>
-                      <button type="button" className="actionButtonsStyles" id="aplicar" onClick={() => {
-                        handleSetText()
-                          .then(() => {
-                            //filterServicios()
-                            handlePageSetter();
-                            setIsRotated3(false);
-                          });
-                      }}>Aplicar</button>
-                    </div>
-                  </ModalContentBottom>
-                </>
-              )}
-              {textModal === "estatus" && (
-                <>
-                  <ModalContentTop
-                    open={modalVisible}
-                  >
-                    <EstatusForma>
-                      <div className="optionsContainer" id="realizadoContainer">
-                        <input type="radio" className="checked" id="realizado" name="choice" value="Realizado" onChange={handleModalCheck}
-                          checked={estatus as any}
-                        />
-                        <label id="realizado2" htmlFor="realizado">Realizado</label>
+                    </ModalContentTop>
+                    <ModalContentBottom
+                      open={modalVisible}
+                    >
+                      <div className="filtroActionButtons">
+                        <button
+                          onClick={() => {
+                            setStartDate(new Date());
+                            setEndDate(new Date());
+                          }}
+                          className="actionButtonsStyles"
+                          id="limpiar"
+                        >
+                          Limpiar
+                        </button>
+                        <button type="button" className="actionButtonsStyles" id="aplicar" onClick={() => {
+                          handleSetText()
+                            .then(() => {
+                              //filterServicios()
+                              handlePageSetter();
+                              setIsRotated3(false);
+                            });
+                        }}>Aplicar</button>
                       </div>
-                      <div className="optionsContainer" id="noRealizadoContainer">
-                        <input type="radio" className="checked" id="no-realizado" name="choice" value="Norealizado" onChange={handleModalCheck}
-                          checked={!estatus && estatus !== null as any}
-                        />
-                        <label id="noRealizado2" htmlFor="no-realizado">No realizado </label>
+                    </ModalContentBottom>
+                  </>
+                )}
+                {textModal === "estatus" && (
+                  <>
+                    <ModalContentTop
+                      open={modalVisible}
+                    >
+                      <EstatusForma>
+                        <div className="optionsContainer" id="realizadoContainer">
+                          <input type="radio" className="checked" id="realizado" name="choice" value="Realizado" onChange={handleModalCheck}
+                            checked={estatus as any}
+                          />
+                          <label id="realizado2" htmlFor="realizado">Realizado</label>
+                        </div>
+                        <div className="optionsContainer" id="noRealizadoContainer">
+                          <input type="radio" className="checked" id="no-realizado" name="choice" value="Norealizado" onChange={handleModalCheck}
+                            checked={!estatus && estatus !== null as any}
+                          />
+                          <label id="noRealizado2" htmlFor="no-realizado">No realizado </label>
+                        </div>
+                      </EstatusForma>
+                    </ModalContentTop>
+                    <ModalContentBottom
+                      open={modalVisible}
+                    >
+                      <div className="filtroActionButtons">
+                        <button className="actionButtonsStyles" id="limpiar"
+                          onClick={() => { handleClearSelection() }}
+                        >Limpiar</button>
+                        <button className="actionButtonsStyles" id="aplicar" onClick={() => {
+                          handleSetText()
+                            .then(() => {
+                              //filterServicios()
+                              handlePageSetter();
+                              setIsRotated4(false);
+                            });
+                        }}>Aplicar</button>
                       </div>
-                    </EstatusForma>
-                  </ModalContentTop>
-                  <ModalContentBottom
-                    open={modalVisible}
-                  >
-                    <div className="filtroActionButtons">
-                      <button className="actionButtonsStyles" id="limpiar"
-                        onClick={() => { handleClearSelection() }}
-                      >Limpiar</button>
-                      <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                        handleSetText()
-                          .then(() => {
-                            //filterServicios()
-                            handlePageSetter();
-                            setIsRotated4(false);
-                          });
-                      }}>Aplicar</button>
-                    </div>
-                  </ModalContentBottom>
-                </>
-              )}
-            </ModalContainer>
-          )}
-         </FiltrosLeft>
-          <div>
-           <PaginationComponent
-            currentPage={currentPage}
-            totalPages={totalPages}
-            onPageChange={handlePageChange}
-          />
-          </div>
+                    </ModalContentBottom>
+                  </>
+                )}
+              </ModalContainer>
+            )}
+          </FiltrosLeft>
+          {screenWidth > 820 &&
+
+
+            <div >
+              <PaginationComponent
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={handlePageChange}
+              />
+            </div>
+          }
         </FiltrosContainer>
+        {screenWidth <= 820 &&
+          <FiltrosRight>
+            <PaginationComponent
+              currentPage={currentPage}
+              totalPages={totalPages}
+              onPageChange={handlePageChange}
+            />
+          </FiltrosRight>
+        }
         <ServiciosSelectContainer>
 
 
           {servicios
             .sort((a, b) => new Date(b.fecha_servicio).getTime() - new Date(a.fecha_servicio).getTime())
             .map((servicio) => (
+              
               <ServiciosElement
+              onTouchStart={(e:any) => handleTouchStart(e, servicio.id)}
+              onTouchMove={(e:any) => handleTouchMove(e, servicio.id)}
+              onTouchEnd={() => handleTouchEnd(servicio.id)}
                 key={servicio.id}
               >
 
                 <ServiciosElement1 style={{ textAlign: "left" }}>
                   <FolioLink className="primerSector" style={{ minWidth: "28.6%", maxHeight: "3.351rem", maxWidth: "28.6%", textAlign: "left", marginLeft: "1rem" }} to={`${location.pathname}/${servicio.folio}`}>
-                    #Folio: {servicio.folio}
+                    {screenWidth > 820 ? "#Folio:" : <strong>#</strong>} {servicio.folio}
                   </FolioLink>
                   <div
                     style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "50%" }}
@@ -1067,22 +1242,27 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     <FolioLink
                       to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
                   </div>
-                  <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
+                  {screenWidth > 820 &&
+                    <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
+                  }
                 </ServiciosElement1>
                 <ServiciosElement2>
                   <h3 className="primerSector"
                     style={{ fontWeight: "bold" }}
-                  >Fecha: </h3>
+                  >{screenWidth > 820 ? "Fecha" : <BsCalendarDate></BsCalendarDate>} </h3>
                   <h3 className="primerSector">{servicio.fecha_servicio} </h3>
                 </ServiciosElement2>
                 <ServiciosElement3>
                   <h3 className="primerSector"
                     style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                  >  Estatus : {servicio.realizado ? 'Realizado' : 'No realizado'}
+                  >  Estatus : {servicio.realizado ? screenWidth > 820 ? "Realizado" :<FaRegCheckCircle/>: screenWidth > 820 ? "No realizado" :<MdDoNotDisturb/>}
                   </h3>
                   <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
                 </ServiciosElement3>
-                <ServiciosElement4>
+                {screenWidth >820 &&
+                <ServiciosElement4
+                screen_width={screenWidth}
+                >
                   <button id="borrarServicio"
                     // onClick={() =>
                     //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
@@ -1093,17 +1273,35 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     X
                   </button>
                 </ServiciosElement4>
+                }
+                {screenWidth < 820 &&
+                <ServiciosElement5
+                screen_width={screenWidth}
+                swipeActiator={swipedItems[servicio.id]}
+                onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
+                >
+                  <RiDeleteBin6Line/>
+                  <button id="borrarServicio"
+                    // onClick={() =>
+                    //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
+                    // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                    onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
+                  >
+                    X
+                  </button>
+                </ServiciosElement5>
+                }
               </ServiciosElement>
             ))}
 
           <LowerActionButtons className="lowerActionButtons">
-         
-          <div style={{ width:"82.485625rem",height:"2.25rem",position:"absolute", top:"90%"}}>
-          <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
-          </div>
+
+            <div style={{ width: "85%", height: "2.25rem", position: "absolute", top: "90%" }}>
+              <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
+            </div>
           </LowerActionButtons>
-          
-         
+
+
 
         </ServiciosSelectContainer>
       </ServiciosContainer>
