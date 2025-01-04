@@ -483,8 +483,8 @@ width:100%;
 
 `
 export const FolioLink = styled(Link) <{ screen_width?: number, setWidth?: string }> /*style*/ `
-width: ${(props) => props.screen_width > 820 ? "50%" : props.setWidth};
-max-width: ${(props) => props.screen_width > 820 ? "28.6%" : "100%"};
+width: ${(props) =>props.screen_width && props.screen_width > 820 ? "50%" : props.setWidth};
+max-width: ${(props) => props.screen_width && props.screen_width > 820 ? "28.6%" : "100%"};
 all:unset;
 &:hover{
 cursor: pointer;
