@@ -41,6 +41,8 @@ const Clientes: React.FC<clientesProps> = (props) => {
     const [allClientes, setAllCliente] = useState<Cliente[]>([])
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [deletedClient, setDeletedCliente] = useState<any>([])
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
 
     const handleSearchChange = (e: any) => {
         const cambio = e.target.value
@@ -449,7 +451,9 @@ const Clientes: React.FC<clientesProps> = (props) => {
                             </h3>
 
                         </ServiciosElement3>
-                        <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}>
+                        <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                        screen_width={screenWidth}
+                        >
                             <button id="borrarServicio"
                                 onClick={() => { deleteClienteHandler(cliente).then(() => { setDeleteModalVisible(true) }) }}
                                 style={{ fontWeight: "bold", fontSize: "105%" }}
