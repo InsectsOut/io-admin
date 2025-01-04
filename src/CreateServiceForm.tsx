@@ -27,8 +27,8 @@ const isFrecuencia = (value: any): value is Enums<"FrecuenciaServicio"> => {
     return frecuencias.includes(value);
 };
 
-const SearchButtonLink = styled.button`
-width: 4.5rem;
+const SearchButtonLink = styled.button /*style*/`
+width: 8.5rem;
 height: 2.188rem;
 background: #0D4E80;
 border-radius: .375rem;
@@ -47,8 +47,12 @@ color:white;
     cursor:pointer;
     color:white;
   }
+
+  @media (max-width: 820px) {
+width:95%;
+} 
 `
-const CreateFormContainer = styled.div`
+const CreateFormContainer = styled.div /*style*/`
 background:red;
 width: 60.3125%;
 background:red;
@@ -58,15 +62,21 @@ background: #F3F3F3;
 min-height:99vh;
 height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
+@media (max-width: 820px) {
+width:95%;
+}
 `
 
-const CreateContainer = styled(ServiciosContainer)`
+const CreateContainer = styled(ServiciosContainer) /*style*/ `
+@media (max-width: 820px) {
+width:100vw;
+}
 .createForm{
 align-self:center;
 }
 `
 
-const FormHeader = styled.div`
+const FormHeader = styled.div /*style*/`
 width:100%;
 height:6.25rem ;
 background:#6B8AAC;
@@ -101,13 +111,16 @@ flex-direction:column;
    }
 `
 
-export const FormatoInputs = styled.div`
+export const FormatoInputs = styled.div<{width?:number, screen_width?:number}>/*style*/`
+@media (max-width: 820px) {
+ width: calc(95% - 6.25rem);
+ margin-left:3.25rem;
+}
     text-align:left;
-    margin-left:6.25rem;
+    margin-left:3.25rem;
    display:flex;
    flex-direction:column;
-   width:12.698rem;
-   
+   width: ${(props) => `calc(${props.width}% - 6.25rem)`};
    .textInputs{
    all:unset;
    background-image: url('data:image/svg+xml;utf8,<svg fill="%23000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>');
@@ -206,6 +219,29 @@ border-radius: 0.215379rem;
 
 }
 `
+
+const StyledSelect = styled.select /*style*/`
+  all: unset;
+  background: #FFFFFF;
+  color: #474747;
+  height: 2.513rem;
+  border: 0.072rem solid #727272;
+  border-radius: 0.215rem;
+  display: flex;
+  align-items: center;
+  padding-left: 0.5rem;
+  font-size: 0.9rem;
+  
+  /* Optional: Style for options if needed */
+  option {
+    background: #FFFFFF;
+    color: #474747;
+  }
+  @media (max-width: 820px) {
+width:100%;
+} 
+
+`;
 interface createServicioProps {
     user_id?: string | null
 }
@@ -228,6 +264,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const [organizacion, setOrganizacion] = useState<string>("")
     const [direccion_id, setDireccion_id] = useState<number | null>(null)
     const [dirección, setDireccion] = useState<Direcciones[]>([])
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const navigate = useNavigate()
 
     const fetchResponsables = async () => {
@@ -433,14 +470,16 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
             <Titulo>Servicios</Titulo>
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo servicio, complete el siguiente formulario.</FormHeader>
                 <CreateServicioForm className="oli">
-                    <FormatoInputs>
+                    <FormatoInputs
+                    width={95}
+                    >
                         <FormLabels >Nombre del Cliente</FormLabels>
-                        <select value={clienteId} onChange={handleClientClick} style={{ all: "unset", background: "#FFFFFF", color: "#474747", height: "2.513rem", width: "12.635625rem", border: "0.072rem solid #727272", borderRadius: "0.215rem", display: "flex", alignItems: "center", paddingLeft: ".5rem", fontSize: ".9rem" }}>
+                        <StyledSelect value={clienteId} onChange={handleClientClick}>
                             <option disabled selected hidden>Elegir al cliente...</option>
                             {clientes.map((cliente) => (
                                 <option value={cliente.id} key={cliente.id} >{cliente.nombre} {cliente.apellidos}</option>
                             ))}
-                        </select>
+                        </StyledSelect>
                     </FormatoInputs>
                     <FormatoInputs className="dateInput">
                         <FechaInput>
@@ -460,7 +499,10 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         </TimeInput>
                     </FormatoInputs>
 
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs 
+                    width={95}
+                    screen_width={screenWidth}
+                    >
                         <FormLabels >Observaciones del Servicio</FormLabels>
                         <input className="textInputs"
                             onChange={handleObservacionesChange}
@@ -468,7 +510,9 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                             type="text"
                         />
                     </FormatoInputs>
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs 
+                    width={95}
+                    screen_width={screenWidth}>
 
 
                         <FormLabels >Frecuencia recomendada:</FormLabels>
@@ -493,7 +537,9 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         }
                     </FormatoInputs>
 
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs 
+                    width={95}
+                    >
                         <FormLabels >Dirección:</FormLabels>
                         <select value={direccion_id ?? undefined} onChange={handleDireccionChange} className="textInputs arrowChange">
                             <option>Elige la dirección</option>
@@ -510,7 +556,8 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                             <input onChange={handleFacturacionChange} type="radio" className="checked" id="noFacturado" name="choice" value="No facturado" /> No Facturado
                         </div>
                     </FormatoInputs>
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs 
+                    width={95}>
                         <FormLabels >Tipo de Servicio:</FormLabels>
                         <select value={tipoServicio} onChange={handleTipoServicio} className="textInputs arrowChange"
                         >
@@ -524,7 +571,9 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         </select>
                     </FormatoInputs>
                     {tipoServicio !== "Residencial" &&
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs 
+                    width={95}
+                    >
                         <FormLabels >Responsable:</FormLabels>
                         <select value={responsableId ?? undefined} onChange={handleResponsableChange} className="textInputs arrowChange">
                             <option selected hidden>Elige al Responsable...</option>
@@ -534,7 +583,9 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         </select>
                     </FormatoInputs>
                         }
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs
+                     width={95}
+                   >
                         <FormLabels >Orden de compra</FormLabels>
                         <input className="textInputs"
                             onChange={handleOrdenCompra}

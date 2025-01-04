@@ -43,6 +43,8 @@ const Empleados: React.FC<empleadosProps> = (props) => {
     const [empleados, setEmpleados] = useState<Empleados[]>()
     const [empleadosFijos, setEmpleadosFijos] =  useState<Empleados[]>()
     const [estatus, setEstatus] = useState<boolean>()
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
 
 
     // const [totalPages, setTotalPages] = useState<number>(1);
@@ -436,7 +438,9 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                             </h3>
 
                         </ServiciosElement3>
-                        <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}>
+                        <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                        screen_width={screenWidth}
+                        >
                             <button id="borrarServicio"
                                 onClick={() => { deleteClienteHandler(empleado).then(() => { setDeleteModalVisible(true) }) }}
                                 style={{ fontWeight: "bold", fontSize: "105%" }}
