@@ -51,6 +51,7 @@ background: #FFFFFF;
 border:${props => (props.open ? '1px solid #CFCACA' : 'none')}; 
 box-shadow: 0px 6.08511px 6.08511px rgba(0, 0, 0, 0.25);
 border-radius: 7.60638px;
+z-index:999;
 .dateFilterInputs{
 display:flex;
 }
