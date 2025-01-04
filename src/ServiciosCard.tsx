@@ -243,12 +243,12 @@ const ServiciosCard = () => {
     const [fechaIsClicked, setFechaClicked] = useState(false)
     const [servicioOptoins, SetServicioOptions] = useState("")
     const [tipoServicio, setTipoServicio] = useState<string>("")
-    const [estatus, setSelectedEstatus] = useState<any>()
+    const [estatus, setSelectedEstatus] = useState<boolean>()
     const [estatusString, setEstatusString] = useState<string>("")
     const [plagas, setPlagas] = useState<any[]>([])
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null)
     const [empleados, setEmpleados] = useState<any[]>([])
-    const [empleadoId, setEmpleadoID] = useState<string>("")
+    const [empleadoId, setEmpleadoID] = useState<number | null>(null)
     const [modalOpen, setModalOpen] = useState<boolean | null>(false)
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
@@ -289,12 +289,12 @@ const ServiciosCard = () => {
                 setSelectedDate(initialDate)
                 const initialEmpleadoId = servicio[0]?.aplicador_Responsable ?? null;
                 console.log(initialEmpleadoId)
-                setEmpleadoID(initialEmpleadoId?.toString() ?? "")
+                setEmpleadoID(initialEmpleadoId ?? null)
                 const initialTime = servicio[0]?.horario_servicio ?? '00:00'
                 setSelectedTime(initialTime)
                 const initialTipoPlaga = servicio[0]?.tipo_plaga_id ?? null;
                 setTipoPlaga(initialTipoPlaga)
-                setSelectedEstatus(servicio[0]?.realizado)
+                setSelectedEstatus(servicio[0]?.realizado ?? false)
                 setEstatusString(servicio[0]?.realizado ? "Realizado" : "No realizado")
                 setClienteId(servicio[0]?.Clientes?.id as number)
                 console.log(servicio[0]?.tipo_servicio as string)
@@ -377,10 +377,9 @@ const ServiciosCard = () => {
                             fecha_servicio: selectedDate,
                             horario_servicio: selectedTime,
                             tipo_servicio: tipoServicio,
-                            aplicador_Responsable: empleadoId,
+                            aplicador_Responsable: empleadoId ?? null,
                             realizado: estatus,
                             tipo_plaga_id: tipoPlaga,
-                            tipo_plaga_array_id: [...plagaSelected],
                             direccion_id:direccion_id
 
 
@@ -437,10 +436,12 @@ const ServiciosCard = () => {
         setEstatusString(cambio)
 
         if (cambio === "Realizado") {
+            console.log("realizado")
             setSelectedEstatus(true)
 
         }
         else if (cambio === "No realizado") {
+            console.log("norealizado")
             setSelectedEstatus(false)
 
         }
@@ -466,7 +467,7 @@ const ServiciosCard = () => {
 
     const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
-        setEmpleadoID(event.target.value)
+        setEmpleadoID(+event.target.value)
     }
 
     const appearModal = () => {
@@ -675,7 +676,7 @@ const ServiciosCard = () => {
 
                         <DetailsTitle>Aplicador Responsable</DetailsTitle>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
-                            <select value={empleadoId} style={mainStyle} onChange={handleResponsableChange}>
+                            <select value={empleadoId ?? undefined} style={mainStyle} onChange={handleResponsableChange}>
                                 {!empleadoId && <option>Elegir al técnico responsable...</option>}
                                 {empleados.map((empleado) => (
                                     <option value={empleado.id} key={empleado.id}>

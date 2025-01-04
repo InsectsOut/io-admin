@@ -348,11 +348,12 @@ height: 3.35125rem;
 background:#F0F0F0;
 position: relative;
 `
-export const ServiciosElement1 = styled.div /*style*/ `
+export const ServiciosElement1 = styled.div<{ screen_width?: number }> /*style*/ `
 display:flex;
 color:#2395FF;
 gap:2rem;
-width:37%;
+gap:${props => (props.screen_width && props.screen_width >= 820 ? "2rem" : "1rem")};
+width:${props => (props.screen_width && props.screen_width >= 820 ? "37%" : "75%")};
 height: 3.35125rem;
   justify-content:space-between;
   align-items:center;
@@ -368,11 +369,11 @@ padding-left:1rem;
 }
 
 `
-export const ServiciosElement2 = styled.div /*style*/ `
+export const ServiciosElement2 = styled.div<{ screen_width?: number }> /*style*/ `
 display:flex;
 align-items:center;
 justify-content:center;
-width:23%;
+width:${props => (props.screen_width && props.screen_width >= 820 ? "23%" : "45%")};
 height: 3.35125rem;
 color:#727272;
 .primerSector{
@@ -391,9 +392,11 @@ justify-content:left;
 align-items:center;
 width:35%;
 height: 3.35125rem;
-gap:rem;
+gap:.5rem;
 color:#727272;
-
+h3 {
+width:fit-content;
+}
 .primerSector{
    
   font-style: normal;
@@ -403,16 +406,16 @@ color:#727272;
   padding-left:1rem;
 }
 `
-export const ServiciosElement4 = styled.div<{screen_width?: number, swipeActiator?: boolean}> /*style*/ `
+export const ServiciosElement4 = styled.div<{ screen_width?: number, swipeActiator?: boolean }> /*style*/ `
 display:flex;
 justify-content:left;
 align-items:center;
-width:${props => (props.screen_width  && props.screen_width >= 820 ? "5%" : "15%" )};
+width:${props => (props.screen_width && props.screen_width >= 820 ? "5%" : "15%")};
 height: 3.35125rem;
-background:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "none" :"red" )};
+background:${props => (props.screen_width && props.screen_width >= 820 ? "none" : "red")};
 #borrarServicio{
   all:unset;
-  display:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "block" :"none" )};
+  display:${props => (props.screen_width && props.screen_width >= 820 ? "block" : "none")};
   width:2rem;
   height:2rem;
   background:#C1716E;
@@ -423,7 +426,7 @@ background:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "non
   }
 }
 `
-export const ServiciosElement5 = styled.div<{screen_width?: number, swipeActiator?: boolean}> /*style*/ `
+export const ServiciosElement5 = styled.div<{ screen_width?: number, swipeActiator?: boolean }> /*style*/ `
 display:flex;
 justify-content:center;
 align-items:center;
@@ -438,7 +441,7 @@ right:0;
   box-shadow: ${(props) => (props.swipeActiator ? "-4px 0 8px rgba(0, 0, 0, 0.2)" : "none")}; /* Shadow to simulate behind effect */
 #borrarServicio{
   all:unset;
-  display:${props => ( props.screen_width  &&  props.screen_width >= 820 ? "block" :"none" )};
+  display:${props => (props.screen_width && props.screen_width >= 820 ? "block" : "none")};
   width:2rem;
   height:2rem;
   background:#C1716E;
@@ -479,7 +482,9 @@ width:100%;
 }
 
 `
-export const FolioLink = styled(Link) /*style*/ `
+export const FolioLink = styled(Link) <{ screen_width?: number, setWidth?: string }> /*style*/ `
+width: ${(props) => props.screen_width > 820 ? "50%" : props.setWidth};
+max-width: ${(props) => props.screen_width > 820 ? "28.6%" : "100%"};
 all:unset;
 &:hover{
 cursor: pointer;
@@ -860,8 +865,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     // If the modal is currently visible and the same element is clicked, hide the modal
     if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left) {
       setModalVisible(false);
-    } 
-    else  if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left -100) {
+    }
+    else if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left - 100) {
       setModalVisible(false);
     }
     else {
@@ -953,14 +958,14 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
   }
 
-  const handleDelete = (servicio:Servicio) => {
+  const handleDelete = (servicio: Servicio) => {
     // Perform the delete action here
     deleteServicioHandler(servicio).then(() => {
       setDeleteModalVisible(true);
     });
   };
 
- 
+
 
   return (
     <>
@@ -1183,7 +1188,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                         <button className="actionButtonsStyles" id="limpiar"
                           onClick={() => { handleClearSelection() }}
                         >Limpiar</button>
-                        <button className="actionButtonsStyles" id="aplicar" onClick={() => {
+                        <button 
+                        style={{color:"white"}}
+                        className="actionButtonsStyles" id="aplicar" onClick={() => {
                           handleSetText()
                             .then(() => {
                               //filterServicios()
@@ -1225,22 +1232,29 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
           {servicios
             .sort((a, b) => new Date(b.fecha_servicio).getTime() - new Date(a.fecha_servicio).getTime())
             .map((servicio) => (
-              
+
               <ServiciosElement
-              onTouchStart={(e:any) => handleTouchStart(e, servicio.id)}
-              onTouchMove={(e:any) => handleTouchMove(e, servicio.id)}
-              onTouchEnd={() => handleTouchEnd(servicio.id)}
+                onTouchStart={(e: any) => handleTouchStart(e, servicio.id)}
+                onTouchMove={(e: any) => handleTouchMove(e, servicio.id)}
+                onTouchEnd={() => handleTouchEnd(servicio.id)}
                 key={servicio.id}
               >
 
                 <ServiciosElement1 style={{ textAlign: "left" }}>
-                  <FolioLink className="primerSector" style={{ minWidth: "28.6%", maxHeight: "3.351rem", maxWidth: "28.6%", textAlign: "left", marginLeft: "1rem" }} to={`${location.pathname}/${servicio.folio}`}>
+                  <div
+                   style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "40%" }}
+                  >
+                  <FolioLink className="primerSector" style={{ maxHeight: "3.351rem", textAlign: "left" }}
+                    setWidth={"85%"}
+                    to={`${location.pathname}/${servicio.folio}`}>
                     {screenWidth > 820 ? "#Folio:" : <strong>#</strong>} {servicio.folio}
                   </FolioLink>
+                  </div>
                   <div
-                    style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "50%" }}
+                    style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "60%" }}
                   >
                     <FolioLink
+                      setWidth={"85%"}
                       to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
                   </div>
                   {screenWidth > 820 &&
@@ -1255,42 +1269,49 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                 </ServiciosElement2>
                 <ServiciosElement3>
                   <h3 className="primerSector"
-                    style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                  >  Estatus : {servicio.realizado ? screenWidth > 820 ? "Realizado" :<FaRegCheckCircle/>: screenWidth > 820 ? "No realizado" :<MdDoNotDisturb/>}
+                    style={{ fontWeight: "bold", textAlign: "left" }}
+                  >  Estatus :
                   </h3>
-                  <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
+                  <h3>
+                    {servicio.realizado
+                      ? (<FaRegCheckCircle color="green" />)
+                      : (<MdDoNotDisturb color="red" />)}
+                  </h3>
+                  {screenWidth > 820 &&
+                    <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
+                  }
                 </ServiciosElement3>
-                {screenWidth >820 &&
-                <ServiciosElement4
-                screen_width={screenWidth}
-                >
-                  <button id="borrarServicio"
-                    // onClick={() =>
-                    //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
-                    // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
-                    onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
-                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                {screenWidth > 820 &&
+                  <ServiciosElement4
+                    screen_width={screenWidth}
                   >
-                    X
-                  </button>
-                </ServiciosElement4>
+                    <button id="borrarServicio"
+                      // onClick={() =>
+                      //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
+                      // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                      onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
+                      style={{ fontWeight: "bold", fontSize: "105%" }}
+                    >
+                      X
+                    </button>
+                  </ServiciosElement4>
                 }
                 {screenWidth < 820 &&
-                <ServiciosElement5
-                screen_width={screenWidth}
-                swipeActiator={swipedItems[servicio.id]}
-                onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
-                >
-                  <RiDeleteBin6Line/>
-                  <button id="borrarServicio"
-                    // onClick={() =>
-                    //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
-                    // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                  <ServiciosElement5
+                    screen_width={screenWidth}
+                    swipeActiator={swipedItems[servicio.id]}
                     onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
                   >
-                    X
-                  </button>
-                </ServiciosElement5>
+                    <RiDeleteBin6Line />
+                    <button id="borrarServicio"
+                      // onClick={() =>
+                      //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
+                      // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                      onClick={() => { deleteServicioHandler(servicio).then(() => { setDeleteModalVisible(true) }) }}
+                    >
+                      X
+                    </button>
+                  </ServiciosElement5>
                 }
               </ServiciosElement>
             ))}
