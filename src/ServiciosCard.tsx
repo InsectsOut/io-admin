@@ -36,9 +36,10 @@ flex-direction:column;
 gap:1rem;
 
 `
-export const CardInputs = styled.input`
+export const CardInputs = styled.input /*style*/`
 width: 19.815rem;
 height:2.513rem;
+
 `
 
 export const DetallesTitulo = styled.h1`
@@ -81,7 +82,7 @@ export const mainStyle = {
     color: "#474747",
     height: "2.513rem",
     maxHeight: "2.513rem",
-    width: "13.385rem",
+    width: "85%",
     border: "0.072rem solid #727272",
     borderRadius: "0.215rem",
     display: "flex",
@@ -580,14 +581,20 @@ const ServiciosCard = () => {
                 <Titulo>Servicios</Titulo>
                 <CardContainer>
                     <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
-                    <InputsContainer>
+                    <InputsContainer
+                    width={113}
+                    >
                         <DetailsTitle>Folio</DetailsTitle>
-                        <CardInputs readOnly id="textInputs" className="textInputs"
+                        <CardInputs
+                        
+                        readOnly id="textInputs" className="textInputs"
                             type="text"
                             value={servicios.length > 0 ? servicios[0]?.folio : ""}
                         ></CardInputs>
                     </InputsContainer>
-                    <InputsContainer>
+                    <InputsContainer
+                    width={113}
+                    >
 
                         <DetailsTitle>Nombre</DetailsTitle>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
@@ -605,10 +612,12 @@ const ServiciosCard = () => {
                         </div>
 
                     </InputsContainer>
-                    <InputsContainer>
+                    <InputsContainer
+                    width={113}
+                    >
                         <FechaInput>
                             <DetailsTitle >Fecha</DetailsTitle>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row", width: "13.413rem", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row", width: "102%", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem" }}>
                                 <DateInput placeholderText={servicios[0]?.fecha_servicio} selected={selectedDate} onChange={(date) => { setSelectedDate(date); setClicked(true); }} dateFormat="YYY/MM/dd" ></DateInput>
 
                             </div>
@@ -616,11 +625,11 @@ const ServiciosCard = () => {
 
                         </FechaInput>
                         <TimeInput
-                            style={{ marginTop: "1rem", width: "13.413rem" }}
+                            style={{ marginTop: "1rem"}}
                         >
                             <DetailsTitle >Horario</DetailsTitle>
                             <Horario
-                                style={{ width: "13.413rem", padding: 0 }}
+                                style={{ width: "100%", padding: 0, textAlign:"left", paddingLeft:".5rem" }}
                                 type="time"
                                 onChange={handleTimeChange}
                                 value={
@@ -630,12 +639,14 @@ const ServiciosCard = () => {
                             />
                         </TimeInput>
                     </InputsContainer>
-                    <InputsContainer style={{ display: "inline-flex", width: "100%" }}>
+                    <InputsContainer 
+                    width={113}
+                    >
                         <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem", width: "50%", flexDirection: "column", }}>
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem", flexDirection: "column",width: "102%"  }}>
                                 <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
                                 <select
-                                    style={{ ...mainStyle, width: "13.538rem" }}
+                                    style={{ ...mainStyle, width: "102%" }}
                                     value={direccion_id}
                                     onChange={handleDireccionChange}
 
@@ -651,12 +662,14 @@ const ServiciosCard = () => {
 
                         </div>
                     </InputsContainer>
-                    <InputsContainer style={{ display: "inline-flex", width: "100%" }}>
-                        <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem", width: "50%", flexDirection: "column", }}>
+                    <InputsContainer 
+                    width={95}
+                    
+                    >
+                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem",  flexDirection: "column",width: "26.125rem"  }}>
                                 <DetailsTitle style={{ width: "100%" }}>Tipo de Servicio</DetailsTitle>
                                 <select
-                                    style={{ ...mainStyle, width: "10.375rem" }}
+                                    style={{ ...mainStyle}}
                                     value={tipoServicio}
                                     onChange={tipoServicioChange}
 
@@ -670,10 +683,12 @@ const ServiciosCard = () => {
                                 </select>
                             </div>
 
-                        </div>
+                    
                     </InputsContainer>
-                    <InputsContainer >
-
+                    <InputsContainer 
+                    width={95}
+                    >
+                                    
                         <DetailsTitle>Aplicador Responsable</DetailsTitle>
                         <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
                             <select value={empleadoId ?? undefined} style={mainStyle} onChange={handleResponsableChange}>
