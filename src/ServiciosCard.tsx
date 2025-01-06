@@ -15,32 +15,20 @@ import RegistrosCard from "./RegistrosCard";
 import { supabase } from "./utils/ClientSupabase";
 import { IoDownloadOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { ButtonComponents } from "./EmpleadosCard";
+import { CardContainer } from "./rehusableComponents/CardContainer";
+import { CardInputs } from "./rehusableComponents/CardInputs";
 
 type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
 type Direcciones = Tables<"Direcciones">
 
-
-export const CardContainer = styled.div`
-width: 24.625rem;
-min-height:fit-content;
-height: 80vh;
-background: #F4F4F4;
-box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
-border-radius: 0.718rem;
-margin-left:5.875rem;
-padding-left:1.5rem;
-padding-top:.75rem;
-display:flex;
-flex-direction:column;
-gap:1rem;
+const RegistrosAdd = styled(ButtonComponents)`
 
 `
-export const CardInputs = styled.input /*style*/`
-width: 19.815rem;
-height:2.513rem;
 
-`
+
+
 
 export const DetallesTitulo = styled.h1`
  
@@ -54,13 +42,12 @@ color: #000000;
 margin-bottom:unset;
 margin-top:0;
 `
-export const InputsContainer = styled(FormatoInputs)`
+export const InputsContainer = styled(FormatoInputs) /*style*/`
 flex-direction:column;
 display:flex;
 justify-content:left;
 margin-left:unset;
 gap:.25rem;
-
 &.invisible {
     div {
       display: none !important;
@@ -80,8 +67,7 @@ export const mainStyle = {
 
     background: "#FFFFFF",
     color: "#474747",
-    height: "2.513rem",
-    maxHeight: "2.513rem",
+    height: "42.2px",
     width: "85%",
     border: "0.072rem solid #727272",
     borderRadius: "0.215rem",
@@ -153,10 +139,12 @@ export const ReturnButton = styled.button/*style*/ `
 `
 
 
-const ServiciosCardContainer = styled.div`
+const ServiciosCardContainer = styled.div /*style*/ `
 display:flex;
 flex-direction:column;
 position: relative;
+
+
 
 .responsableCard{
 display:flex;
@@ -168,7 +156,17 @@ flex-direction:row;
 top:0;
 right:13%;
 padding-top:4.925rem;
+
+@media (max-width: 900px) {
+display: none;
+
+  }
+
 }
+@media (max-width: 900px) {
+    align-items:center;
+  }
+
 `
 const AddResponsableCard = styled.div`
 width: 24.625rem; 
@@ -257,8 +255,10 @@ const ServiciosCard = () => {
     const [dataFromRegistros, setDataFromRegistros] = useState<number>()
     const navigate = useNavigate()
     const [addButtonClicked, setAddButtonClicked] = useState(false)
-    const [direccion_id,setDireccion_id] = useState<string>("")
-    const [dirección,setDireccion] = useState<Direcciones[]>([])
+    const [direccion_id, setDireccion_id] = useState<string>("")
+    const [dirección, setDireccion] = useState<Direcciones[]>([])
+    const [infoTab, setInfoTab] = useState<string>("general")
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
@@ -381,7 +381,7 @@ const ServiciosCard = () => {
                             aplicador_Responsable: empleadoId ?? null,
                             realizado: estatus,
                             tipo_plaga_id: tipoPlaga,
-                            direccion_id:direccion_id
+                            direccion_id: direccion_id
 
 
                         },
@@ -406,11 +406,11 @@ const ServiciosCard = () => {
         FetchPlagas()
         FetchClientes()
         FetchServicios()
-       
+
     }, [])
     useEffect(() => {
-        if (clienteId){
-        fetchDireccion(clienteId.toString())
+        if (clienteId) {
+            fetchDireccion(clienteId.toString())
         }
     }, [clienteId])
 
@@ -547,27 +547,48 @@ const ServiciosCard = () => {
         try {
             let query = supabase;
             const { data, error } = await query
-            .from("Direcciones")
-            .select("*")
-            .filter("cliente_id","eq",cliente_id)
-            if (data){
+                .from("Direcciones")
+                .select("*")
+                .filter("cliente_id", "eq", cliente_id)
+            if (data) {
                 setDireccion(data)
                 setDireccion_id(data[0].id.toString())
 
             }
-            if (error){
+            if (error) {
                 console.log(error)
             }
         }
-        catch(err){
+        catch (err) {
             console.log(err)
         }
     }
 
+    const setInfoTag = (event: React.MouseEvent<HTMLDivElement>, tag: string) => {
+        setInfoTab(tag);
+    }
+
+    const selectTag = (infoTab: string) => {
+        return (
+            <div className="selectTag">
+                <div className="genInfo infoButtons"
+                    onClick={(e) => { setInfoTag(e, "general") }}
+                    style={{ background: infoTab === "general" ? "white" : "#0D4E80", color: infoTab === "general" ? "#0D4E80" : "white" }}
+                ><p>General</p></div>
+                <div className="workInfo infoButtons"
+                    onClick={(e) => { setInfoTag(e, "registros") }}
+                    style={{ background: infoTab === "registros" ? "white" : "#0D4E80", color: infoTab === "registros" ? "#0D4E80" : "white" }}
+                ><p>Registros</p></div>
+                <div className="workInfo infoButtons"
+                    onClick={(e) => { setInfoTag(e, "constancia") }}
+                    style={{ background: infoTab === "constancia" ? "white" : "#0D4E80", color: infoTab === "constancia" ? "#0D4E80" : "white" }}
+                ><p>Constancia</p></div>
+            </div>
+        )
+    }
+
     return (
         <>
-
-
             {modalOpen && (
                 <Modal
                     registroApId={dataFromRegistros}
@@ -581,144 +602,187 @@ const ServiciosCard = () => {
                 <Titulo>Servicios</Titulo>
                 <CardContainer>
                     <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
-                    <InputsContainer
-                    width={113}
-                    >
-                        <DetailsTitle>Folio</DetailsTitle>
-                        <CardInputs
-                        
-                        readOnly id="textInputs" className="textInputs"
-                            type="text"
-                            value={servicios.length > 0 ? servicios[0]?.folio : ""}
-                        ></CardInputs>
-                    </InputsContainer>
-                    <InputsContainer
-                    width={113}
-                    >
+                    {selectTag(infoTab)}
+                    {(infoTab === "general" || screenWidth > 900) && (
+                        <>
+                            <InputsContainer width={90}>
+                                <DetailsTitle>Folio</DetailsTitle>
+                                <CardInputs
+                                    largo="100%"
+                                    readOnly
+                                    type="text"
+                                    placeholder={servicios.length > 0 ? servicios[0]?.folio : ""}
+                                />
+                            </InputsContainer>
 
-                        <DetailsTitle>Nombre</DetailsTitle>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
-                            <select value={clienteId}
-                                style={mainStyle}
-                                onChange={handleClientClick}
+                            <InputsContainer width={90}
                             >
-                                {/* <option  value={servicios[0]?.cliente_id} key={servicios[0]?.cliente_id} >{servicios[0]?.Clientes?.nombre} {servicios[0]?.Clientes?.apellidos}</option> */}
+                                <DetailsTitle>Nombre</DetailsTitle>
 
-                                {clientes.map((cliente) => (
-                                    <option
-                                        value={cliente.id} key={cliente.id} >{cliente.nombre} {cliente.apellidos}</option>
-                                ))}
-                            </select>
-                        </div>
-
-                    </InputsContainer>
-                    <InputsContainer
-                    width={113}
-                    >
-                        <FechaInput>
-                            <DetailsTitle >Fecha</DetailsTitle>
-                            <div style={{ display: "flex", alignItems: "center", gap: "1rem", flexDirection: "row", width: "102%", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem" }}>
-                                <DateInput placeholderText={servicios[0]?.fecha_servicio} selected={selectedDate} onChange={(date) => { setSelectedDate(date); setClicked(true); }} dateFormat="YYY/MM/dd" ></DateInput>
-
-                            </div>
-
-
-                        </FechaInput>
-                        <TimeInput
-                            style={{ marginTop: "1rem"}}
-                        >
-                            <DetailsTitle >Horario</DetailsTitle>
-                            <Horario
-                                style={{ width: "100%", padding: 0, textAlign:"left", paddingLeft:".5rem" }}
-                                type="time"
-                                onChange={handleTimeChange}
-                                value={
-                                    selectedTime?.toString()
-                                }
-                                step="9000" // Optional: Use a step of 15 minutes (900 seconds)
-                            />
-                        </TimeInput>
-                    </InputsContainer>
-                    <InputsContainer 
-                    width={113}
-                    >
-                        <div style={{ display: "flex", flexDirection: "row" }}>
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem", flexDirection: "column",width: "102%"  }}>
-                                <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
                                 <select
-                                    style={{ ...mainStyle, width: "102%" }}
-                                    value={direccion_id}
-                                    onChange={handleDireccionChange}
-
+                                    value={clienteId}
+                                    style={{ ...mainStyle, width: "100%" }}
+                                    onChange={handleClientClick}
                                 >
-
-                                    {dirección.map((options) => (
-                                        <option
-
-                                            value={options.id} key={options.id} >{options.calle} {options.ciudad} {options.colonia} {options.numero_ext} {options.codigo_postal}</option>
+                                    {clientes.map((cliente) => (
+                                        <option value={cliente.id} key={cliente.id}>
+                                            {cliente.nombre} {cliente.apellidos}
+                                        </option>
                                     ))}
                                 </select>
-                            </div>
 
-                        </div>
-                    </InputsContainer>
-                    <InputsContainer 
-                    width={95}
-                    
-                    >
-                            <div style={{ display: "flex", alignItems: "flex-start", gap: ".25rem",  flexDirection: "column",width: "26.125rem"  }}>
-                                <DetailsTitle style={{ width: "100%" }}>Tipo de Servicio</DetailsTitle>
-                                <select
-                                    style={{ ...mainStyle}}
-                                    value={tipoServicio}
-                                    onChange={tipoServicioChange}
+                            </InputsContainer>
 
+                            <InputsContainer width={90}>
+                                <FechaInput>
+                                    <DetailsTitle>Fecha</DetailsTitle>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "center",
+                                            gap: "1rem",
+                                            flexDirection: "row",
+                                            width: "100%",
+                                            background: "white",
+                                            border: "0.071793rem solid #727272",
+                                            borderRadius: "0.215rem",
+                                        }}
+                                    >
+                                        <DateInput
+                                            placeholderText={servicios[0]?.fecha_servicio}
+                                            selected={selectedDate}
+                                            onChange={(date) => {
+                                                setSelectedDate(date);
+                                                setClicked(true);
+                                            }}
+                                            dateFormat="YYY/MM/dd"
+                                        />
+                                    </div>
+                                </FechaInput>
+                                <TimeInput style={{ marginTop: "1rem" }}>
+                                    <DetailsTitle>Horario</DetailsTitle>
+                                    <Horario
+                                        style={{
+                                            width: "100%",
+                                            padding: "0 0 0 0",
+                                            textAlign: "left",
+                                           
+                                        }}
+                                        type="time"
+                                        onChange={handleTimeChange}
+                                        value={selectedTime?.toString()}
+                                        step="9000" // Optional: Use a step of 15 minutes (900 seconds)
+                                    />
+                                </TimeInput>
+                            </InputsContainer>
+
+                            <InputsContainer width={90}>
+                                <div style={{ display: "flex", flexDirection: "row" }}>
+                                    <div
+                                        style={{
+                                            display: "flex",
+                                            alignItems: "flex-start",
+                                            gap: ".25rem",
+                                            flexDirection: "column",
+                                            width: "100%",
+                                        }}
+                                    >
+                                        <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
+                                        <select
+                                            style={{ ...mainStyle, width: "100%" }}
+                                            value={direccion_id}
+                                            onChange={handleDireccionChange}
+                                        >
+                                            {dirección.map((options) => (
+                                                <option value={options.id} key={options.id}>
+                                                    {options.calle} {options.ciudad} {options.colonia}{" "}
+                                                    {options.numero_ext} {options.codigo_postal}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </div>
+                            </InputsContainer>
+
+                            <InputsContainer width={90}>
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        alignItems: "flex-start",
+                                        gap: ".25rem",
+                                        flexDirection: "column",
+                                        width: "100%",
+                                    }}
                                 >
+                                    <DetailsTitle style={{ width: "100%" }}>
+                                        Tipo de Servicio
+                                    </DetailsTitle>
+                                    <select
+                                        style={{ ...mainStyle, width: "100%" }}
+                                        value={tipoServicio}
+                                        onChange={tipoServicioChange}
+                                    >
+                                        {servicioOptions.map((options) => (
+                                            <option value={options.value} key={options.id}>
+                                                {options.label}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </InputsContainer>
 
-                                    {servicioOptions.map((options) => (
-                                        <option
+                            <InputsContainer width={90}>
+                                <DetailsTitle>Aplicador Responsable</DetailsTitle>
+                                <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
+                                    <select
+                                        value={empleadoId ?? undefined}
+                                        style={{ ...mainStyle, width: "100%" }}
+                                        onChange={handleResponsableChange}
+                                    >
+                                        {!empleadoId && <option>Elegir al técnico responsable...</option>}
+                                        {empleados.map((empleado) => (
+                                            <option value={empleado.id} key={empleado.id}>
+                                                {empleado.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </InputsContainer>
 
-                                            value={options.value} key={options.id} >{options.label}</option>
-                                    ))}
-                                </select>
-                            </div>
-
-                    
-                    </InputsContainer>
-                    <InputsContainer 
-                    width={95}
-                    >
-                                    
-                        <DetailsTitle>Aplicador Responsable</DetailsTitle>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
-                            <select value={empleadoId ?? undefined} style={mainStyle} onChange={handleResponsableChange}>
-                                {!empleadoId && <option>Elegir al técnico responsable...</option>}
-                                {empleados.map((empleado) => (
-                                    <option value={empleado.id} key={empleado.id}>
-                                        {empleado.nombre}
-                                    </option>
-                                ))}
-                            </select>
-                        </div>
-
-                    </InputsContainer>
-                    <InputsContainer>
-
-                        <DetailsTitle>Estatus</DetailsTitle>
-                        <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "26.125rem" }}>
-                            <select value={estatusString}
-                                style={mainStyle}
-
-                                onChange={handleEstatusChange}
+                            <InputsContainer
+                                width={90}
                             >
-                                <option value={"No realizado"}  >No Realizado</option>
-                                <option value={"Realizado"}  >Realizado</option>
-
-                            </select>
+                                <DetailsTitle>Estatus</DetailsTitle>
+                                <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
+                                    <select
+                                        value={estatusString}
+                                        style={{ ...mainStyle, width: "100%" }}
+                                        onChange={handleEstatusChange}
+                                    >
+                                        <option value={"No realizado"}>No Realizado</option>
+                                        <option value={"Realizado"}>Realizado</option>
+                                    </select>
+                                </div>
+                            </InputsContainer>
+                        </>
+                    )}
+                    {infoTab === "registros" && (
+                        <div>
+                            <ButtonComponents
+                                background="white"
+                                height="3rem"
+                                color="#0D4E80"
+                                justify="center"
+                                gap={1}
+                            >
+                                <p>Añadir registro</p> <IoIosAddCircleOutline 
+                                size={25}
+                                />
+                            </ButtonComponents>
                         </div>
-                    </InputsContainer>
-
+                    )}
                 </CardContainer>
+
                 <div className="responsableCard">
                     <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
                         <AddResponsableCard >
@@ -757,7 +821,7 @@ const ServiciosCard = () => {
                 </div>
             </ServiciosCardContainer>
             <ReturnButton>Regresar</ReturnButton>
-            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => {location.reload()}) }}>
+            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { location.reload() }) }}>
                 Guardar Cambios
             </StyledButton>
         </>

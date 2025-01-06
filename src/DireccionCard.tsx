@@ -1,9 +1,9 @@
 import styled from "styled-components"
 import { Tables } from "../src/supabase/Database";
 import { useParams } from 'react-router-dom';
-import { CardContainer } from "./ServiciosCard";
 import { DetailsTitle } from "./ServiciosCard";
-import { CardInputs } from "./ServiciosCard";
+import { CardContainer } from "./rehusableComponents/CardContainer";
+import { CardInputs } from './rehusableComponents/CardInputs';
 import { InputsContainer } from "./ServiciosCard";
 import { DetallesTitulo } from "./ServiciosCard";
 import { supabase } from './utils/ClientSupabase';

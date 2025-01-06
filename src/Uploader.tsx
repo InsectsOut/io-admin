@@ -1,7 +1,7 @@
 import styled from 'styled-components';
-import { CardInputs } from "./ServiciosCard";
 import { colors } from 'react-select/dist/declarations/src/theme';
 import { useState } from 'react';
+import { CardInputs } from './rehusableComponents/CardInputs';
 
 type styledInputButton = {
   background:string;

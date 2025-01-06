@@ -48,7 +48,7 @@ color:white;
     color:white;
   }
 
-  @media (max-width: 820px) {
+  @media (max-width: 900px) {
 width:95%;
 } 
 `
@@ -62,13 +62,13 @@ background: #F3F3F3;
 min-height:99vh;
 height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
-@media (max-width: 820px) {
+@media (max-width: 900px) {
 width:95%;
 }
 `
 
 const CreateContainer = styled(ServiciosContainer) /*style*/ `
-@media (max-width: 820px) {
+@media (max-width: 900px) {
 width:100vw;
 }
 .createForm{
@@ -109,18 +109,21 @@ flex-direction:column;
    flex-direction:row;
    gap:2rem;
    }
+   @media (max-width: 900px) {
+padding:0 1.5rem 0 1rem
+}
 `
 
-export const FormatoInputs = styled.div<{width?:number, screen_width?:number}>/*style*/`
-@media (max-width: 820px) {
- width: calc(95% - 6.25rem);
- margin-left:3.25rem;
+export const FormatoInputs = styled.div<{ width?: number, screen_width?: number,marginleft?:string }>/*style*/`
+@media (max-width: 900px) {
+ width: calc(100%);
+ margin-left: ${(props) => props.marginleft ? props.marginleft : "3.25rem"};
 }
     text-align:left;
     margin-left:3.25rem;
    display:flex;
    flex-direction:column;
-   width: ${(props) => `calc(${props.width}% - 6.25rem)`};
+   width: ${(props) => `${props.width}%`};
    .textInputs{
    all:unset;
    background-image: url('data:image/svg+xml;utf8,<svg fill="%23000" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/></svg>');
@@ -237,7 +240,7 @@ const StyledSelect = styled.select /*style*/`
     background: #FFFFFF;
     color: #474747;
   }
-  @media (max-width: 820px) {
+  @media (max-width: 900px) {
 width:100%;
 } 
 
@@ -257,7 +260,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const [frecuencia, setFrecuencia] = useState<Enums<"FrecuenciaServicio">>("Ninguna")
     const [estadoFacturacion, setEstadoFacturacion] = useState("")
     const [tipoServicio, setTipoServicio] = useState("")
-    const [responsableId, setResponsableId] = useState<number | null >(null)
+    const [responsableId, setResponsableId] = useState<number | null>(null)
     const [ordenDeCommpra, setOrdeDeCompra] = useState("")
     const [_, SetServicioFolio] = useState<number | null>(null)
     const [otroSelected, setOtroSelected] = useState<boolean>(true)
@@ -471,17 +474,21 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo servicio, complete el siguiente formulario.</FormHeader>
                 <CreateServicioForm className="oli">
                     <FormatoInputs
-                    width={95}
+                        width={90}
+                        marginleft={"0"}
                     >
                         <FormLabels >Nombre del Cliente</FormLabels>
                         <StyledSelect value={clienteId} onChange={handleClientClick}>
-                            <option disabled selected hidden>Elegir al cliente...</option>
+                            <option >Elegir al cliente...</option>
                             {clientes.map((cliente) => (
                                 <option value={cliente.id} key={cliente.id} >{cliente.nombre} {cliente.apellidos}</option>
                             ))}
                         </StyledSelect>
                     </FormatoInputs>
-                    <FormatoInputs className="dateInput">
+                    <FormatoInputs className="dateInput"
+                    marginleft={"0"}
+                    width={90}
+                    >
                         <FechaInput>
                             <FormLabels >Fecha</FormLabels>
                             <div className="dateInputContainer">
@@ -499,9 +506,10 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         </TimeInput>
                     </FormatoInputs>
 
-                    <FormatoInputs 
-                    width={95}
-                    screen_width={screenWidth}
+                    <FormatoInputs
+                        width={90}
+                        screen_width={screenWidth}
+                        marginleft={"0"}
                     >
                         <FormLabels >Observaciones del Servicio</FormLabels>
                         <input className="textInputs"
@@ -510,23 +518,23 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                             type="text"
                         />
                     </FormatoInputs>
-                    <FormatoInputs 
-                    width={95}
-                    screen_width={screenWidth}>
-
-
+                    <FormatoInputs
+                       width={90}
+                        screen_width={screenWidth}
+                        marginleft={"0"}
+                        >
                         <FormLabels >Frecuencia recomendada:</FormLabels>
-                        {otroSelected &&
+                      
                             <select value={frecuencia} onChange={handleFrecuenciaChange} className="textInputs arrowChange">
-                                <option hidden>Elegir la frecuencia del servicio...</option>
+                                <option >Elegir la frecuencia del servicio...</option>
                                 {frecuencias.map((frecuencia) => (
-                                    <option key={frecuencia} value={frecuencia} selected={frecuencia === "Ninguna"}>
+                                    <option key={frecuencia} value={frecuencia} >
                                         {frecuencia}
                                     </option>
                                 ))}
                             </select>
-                        }
-                        {!otroSelected &&
+                        
+                        {/* {!otroSelected &&
                             <input id="otroAlternative" className="textInputs"
                                 onBlur={() => setOtroSelected(frecuencia === "Ninguna")}
                                 onChange={handleFrecuenciaChange as any}
@@ -534,11 +542,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                                 value={frecuencia}
                                 type="text"
                             />
-                        }
+                        } */}
                     </FormatoInputs>
 
-                    <FormatoInputs 
-                    width={95}
+                    <FormatoInputs
+                        width={90}
+                        marginleft={"0"}
                     >
                         <FormLabels >Dirección:</FormLabels>
                         <select value={direccion_id ?? undefined} onChange={handleDireccionChange} className="textInputs arrowChange">
@@ -549,19 +558,23 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         </select>
                     </FormatoInputs>
 
-                    <FormatoInputs style={{ width: "19.815rem" }}>
+                    <FormatoInputs style={{ width: "19.815rem" }}
+                    marginleft={"0"}
+                    >
                         <FormLabels >Tipo de Folio:</FormLabels>
                         <div style={{ display: "flex", gap: "1rem" }}>
                             <input onChange={handleFacturacionChange} type="radio" className="checked" id="facturado" name="choice" value="Facturado" /> Facturado
                             <input onChange={handleFacturacionChange} type="radio" className="checked" id="noFacturado" name="choice" value="No facturado" /> No Facturado
                         </div>
                     </FormatoInputs>
-                    <FormatoInputs 
-                    width={95}>
+                    <FormatoInputs
+                        width={90}
+                        marginleft={"0"}
+                        >
                         <FormLabels >Tipo de Servicio:</FormLabels>
                         <select value={tipoServicio} onChange={handleTipoServicio} className="textInputs arrowChange"
                         >
-                            <option value="" disabled selected hidden>Elegir el tipo de servicio...</option>
+                            <option value="" >Elegir el tipo de servicio...</option>
                             <option value="Residencial" >Residencial</option>
                             <option value="Industrial" >Industrial</option>
                             <option value="Comercial" >Comercial</option>
@@ -571,21 +584,23 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         </select>
                     </FormatoInputs>
                     {tipoServicio !== "Residencial" &&
-                    <FormatoInputs 
-                    width={95}
-                    >
-                        <FormLabels >Responsable:</FormLabels>
-                        <select value={responsableId ?? undefined} onChange={handleResponsableChange} className="textInputs arrowChange">
-                            <option selected hidden>Elige al Responsable...</option>
-                            {responsables.map((responsable) =>
-                                <option key={responsable.id} value={responsable.id}>{responsable.nombre}</option>
-                            )}
-                        </select>
-                    </FormatoInputs>
-                        }
+                        <FormatoInputs
+                        width={90}
+                        marginleft={"0"}
+                        >
+                            <FormLabels >Responsable:</FormLabels>
+                            <select value={responsableId ?? undefined} onChange={handleResponsableChange} className="textInputs arrowChange">
+                                <option >Elige al Responsable...</option>
+                                {responsables.map((responsable) =>
+                                    <option key={responsable.id} value={responsable.id}>{responsable.nombre}</option>
+                                )}
+                            </select>
+                        </FormatoInputs>
+                    }
                     <FormatoInputs
-                     width={95}
-                   >
+                        width={90}
+                        marginleft={"0"}
+                    >
                         <FormLabels >Orden de compra</FormLabels>
                         <input className="textInputs"
                             onChange={handleOrdenCompra}
