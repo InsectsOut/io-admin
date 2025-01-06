@@ -4,15 +4,15 @@ import { Database, Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
 import { createClient } from "@supabase/supabase-js";
 import { useParams } from 'react-router-dom';
-import { CardContainer, ReturnButton } from "./ServiciosCard";
+import { CardContainer } from "./rehusableComponents/CardContainer";
 import { DetailsTitle } from "./ServiciosCard";
-import { CardInputs } from "./ServiciosCard";
 import { InputsContainer } from "./ServiciosCard";
 import { mainStyle } from "./ServiciosCard";
 import { DetallesTitulo } from "./ServiciosCard";
 import { StyledButton } from './FormComponents';
 import { supabase } from './utils/ClientSupabase';
 import { useEffect, useState } from "react";
+import { CardInputs } from "./rehusableComponents/CardInputs";
 type Cliente = Tables<"Clientes">
 type Responsable = Tables<"Responsables">
 type Servicio = Tables<"Servicios">

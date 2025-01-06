@@ -10,7 +10,7 @@ height: 1.732rem;
 display:flex;
 justify-content:right;
 gap:1rem;
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   width:100%;
   justify-content:space-between;
   margin-bottom:1rem;
@@ -34,7 +34,7 @@ border-radius: 4.18367px;
 :hover{
 cursor: pointer;
 }
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   justify-content:space-between;
   margin-bottom:1rem;
   background:none;

@@ -26,7 +26,7 @@ export const ServiciosContainer = styled.div /*style*/ `
 width:100vw;
 display:flex;
 flex-direction:column;
-@media (max-width: 820px) {
+@media (max-width: 900px) {
 align-items:center;
 
   }
@@ -72,7 +72,7 @@ text-align:left;
 margin-left:5.875rem;
 margin-bottom:0;
 color: #0D4E80;
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   margin-left:0px;
   margin-bottom:1rem;
 
@@ -84,7 +84,7 @@ align-self:flex-start;
 justify-content:flex-start;
 width:100% ;
 gap: .5rem;
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   margin-left:0px;
   width:85% ;
 align-self:center;
@@ -98,8 +98,8 @@ display:flex;
 gap:.5rem;
 justify-content:space-between;
 width:85%;
-@media (max-width: 820px) {
-max-width:820px;
+@media (max-width: 900px) {
+max-width:900px;
 margin-left:0px;
 }
 
@@ -177,7 +177,7 @@ box-shadow: inset 0px 4.82759px 4.82759px rgba(0, 0, 0, 0.25);
 border-radius: .375rem;
 margin-left:5.875rem;
 color:#838383;
-@media (max-width: 820px) {
+@media (max-width: 900px) {
   margin-left:0px;
 }
 `
@@ -337,7 +337,7 @@ export const ServiciosSelectContainer = styled.div /*style*/ `
   display:flex;
   flex-direction:column;
   gap:.5rem;
-  @media (max-width: 820px) {
+  @media (max-width: 900px) {
   margin-left:0px;
 }
 `
@@ -352,8 +352,8 @@ export const ServiciosElement1 = styled.div<{ screen_width?: number }> /*style*/
 display:flex;
 color:#2395FF;
 gap:2rem;
-gap:${props => (props.screen_width && props.screen_width >= 820 ? "2rem" : "1rem")};
-width:${props => (props.screen_width && props.screen_width >= 820 ? "37%" : "75%")};
+gap:${props => (props.screen_width && props.screen_width >= 900 ? "2rem" : "1rem")};
+width:${props => (props.screen_width && props.screen_width >= 900 ? "37%" : "75%")};
 height: 3.35125rem;
   justify-content:space-between;
   align-items:center;
@@ -373,7 +373,7 @@ export const ServiciosElement2 = styled.div<{ screen_width?: number }> /*style*/
 display:flex;
 align-items:center;
 justify-content:center;
-width:${props => (props.screen_width && props.screen_width >= 820 ? "23%" : "45%")};
+width:${props => (props.screen_width && props.screen_width >= 900 ? "23%" : "45%")};
 height: 3.35125rem;
 color:#727272;
 .primerSector{
@@ -410,12 +410,12 @@ export const ServiciosElement4 = styled.div<{ screen_width?: number, swipeActiat
 display:flex;
 justify-content:left;
 align-items:center;
-width:${props => (props.screen_width && props.screen_width >= 820 ? "5%" : "15%")};
+width:${props => (props.screen_width && props.screen_width >= 900 ? "5%" : "15%")};
 height: 3.35125rem;
-background:${props => (props.screen_width && props.screen_width >= 820 ? "none" : "red")};
+background:${props => (props.screen_width && props.screen_width >= 900 ? "none" : "red")};
 #borrarServicio{
   all:unset;
-  display:${props => (props.screen_width && props.screen_width >= 820 ? "block" : "none")};
+  display:${props => (props.screen_width && props.screen_width >= 900 ? "block" : "none")};
   width:2rem;
   height:2rem;
   background:#C1716E;
@@ -441,7 +441,7 @@ right:0;
   box-shadow: ${(props) => (props.swipeActiator ? "-4px 0 8px rgba(0, 0, 0, 0.2)" : "none")}; /* Shadow to simulate behind effect */
 #borrarServicio{
   all:unset;
-  display:${props => (props.screen_width && props.screen_width >= 820 ? "block" : "none")};
+  display:${props => (props.screen_width && props.screen_width >= 900 ? "block" : "none")};
   width:2rem;
   height:2rem;
   background:#C1716E;
@@ -475,7 +475,7 @@ background-color: #2980b9;
 transform: scale(1.05); 
 color:white;
 }
-@media (max-width: 820px) {
+@media (max-width: 900px) {
 
 margin-top:3rem;
 width:100%;
@@ -483,8 +483,8 @@ width:100%;
 
 `
 export const FolioLink = styled(Link) <{ screen_width?: number, setWidth?: string }> /*style*/ `
-width: ${(props) =>props.screen_width && props.screen_width > 820 ? "50%" : props.setWidth};
-max-width: ${(props) => props.screen_width && props.screen_width > 820 ? "28.6%" : "100%"};
+width: ${(props) => props.screen_width && props.screen_width > 900 ? "50%" : props.setWidth};
+max-width: ${(props) => props.screen_width && props.screen_width > 900 ? "28.6%" : "100%"};
 all:unset;
 &:hover{
 cursor: pointer;
@@ -496,12 +496,12 @@ export const FiltrosLeft = styled.div /*style*/ `
 display:flex;
 gap:.5rem;
 width:100%;
-@media (max-width: 820px) {
+@media (max-width: 900px) {
 justify-content:space-between;
 }
 `
 export const FiltrosRight = styled.div /*style*/ `
-@media (max-width: 820px) {
+@media (max-width: 900px) {
 width:85%;
 }
 `
@@ -661,6 +661,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
         .filter("organizacion", "eq", props.organizacion)
+        .order('fecha_servicio', { ascending: false })
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
       if (barraBusqueda !== "") {
         query = isNaN(parseInt(barraBusqueda))
@@ -687,6 +688,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       console.error("An unexpected error occurred:", error);
     }
   }
+
   const fetchConteo = async () => {
 
     const { count } = await supabase
@@ -750,6 +752,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       let query = supabase
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
+        .order('fecha_servicio', { ascending: false })
         .filter("organizacion", "eq", props.organizacion)
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
@@ -871,7 +874,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     }
     else {
       // Otherwise, show the modal at the new position
-      if (window.innerWidth <= 820 && target.id === "estatusFilter") {
+      if (window.innerWidth <= 900 && target.id === "estatusFilter") {
         newPosition.left -= 100
         console.log(newPosition.left)
         setModalPosition(newPosition);
@@ -1188,16 +1191,16 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                         <button className="actionButtonsStyles" id="limpiar"
                           onClick={() => { handleClearSelection() }}
                         >Limpiar</button>
-                        <button 
-                        style={{color:"white"}}
-                        className="actionButtonsStyles" id="aplicar" onClick={() => {
-                          handleSetText()
-                            .then(() => {
-                              //filterServicios()
-                              handlePageSetter();
-                              setIsRotated4(false);
-                            });
-                        }}>Aplicar</button>
+                        <button
+                          style={{ color: "white" }}
+                          className="actionButtonsStyles" id="aplicar" onClick={() => {
+                            handleSetText()
+                              .then(() => {
+                                //filterServicios()
+                                handlePageSetter();
+                                setIsRotated4(false);
+                              });
+                          }}>Aplicar</button>
                       </div>
                     </ModalContentBottom>
                   </>
@@ -1205,7 +1208,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
               </ModalContainer>
             )}
           </FiltrosLeft>
-          {screenWidth > 820 &&
+          {screenWidth > 900 &&
 
 
             <div >
@@ -1217,7 +1220,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
             </div>
           }
         </FiltrosContainer>
-        {screenWidth <= 820 &&
+        {screenWidth <= 900 &&
           <FiltrosRight>
             <PaginationComponent
               currentPage={currentPage}
@@ -1230,7 +1233,6 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
 
           {servicios
-            .sort((a, b) => new Date(b.fecha_servicio).getTime() - new Date(a.fecha_servicio).getTime())
             .map((servicio) => (
 
               <ServiciosElement
@@ -1242,13 +1244,13 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
                 <ServiciosElement1 style={{ textAlign: "left" }}>
                   <div
-                   style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "40%" }}
+                    style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "40%" }}
                   >
-                  <FolioLink className="primerSector" style={{ maxHeight: "3.351rem", textAlign: "left" }}
-                    setWidth={"85%"}
-                    to={`${location.pathname}/${servicio.folio}`}>
-                    {screenWidth > 820 ? "#Folio:" : <strong>#</strong>} {servicio.folio}
-                  </FolioLink>
+                    <FolioLink className="primerSector" style={{ maxHeight: "3.351rem", textAlign: "left" }}
+                      setWidth={"85%"}
+                      to={`${location.pathname}/${servicio.folio}`}>
+                      {screenWidth > 900 ? "#Folio:" : <strong>#</strong>} {servicio.folio}
+                    </FolioLink>
                   </div>
                   <div
                     style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left", width: "60%" }}
@@ -1257,14 +1259,14 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       setWidth={"85%"}
                       to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
                   </div>
-                  {screenWidth > 820 &&
+                  {screenWidth > 900 &&
                     <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
                   }
                 </ServiciosElement1>
                 <ServiciosElement2>
                   <h3 className="primerSector"
                     style={{ fontWeight: "bold" }}
-                  >{screenWidth > 820 ? "Fecha" : <BsCalendarDate></BsCalendarDate>} </h3>
+                  >{screenWidth > 900 ? "Fecha" : <BsCalendarDate></BsCalendarDate>} </h3>
                   <h3 className="primerSector">{servicio.fecha_servicio} </h3>
                 </ServiciosElement2>
                 <ServiciosElement3>
@@ -1277,11 +1279,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       ? (<FaRegCheckCircle color="green" />)
                       : (<MdDoNotDisturb color="red" />)}
                   </h3>
-                  {screenWidth > 820 &&
+                  {screenWidth > 900 &&
                     <h3 className="primerSector"> {servicio.tipo_servicio}</h3>
                   }
                 </ServiciosElement3>
-                {screenWidth > 820 &&
+                {screenWidth > 900 &&
                   <ServiciosElement4
                     screen_width={screenWidth}
                   >
@@ -1296,7 +1298,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     </button>
                   </ServiciosElement4>
                 }
-                {screenWidth < 820 &&
+                {screenWidth < 900 &&
                   <ServiciosElement5
                     screen_width={screenWidth}
                     swipeActiator={swipedItems[servicio.id]}

@@ -5,9 +5,10 @@ import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
 import { MdFileUpload } from "react-icons/md";
 import { useParams } from 'react-router-dom';
-import { CardContainer, ReturnButton } from "./ServiciosCard";
+import {  ReturnButton } from "./ServiciosCard";
+import { CardContainer } from "./rehusableComponents/CardContainer";
 import { DetailsTitle } from "./ServiciosCard";
-import { CardInputs } from "./ServiciosCard";
+import { CardInputs } from './rehusableComponents/CardInputs';
 import { InputsContainer } from "./ServiciosCard";
 import { DetallesTitulo } from "./ServiciosCard";
 import ResponsableCard from "./ResponsableCard";
@@ -33,11 +34,12 @@ type StyledButtonProps = {
     color?: string
     background?: string
     justify?: string
+    gap?:number
 
 }
 
 
-const ButtonComponents = styled.div<StyledButtonProps>/*style*/`
+export const ButtonComponents = styled.div<StyledButtonProps>/*style*/`
 width:${props => (props.width)};
 background:${props => (props.background)};
 height:${props => (props.height)};
@@ -50,7 +52,11 @@ display:flex;
 align-items:center;
 padding-left:.5rem;
 padding-right:.5rem;
+gap: ${props => (props.gap ? `${props.gap}rem` : 0 )};
 justify-content:${props => (props.justify)};
+&:hover{
+cursor:pointer;
+}
 p{
 margin:0;
 }
@@ -65,14 +71,12 @@ gap:2.94rem;
 .selectTag{
 display:flex;
 gap:.25rem;
-;
 }
 .genInfo{}
 .workInfo{}
 .infoButtons{
 width:25%;
 background:#0D4E80;
-height:% ;
 border-radius: 0.25rem;
 cursor:pointer;
 box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
@@ -544,6 +548,7 @@ const EmpleadosCard = () => {
     
     },[])
    
+    
 
 
 

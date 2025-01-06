@@ -4,7 +4,7 @@ import { Titulo } from "./Servicios";
 import { useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from 'react-router-dom'
-import { CardInputs } from "./ServiciosCard";
+import { CardInputs } from './rehusableComponents/CardInputs';
 import { supabase } from "./utils/ClientSupabase";
 
 const SearchButtonLink = styled.button`
