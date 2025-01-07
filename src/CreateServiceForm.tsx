@@ -64,12 +64,15 @@ height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
 @media (max-width: 900px) {
 width:95%;
-}
+overflow:scroll;
+min-height:99%;
 `
 
 const CreateContainer = styled(ServiciosContainer) /*style*/ `
 @media (max-width: 900px) {
 width:100vw;
+overflow:hidden;
+max-height:90vh;
 }
 .createForm{
 align-self:center;
@@ -187,13 +190,13 @@ background: none;
 border-radius: 0.215379rem; 
 width:  ${props => (props.wid ?? "12.635625rem")};
 `
-export const Horario = styled.input /*style*/ `
+export const Horario = styled.input<{ width?: string }>  /*style*/ `
  
 font-style: normal;
 font-weight: 400;
 font-size: 15px;
 line-height: 20px;
-text-align:center;
+text-align:left;
 padding-left:1rem;
 color: #838383;
 width:6.063rem;
@@ -205,16 +208,32 @@ margin-top: .25rem;
 &::-webkit-calendar-picker-indicator{
   filter: invert(100%);
 }
+
+@media (max-width: 900px) {
+width:  ${props => (props.width ?? "6.063rem")};
+display:flex;
+align-items:center;
+justify-content:left;
+}
 `
-export const TimeInput = styled.div`
+export const TimeInput = styled.div<{marginTop?:string, marginTopTablet?:string}> /*style*/`
+display:flex;
+flex-direction:column;
+margin-top: ${(props) => props.marginTop ? props.marginTop : "1rem"};
+
+@media (max-width: 900px) {
+    margin-top: ${(props) => props.marginTopTablet ? props.marginTopTablet : "1rem"};
+
+} 
+
+`
+export const FechaInput = styled.div<{flexDir:string}> /*style*/ `
 display:flex;
 flex-direction:column;
 
-`
-export const FechaInput = styled.div /*style*/ `
-display:flex;
-flex-direction:column;
-
+@media (max-width: 900px) {
+flex-direction: ${(props) => props.flexDir ? props.flexDir : "column"};
+} 
 .dateInputContainer{
 background:white;
 border: 0.071793rem solid #727272; 
@@ -472,6 +491,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
         <CreateContainer>
             <Titulo>Servicios</Titulo>
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo servicio, complete el siguiente formulario.</FormHeader>
+            <div className="detailsContainer createService">
                 <CreateServicioForm className="oli">
                     <FormatoInputs
                         width={90}
@@ -612,6 +632,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         <SearchButtonLink type="button" onClick={addServicio}>Registrar</SearchButtonLink>
                     </div>
                 </CreateServicioForm>
+                </div>
             </CreateFormContainer>
         </CreateContainer >
     )

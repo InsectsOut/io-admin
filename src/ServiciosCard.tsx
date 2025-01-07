@@ -42,8 +42,9 @@ color: #000000;
 margin-bottom:unset;
 margin-top:0;
 `
-export const InputsContainer = styled(FormatoInputs) /*style*/`
-flex-direction:column;
+export const InputsContainer = styled(FormatoInputs)<{flexDir:string}> /*style*/`
+flex-direction: ${(props) => props.flexDir ? props.flexDir : "column"};
+
 display:flex;
 justify-content:left;
 margin-left:unset;
@@ -53,6 +54,9 @@ gap:.25rem;
       display: none !important;
     }
   }
+  @media (max-width: 900px) {
+flex-direction: ${(props) => props.flexDir ? props.flexDir : "column"};
+} 
 `
 const iconStyle = {
     backgroundImage: "url('data:image/svg+xml;utf8,<svg fill=\"black\" height=\"24\" viewBox=\"0 0 24 24\" width=\"24\" xmlns=\"http://www.w3.org/2000/svg\"><path d=\"M7 10l5 5 5-5z\"/><path d=\"M0 0h24v24H0z\" fill=\"none\"/></svg>')",
@@ -143,7 +147,7 @@ const ServiciosCardContainer = styled.div /*style*/ `
 display:flex;
 flex-direction:column;
 position: relative;
-
+overflow:visible;
 
 
 .responsableCard{
@@ -165,6 +169,7 @@ display: none;
 }
 @media (max-width: 900px) {
     align-items:center;
+    overflow: hidden;
   }
 
 `
@@ -552,7 +557,7 @@ const ServiciosCard = () => {
                 .filter("cliente_id", "eq", cliente_id)
             if (data) {
                 setDireccion(data)
-                setDireccion_id(data[0].id.toString())
+                setDireccion_id(data[0]?.id.toString())
 
             }
             if (error) {
@@ -600,15 +605,18 @@ const ServiciosCard = () => {
             )}
             <ServiciosCardContainer  >
                 <Titulo>Servicios</Titulo>
-                <CardContainer>
+                <CardContainer
+            
+                >
                     <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
                     {selectTag(infoTab)}
                     {(infoTab === "general" || screenWidth > 900) && (
                         <>
+                        <div className="detailsContainer">
                             <InputsContainer width={90}>
                                 <DetailsTitle>Folio</DetailsTitle>
                                 <CardInputs
-                                    largo="100%"
+                                    largo="calc(100%-2px)"
                                     readOnly
                                     type="text"
                                     placeholder={servicios.length > 0 ? servicios[0]?.folio : ""}
@@ -633,8 +641,12 @@ const ServiciosCard = () => {
 
                             </InputsContainer>
 
-                            <InputsContainer width={90}>
-                                <FechaInput>
+                            <InputsContainer 
+                            style={{gap:"1rem", alignItems:"center"}}
+                           flexDir={"row"}
+                            width={90}>
+                                <FechaInput
+                                >
                                     <DetailsTitle>Fecha</DetailsTitle>
                                     <div
                                         style={{
@@ -642,13 +654,14 @@ const ServiciosCard = () => {
                                             alignItems: "center",
                                             gap: "1rem",
                                             flexDirection: "row",
-                                            width: "100%",
                                             background: "white",
                                             border: "0.071793rem solid #727272",
                                             borderRadius: "0.215rem",
                                         }}
                                     >
                                         <DateInput
+                                        //@ts-ignore
+                                        wid={"12rem"}
                                             placeholderText={servicios[0]?.fecha_servicio}
                                             selected={selectedDate}
                                             onChange={(date) => {
@@ -659,13 +672,21 @@ const ServiciosCard = () => {
                                         />
                                     </div>
                                 </FechaInput>
-                                <TimeInput style={{ marginTop: "1rem" }}>
+                                <TimeInput 
+                                marginTop={"0"}
+                                marginTopTablet={"0"}
+                                style={{width:"100%"}}
+                                >
                                     <DetailsTitle>Horario</DetailsTitle>
                                     <Horario
+                                    width={"10rem"}
                                         style={{
-                                            width: "100%",
-                                            padding: "0 0 0 0",
                                             textAlign: "left",
+                                            marginTop:"0",
+                                            flexGrow:"1",
+                                            padding: "0 2rem 0 .5rem",
+                                            display:"flex",
+                                            justifyContent:"left"
                                            
                                         }}
                                         type="time"
@@ -764,6 +785,7 @@ const ServiciosCard = () => {
                                     </select>
                                 </div>
                             </InputsContainer>
+                            </div>
                         </>
                     )}
                     {infoTab === "registros" && (
@@ -774,6 +796,7 @@ const ServiciosCard = () => {
                                 color="#0D4E80"
                                 justify="center"
                                 gap={1}
+                                onClick={() => { setModalOpen(true); setAddButtonClicked(true) }}
                             >
                                 <p>Añadir registro</p> <IoIosAddCircleOutline 
                                 size={25}
