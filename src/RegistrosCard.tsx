@@ -74,6 +74,17 @@ text-align:left;
 .listElement p {
 flex-grow:1;
 }
+
+@media (max-width: 900px) {
+    .topContent{
+    display:none;
+    }
+    .bottomContent{
+    
+    }
+width:100%;
+height:53vh;    
+}
  `
 
 interface registrosProps {

@@ -107,6 +107,7 @@ margin:unset;
 type StyledButtonProps = {
     clicado?: boolean
     posy?: string
+    position?:string
 }
 
 export const StyledButton = styled.button<StyledButtonProps>`
@@ -140,6 +141,7 @@ export const ReturnButton = styled.button/*style*/ `
   right:12%;
   margin-bottom: .5rem; 
   margin-right: 1rem; 
+  left:50%;
 `
 
 
@@ -225,6 +227,12 @@ const PdfMailButton = styled.div<StyledButtonProps>`
   }
   :hover p {
   cursor:pointer;
+  }
+  @media (max-width: 900px) {
+    align-items:center;
+  position: ${props => (`${props.position}`)};
+  width:100%;
+right:0;
   }
 `;
 
@@ -802,6 +810,31 @@ const ServiciosCard = () => {
                                 size={25}
                                 />
                             </ButtonComponents>
+
+                            <RegistrosCard
+                            sendDataParent={handleChildData}
+                            openModal={() => { setModalOpen(true) }}
+                            servicioId={servicios[0]?.id}
+                        ></RegistrosCard>
+
+                        </div>
+                    )}
+                    {infoTab === "constancia" && (
+                        <div>
+                            <PdfMailButton
+                        position="relative"
+                    >
+                        <p>Registro de aplicación</p>
+                        <div style={{ width: "100%", display: "flex", justifyContent: "center", gap: ".25rem" }}
+                            onClick={handleNavigate}
+                        >
+                            <IoDownloadOutline size={20} color="#2395FF" />
+                            <p
+
+                            >Descargar PDF</p>
+                        </div>
+
+                    </PdfMailButton>
                         </div>
                     )}
                 </CardContainer>
@@ -843,7 +876,9 @@ const ServiciosCard = () => {
 
                 </div>
             </ServiciosCardContainer>
-            <ReturnButton>Regresar</ReturnButton>
+            <ReturnButton
+           onClick={() => window.history.back()}
+            >Regresar</ReturnButton>
             <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { location.reload() }) }}>
                 Guardar Cambios
             </StyledButton>
