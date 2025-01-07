@@ -46,6 +46,9 @@ align-items:flex-start;
 padding-left:1.25rem;
 padding-top:1.75rem;
 gap:1rem;
+@media (max-width: 900px) {
+width: 85%;
+}
 `
 const CloseButton = styled.div /*style*/ `
 width: 9.46px;

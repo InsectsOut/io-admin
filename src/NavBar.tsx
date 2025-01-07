@@ -16,7 +16,6 @@ const NavContainer = styled.div`
     box-shadow: 0px 7px 4px rgba(0, 0, 0, 0.25);
     justify-content: flex-start;
     align-items: center;
-
     &.iconosContainer {
       justify-content: flex-end;
     }
