@@ -23,13 +23,6 @@ type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
 type Direcciones = Tables<"Direcciones">
 
-const RegistrosAdd = styled(ButtonComponents)`
-
-`
-
-
-
-
 export const DetallesTitulo = styled.h1`
  
 font-style: normal;
@@ -42,20 +35,19 @@ color: #000000;
 margin-bottom:unset;
 margin-top:0;
 `
-export const InputsContainer = styled(FormatoInputs)<{flexDir:string}> /*style*/`
+export const InputsContainer = styled(FormatoInputs) <{ flexDir: string }>`
 flex-direction: ${(props) => props.flexDir ? props.flexDir : "column"};
-
 display:flex;
 justify-content:left;
 margin-left:unset;
 gap:.25rem;
 &.invisible {
     div {
-      display: none !important;
+        display: none !important;
     }
-  }
-  @media (max-width: 900px) {
-flex-direction: ${(props) => props.flexDir ? props.flexDir : "column"};
+}
+@media (max-width: 900px) {
+    flex-direction: ${(props) => props.flexDir ? props.flexDir : "column"};
 } 
 `
 const iconStyle = {
@@ -107,30 +99,29 @@ margin:unset;
 type StyledButtonProps = {
     clicado?: boolean
     posy?: string
-    position?:string
+    position?: string
 }
 
 export const StyledButton = styled.button<StyledButtonProps>`
-all:unset;
-  background-color: ${props => (props.clicado ? '#0D4E80' : 'gray')};
-   
-  font-weight:bold;
-  width:9.62rem;
-  position:absolute;
-  bottom:0;
-  right:0;
-  height:2.226rem;
-  margin-bottom: .5rem; 
-  margin-right: 1rem; 
-  font-size:.8rem;
-  border-radius:.359rem;
-  &:hover{
-cursor: pointer;
-background-color: ${props => (props.clicado ? '#2980b9' : 'gray')};
-transform: ${props => (props.clicado ? 'scale(1.05)' : 'scale(1)')};
-}
+    all:unset;
+    background-color: ${props => (props.clicado ? '#0D4E80' : 'gray')};
+    font-weight:bold;
+    width:9.62rem;
+    position:absolute;
+    bottom:0;
+    right:0;
+    height:2.226rem;
+    margin-bottom: .5rem; 
+    margin-right: 1rem; 
+    font-size:.8rem;
+    border-radius:.359rem;
+    &:hover {
+        cursor: pointer;
+        background-color: ${props => (props.clicado ? '#2980b9' : 'gray')};
+        transform: ${props => (props.clicado ? 'scale(1.05)' : 'scale(1)')};
+    }
 `
-export const ReturnButton = styled.button/*style*/ `
+export const ReturnButton = styled.button`
    
   background:none;
   color:#0D4E80;
@@ -144,13 +135,11 @@ export const ReturnButton = styled.button/*style*/ `
   left:50%;
 `
 
-
-const ServiciosCardContainer = styled.div /*style*/ `
+const ServiciosCardContainer = styled.div`
 display:flex;
 flex-direction:column;
 position: relative;
 overflow:visible;
-
 
 .responsableCard{
 display:flex;
@@ -247,7 +236,6 @@ const ServiciosCard = () => {
     const [servicios, setServicios] = useState<ServicioConClientes[]>([])
     const [clientes, setClientes] = useState<Cliente[]>([])
     const fechaServicioString = servicios.length > 0 ? servicios[0]?.fecha_servicio : '';
-    const fechaServicioDate = fechaServicioString ? new Date(fechaServicioString) : null;
     const [selectedTime, setSelectedTime] = useState<string | null>("null");
     const [clienteId, setClienteId] = useState<number>(0)
     const [selectedDate, setSelectedDate] = useState<null | Date>(null)
@@ -276,10 +264,6 @@ const ServiciosCard = () => {
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
     };
-    const options = [
-        { value: true, label: 'Realizado' },
-        { value: false, label: 'No Realizado' },
-    ];
 
     const handleChildData = async (data: number) => {
         setDataFromRegistros(data)
@@ -295,7 +279,7 @@ const ServiciosCard = () => {
                 .from("Servicios")
                 .select(`*,Clientes!inner(*)`)
                 .filter("folio", "eq", `${folio}`)
-            const { error, data: servicio } = await query;
+            const { data: servicio } = await query;
             if (servicio) {
                 setServicios(servicio)
                 const initialDateString = servicio[0]?.fecha_servicio;
@@ -330,10 +314,10 @@ const ServiciosCard = () => {
 
     const FetchPlagas = async () => {
         try {
-            let query = supabase
+            const query = supabase
                 .from("Plagas")
                 .select("*")
-            const { error, data: plaga } = await query;
+            const { data: plaga } = await query;
             if (plaga) {
                 setPlagas(plaga)
             }
@@ -346,10 +330,10 @@ const ServiciosCard = () => {
     }
     const FetchEmpleado = async () => {
         try {
-            let query = supabase
+            const query = supabase
                 .from("Empleados")
                 .select("*")
-            const { error, data: empleado } = await query;
+            const { data: empleado } = await query;
             if (empleado) {
                 setEmpleados(empleado)
 
@@ -368,7 +352,7 @@ const ServiciosCard = () => {
             let query = supabase
                 .from("Clientes")
                 .select("*")
-            const { error, data: cliente } = await query;
+            const { data: cliente } = await query;
             if (cliente) {
                 setClientes(cliente)
             }
@@ -429,15 +413,8 @@ const ServiciosCard = () => {
 
 
 
-    const toggleEditable = () => {
-        setReadOnly(!readOnly);
-    };
     const toggleNombreEditable = () => {
         setNombreEditable(!nombreEditable);
-    };
-    const toggleFechaEditable = () => {
-        setFechaClicked(!fechaIsClicked);
-        setFechaEditable(!fechaEditable);
     };
     const handleClientClick = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true);
@@ -471,81 +448,18 @@ const ServiciosCard = () => {
         setTipoServicio(cambio)
     }
 
-    const esRealizado = servicios[0]?.realizado;
 
-    const HandleplagaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setClicked(true)
-        const cambio = +event?.target.value
-        setTipoPlaga(cambio)
-    }
 
     const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
         setEmpleadoID(+event.target.value)
     }
 
-    const appearModal = () => {
-        if (estatusString === "Realizado") {
-            setModalOpen(true)
-
-        }
-    }
 
     const closeModal = () => {
         setModalOpen(false)
     }
-    type OptionType = {
-        value: string | number;
-        label: string;
-    };
 
-    const loadOptions = (inputValue: any, callback: any) => {
-
-        const options = plagas.map((plaga) => ({
-            value: plaga.id,
-            label: plaga.plaga,
-        }));
-        callback(options)
-    };
-
-    const handleFiltrosClick = (event: React.MouseEvent<HTMLSelectElement, MouseEvent>) => {
-        const target = event.currentTarget as HTMLSelectElement;
-        const { top, left, height } = target.getBoundingClientRect();
-
-        // Adjust the modal position by adding an offset
-        const offset = 20; // Adjust this value as needed
-        const newPosition = {
-            top: top + height + window.scrollY + offset,
-            left: left + window.scrollX
-        };
-
-        // If the modal is currently visible and the same element is clicked, hide the modal
-        if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left) {
-            setModalVisible(false);
-        } else {
-            // Otherwise, show the modal at the new position
-            setModalPosition(newPosition);
-            setModalVisible(true);
-        }
-    };
-
-    const handleSelectedPlaga = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = +event.target.value;
-
-        if (plagaSelected.includes(cambio)) {
-            setPlagaSelected(prevState => prevState.filter(item => item !== cambio));
-        } else {
-            setPlagaSelected(prevState => [...prevState, cambio]);
-        }
-    }
-
-    const handleClearSelection = () => {
-        document.querySelectorAll<HTMLInputElement>('div.optionsContainer input[type="checkbox"]').forEach((checkbox) => {
-            checkbox.checked = false;
-        });
-        setPlagaSelected([])
-    }
     const handleNavigate = () => {
         navigate(`/Servicios/pdf/${servicios[0].folio}`);
     };
@@ -558,8 +472,7 @@ const ServiciosCard = () => {
 
     const fetchDireccion = async (cliente_id: string) => {
         try {
-            let query = supabase;
-            const { data, error } = await query
+            const { data, error } = await supabase
                 .from("Direcciones")
                 .select("*")
                 .filter("cliente_id", "eq", cliente_id)
@@ -614,99 +527,126 @@ const ServiciosCard = () => {
             <ServiciosCardContainer  >
                 <Titulo>Servicios</Titulo>
                 <CardContainer
-            
+
                 >
                     <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
                     {selectTag(infoTab)}
                     {(infoTab === "general" || screenWidth > 900) && (
                         <>
-                        <div className="detailsContainer">
-                            <InputsContainer width={90}>
-                                <DetailsTitle>Folio</DetailsTitle>
-                                <CardInputs
-                                    largo="calc(100%-2px)"
-                                    readOnly
-                                    type="text"
-                                    placeholder={servicios.length > 0 ? servicios[0]?.folio : ""}
-                                />
-                            </InputsContainer>
-
-                            <InputsContainer width={90}
-                            >
-                                <DetailsTitle>Nombre</DetailsTitle>
-
-                                <select
-                                    value={clienteId}
-                                    style={{ ...mainStyle, width: "100%" }}
-                                    onChange={handleClientClick}
-                                >
-                                    {clientes.map((cliente) => (
-                                        <option value={cliente.id} key={cliente.id}>
-                                            {cliente.nombre} {cliente.apellidos}
-                                        </option>
-                                    ))}
-                                </select>
-
-                            </InputsContainer>
-
-                            <InputsContainer 
-                            style={{gap:"1rem", alignItems:"center"}}
-                           flexDir={"row"}
-                            width={90}>
-                                <FechaInput
-                                >
-                                    <DetailsTitle>Fecha</DetailsTitle>
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "center",
-                                            gap: "1rem",
-                                            flexDirection: "row",
-                                            background: "white",
-                                            border: "0.071793rem solid #727272",
-                                            borderRadius: "0.215rem",
-                                        }}
-                                    >
-                                        <DateInput
-                                        //@ts-ignore
-                                        wid={"12rem"}
-                                            placeholderText={servicios[0]?.fecha_servicio}
-                                            selected={selectedDate}
-                                            onChange={(date) => {
-                                                setSelectedDate(date);
-                                                setClicked(true);
-                                            }}
-                                            dateFormat="YYY/MM/dd"
-                                        />
-                                    </div>
-                                </FechaInput>
-                                <TimeInput 
-                                marginTop={"0"}
-                                marginTopTablet={"0"}
-                                style={{width:"100%"}}
-                                >
-                                    <DetailsTitle>Horario</DetailsTitle>
-                                    <Horario
-                                    width={"10rem"}
-                                        style={{
-                                            textAlign: "left",
-                                            marginTop:"0",
-                                            flexGrow:"1",
-                                            padding: "0 2rem 0 .5rem",
-                                            display:"flex",
-                                            justifyContent:"left"
-                                           
-                                        }}
-                                        type="time"
-                                        onChange={handleTimeChange}
-                                        value={selectedTime?.toString()}
-                                        step="9000" // Optional: Use a step of 15 minutes (900 seconds)
+                            <div className="detailsContainer">
+                                <InputsContainer width={90}>
+                                    <DetailsTitle>Folio</DetailsTitle>
+                                    <CardInputs
+                                        largo="calc(100%-2px)"
+                                        readOnly
+                                        type="text"
+                                        placeholder={servicios.length > 0 ? servicios[0]?.folio : ""}
                                     />
-                                </TimeInput>
-                            </InputsContainer>
+                                </InputsContainer>
 
-                            <InputsContainer width={90}>
-                                <div style={{ display: "flex", flexDirection: "row" }}>
+                                <InputsContainer width={90}
+                                >
+                                    <DetailsTitle>Nombre</DetailsTitle>
+
+                                    <select
+                                        value={clienteId}
+                                        style={{ ...mainStyle, width: "100%" }}
+                                        onChange={handleClientClick}
+                                    >
+                                        {clientes.map((cliente) => (
+                                            <option value={cliente.id} key={cliente.id}>
+                                                {cliente.nombre} {cliente.apellidos}
+                                            </option>
+                                        ))}
+                                    </select>
+
+                                </InputsContainer>
+
+                                <InputsContainer
+                                    style={{ gap: "1rem", alignItems: "center" }}
+                                    flexDir={"row"}
+                                    width={90}>
+                                    <FechaInput
+                                    >
+                                        <DetailsTitle>Fecha</DetailsTitle>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "center",
+                                                gap: "1rem",
+                                                flexDirection: "row",
+                                                background: "white",
+                                                border: "0.071793rem solid #727272",
+                                                borderRadius: "0.215rem",
+                                            }}
+                                        >
+                                            <DateInput
+                                                //@ts-ignore
+                                                wid={"12rem"}
+                                                placeholderText={servicios[0]?.fecha_servicio}
+                                                selected={selectedDate}
+                                                onChange={(date) => {
+                                                    setSelectedDate(date);
+                                                    setClicked(true);
+                                                }}
+                                                dateFormat="YYY/MM/dd"
+                                            />
+                                        </div>
+                                    </FechaInput>
+                                    <TimeInput
+                                        marginTop={"0"}
+                                        marginTopTablet={"0"}
+                                        style={{ width: "100%" }}
+                                    >
+                                        <DetailsTitle>Horario</DetailsTitle>
+                                        <Horario
+                                            width={"10rem"}
+                                            style={{
+                                                textAlign: "left",
+                                                marginTop: "0",
+                                                flexGrow: "1",
+                                                padding: "0 2rem 0 .5rem",
+                                                display: "flex",
+                                                justifyContent: "left"
+
+                                            }}
+                                            type="time"
+                                            onChange={handleTimeChange}
+                                            value={selectedTime?.toString()}
+                                            step="9000" // Optional: Use a step of 15 minutes (900 seconds)
+                                        />
+                                    </TimeInput>
+                                </InputsContainer>
+
+                                <InputsContainer width={90}>
+                                    <div style={{ display: "flex", flexDirection: "row" }}>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                alignItems: "flex-start",
+                                                gap: ".25rem",
+                                                flexDirection: "column",
+                                                width: "100%",
+                                            }}
+                                        >
+                                            <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
+                                            <select
+                                                style={{ ...mainStyle, width: "100%" }}
+                                                value={direccion_id}
+                                                onChange={handleDireccionChange}
+                                            >
+                                                {dirección.map((options) => (
+                                                    <option value={options.id} key={options.id}>
+                                                        {options.calle} {options.ciudad} {options.colonia}{" "}
+                                                        {options.numero_ext} {options.codigo_postal}
+                                                    </option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    </div>
+                                </InputsContainer>
+
+                                <InputsContainer width={90}>
                                     <div
                                         style={{
                                             display: "flex",
@@ -716,83 +656,56 @@ const ServiciosCard = () => {
                                             width: "100%",
                                         }}
                                     >
-                                        <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
+                                        <DetailsTitle style={{ width: "100%" }}>
+                                            Tipo de Servicio
+                                        </DetailsTitle>
                                         <select
                                             style={{ ...mainStyle, width: "100%" }}
-                                            value={direccion_id}
-                                            onChange={handleDireccionChange}
+                                            value={tipoServicio}
+                                            onChange={tipoServicioChange}
                                         >
-                                            {dirección.map((options) => (
-                                                <option value={options.id} key={options.id}>
-                                                    {options.calle} {options.ciudad} {options.colonia}{" "}
-                                                    {options.numero_ext} {options.codigo_postal}
+                                            {servicioOptions.map((options) => (
+                                                <option value={options.value} key={options.id}>
+                                                    {options.label}
                                                 </option>
                                             ))}
                                         </select>
                                     </div>
-                                </div>
-                            </InputsContainer>
+                                </InputsContainer>
 
-                            <InputsContainer width={90}>
-                                <div
-                                    style={{
-                                        display: "flex",
-                                        alignItems: "flex-start",
-                                        gap: ".25rem",
-                                        flexDirection: "column",
-                                        width: "100%",
-                                    }}
+                                <InputsContainer width={90}>
+                                    <DetailsTitle>Aplicador Responsable</DetailsTitle>
+                                    <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
+                                        <select
+                                            value={empleadoId ?? undefined}
+                                            style={{ ...mainStyle, width: "100%" }}
+                                            onChange={handleResponsableChange}
+                                        >
+                                            {!empleadoId && <option>Elegir al técnico responsable...</option>}
+                                            {empleados.map((empleado) => (
+                                                <option value={empleado.id} key={empleado.id}>
+                                                    {empleado.nombre}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                </InputsContainer>
+
+                                <InputsContainer
+                                    width={90}
                                 >
-                                    <DetailsTitle style={{ width: "100%" }}>
-                                        Tipo de Servicio
-                                    </DetailsTitle>
-                                    <select
-                                        style={{ ...mainStyle, width: "100%" }}
-                                        value={tipoServicio}
-                                        onChange={tipoServicioChange}
-                                    >
-                                        {servicioOptions.map((options) => (
-                                            <option value={options.value} key={options.id}>
-                                                {options.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </InputsContainer>
-
-                            <InputsContainer width={90}>
-                                <DetailsTitle>Aplicador Responsable</DetailsTitle>
-                                <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
-                                    <select
-                                        value={empleadoId ?? undefined}
-                                        style={{ ...mainStyle, width: "100%" }}
-                                        onChange={handleResponsableChange}
-                                    >
-                                        {!empleadoId && <option>Elegir al técnico responsable...</option>}
-                                        {empleados.map((empleado) => (
-                                            <option value={empleado.id} key={empleado.id}>
-                                                {empleado.nombre}
-                                            </option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </InputsContainer>
-
-                            <InputsContainer
-                                width={90}
-                            >
-                                <DetailsTitle>Estatus</DetailsTitle>
-                                <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
-                                    <select
-                                        value={estatusString}
-                                        style={{ ...mainStyle, width: "100%" }}
-                                        onChange={handleEstatusChange}
-                                    >
-                                        <option value={"No realizado"}>No Realizado</option>
-                                        <option value={"Realizado"}>Realizado</option>
-                                    </select>
-                                </div>
-                            </InputsContainer>
+                                    <DetailsTitle>Estatus</DetailsTitle>
+                                    <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
+                                        <select
+                                            value={estatusString}
+                                            style={{ ...mainStyle, width: "100%" }}
+                                            onChange={handleEstatusChange}
+                                        >
+                                            <option value={"No realizado"}>No Realizado</option>
+                                            <option value={"Realizado"}>Realizado</option>
+                                        </select>
+                                    </div>
+                                </InputsContainer>
                             </div>
                         </>
                     )}
@@ -806,35 +719,35 @@ const ServiciosCard = () => {
                                 gap={1}
                                 onClick={() => { setModalOpen(true); setAddButtonClicked(true) }}
                             >
-                                <p>Añadir registro</p> <IoIosAddCircleOutline 
-                                size={25}
+                                <p>Añadir registro</p> <IoIosAddCircleOutline
+                                    size={25}
                                 />
                             </ButtonComponents>
 
                             <RegistrosCard
-                            sendDataParent={handleChildData}
-                            openModal={() => { setModalOpen(true) }}
-                            servicioId={servicios[0]?.id}
-                        ></RegistrosCard>
+                                sendDataParent={handleChildData}
+                                openModal={() => { setModalOpen(true) }}
+                                servicioId={servicios[0]?.id}
+                            ></RegistrosCard>
 
                         </div>
                     )}
                     {infoTab === "constancia" && (
                         <div>
                             <PdfMailButton
-                        position="relative"
-                    >
-                        <p>Registro de aplicación</p>
-                        <div style={{ width: "100%", display: "flex", justifyContent: "center", gap: ".25rem" }}
-                            onClick={handleNavigate}
-                        >
-                            <IoDownloadOutline size={20} color="#2395FF" />
-                            <p
+                                position="relative"
+                            >
+                                <p>Registro de aplicación</p>
+                                <div style={{ width: "100%", display: "flex", justifyContent: "center", gap: ".25rem" }}
+                                    onClick={handleNavigate}
+                                >
+                                    <IoDownloadOutline size={20} color="#2395FF" />
+                                    <p
 
-                            >Descargar PDF</p>
-                        </div>
+                                    >Descargar PDF</p>
+                                </div>
 
-                    </PdfMailButton>
+                            </PdfMailButton>
                         </div>
                     )}
                 </CardContainer>
@@ -877,7 +790,7 @@ const ServiciosCard = () => {
                 </div>
             </ServiciosCardContainer>
             <ReturnButton
-           onClick={() => window.history.back()}
+                onClick={() => window.history.back()}
             >Regresar</ReturnButton>
             <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { location.reload() }) }}>
                 Guardar Cambios

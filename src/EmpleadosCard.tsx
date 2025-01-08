@@ -1,11 +1,11 @@
 
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
 import { MdFileUpload } from "react-icons/md";
 import { useParams } from 'react-router-dom';
-import {  ReturnButton } from "./ServiciosCard";
+import { ReturnButton } from "./ServiciosCard";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { DetailsTitle } from "./ServiciosCard";
 import { CardInputs } from './rehusableComponents/CardInputs';
@@ -17,14 +17,9 @@ import { supabase } from "./utils/ClientSupabase";
 import FileUpload from "./Uploader";
 import FileDownloader from "./FileDownloader";
 import { DateInput } from "./CreateServiceForm";
-import { useNavigate } from 'react-router-dom'
 
-
-type Servicio = Tables<"Servicios">
-type Cliente = Tables<"Clientes">
 type Empleado = Tables<"Empleados">
-type DocsEmpleado = Tables<"Documentos_empleados">;
-
+type DocsEmpleado = Tables<"DocumentosEmpleados">;
 type Empleado_Con_Docs = DocsEmpleado & {
     Empleado: Empleado | null
 }
@@ -34,12 +29,11 @@ type StyledButtonProps = {
     color?: string
     background?: string
     justify?: string
-    gap?:number
+    gap?: number
 
 }
 
-
-export const ButtonComponents = styled.div<StyledButtonProps>/*style*/`
+export const ButtonComponents = styled.div<StyledButtonProps>`
 width:${props => (props.width)};
 background:${props => (props.background)};
 height:${props => (props.height)};
@@ -52,7 +46,7 @@ display:flex;
 align-items:center;
 padding-left:.5rem;
 padding-right:.5rem;
-gap: ${props => (props.gap ? `${props.gap}rem` : 0 )};
+gap: ${props => (props.gap ? `${props.gap}rem` : 0)};
 justify-content:${props => (props.justify)};
 &:hover{
 cursor:pointer;
@@ -61,11 +55,11 @@ p{
 margin:0;
 }
 `
-const ClientCardContainer = styled(CardContainer) /*style*/ `
+const ClientCardContainer = styled(CardContainer)`
 height:30.625rem;
 
 `
-export const BodyContainer = styled.div /*style*/ `
+export const BodyContainer = styled.div`
 display:flex;
 gap:2.94rem;
 .selectTag{
@@ -147,7 +141,7 @@ gap:.5rem;
 
 }
 `
-const NumberInputs = styled(CardInputs) /*style*/ `
+const NumberInputs = styled(CardInputs)`
 &::-webkit-inner-spin-button,
   &::-webkit-outer-spin-button {
   appearance: none;
@@ -158,13 +152,14 @@ const NumberInputs = styled(CardInputs) /*style*/ `
   &::-webkit-outer-spin-button:hover {
     background-color: #ddd;
   }
+}
 `
 
 const inputWidthStyle = {
     width: "19.815rem"
 }
 
-export const AddResponsableCard = styled.div /*style*/ `
+export const AddResponsableCard = styled.div`
   width: 24.625rem; 
   height: 5.875rem; 
   background: #FFFFFF;
@@ -178,44 +173,20 @@ export const AddResponsableCard = styled.div /*style*/ `
   }
 `
 
-const TextoAddCard = styled.h1 /*style*/`
-  height:min-content;
-  margin:unset;
- 
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.125rem; /* 18px converted to rem */
-  line-height: 1.438rem; /* 23px converted to rem */
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #727272;
-`;
-
-
-
-
 const EmpleadosCard = () => {
-
-    interface TipoCliente {
-        tipo_cliente: string;
-    }
-
-    const [cliente, setCliente] = useState<Cliente[] | null>([])
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
-    const [email, setEmail] = useState<string>("")
     const { id } = useParams<string>()
-    const [responsable, setResponsable] = useState<string>("")
+    const [, setResponsable] = useState<string>("")
     const [isClicked, setClicked] = useState<boolean>(false);
-    const [responsableExists, setResponsableExists] = useState<boolean | null>(false)
+    const [responsableExists] = useState<boolean | null>(false)
     const [updater, setUpdater] = useState(false)
     const [infoTab, setInfoTab] = useState<string>("general")
     const [uploaderOpen, setUploaderOpen] = useState(false)
     const [valueFromChildre, setValueFromChildren] = useState<string>("")
     const [file_title, setFile_Title] = useState<string>(valueFromChildre)
-    const [empleados, setEmpleados] = useState<Empleado_Con_Docs[]>([])
-    const [docs, setDocs] = useState<DocsEmpleado[]>([])
+    const [, setEmpleados] = useState<Empleado_Con_Docs[]>([])
+    const [docs, setDocs] = useState([] as DocsEmpleado[])
     const [empladoStatus, setEmpleadoStatus] = useState<boolean>(true)
     const [empladoStatusString, setEmpleadoStatusString] = useState<string>("")
     const [fecha_nacimiento, setFechaDeNacimiento] = useState<Date | null>()
@@ -228,13 +199,12 @@ const EmpleadosCard = () => {
     const [vigencia_conducir_end, setVigenciaDeConducirEnd] = useState<Date | null>()
     const [numCuenta, setNumCuenta] = useState<number | null>()
     const [esCapacitacion, setEsCapacitacion] = useState<boolean>(false);
-    const [mostrarCapacitaciones,setMostrarCapacitaciones] = useState<boolean>(false)
-    const navigate = useNavigate()
+    const [mostrarCapacitaciones, setMostrarCapacitaciones] = useState<boolean>(false)
 
-
-    const handleMostrarCapacitaciones = () =>{
-        setMostrarCapacitaciones(prev =>!prev)
+    const handleMostrarCapacitaciones = () => {
+        setMostrarCapacitaciones(prev => !prev)
     }
+
     const handleDocTypeChange = (isCapacitacion: boolean) => {
         setEsCapacitacion(isCapacitacion);
     };
@@ -244,7 +214,6 @@ const EmpleadosCard = () => {
     const handleChildStateChange = () => {
         setClicked(true)
     }
-
 
     const handleChildValue = (nuevoValor: string) => {
         setResponsable(nuevoValor)
@@ -265,53 +234,55 @@ const EmpleadosCard = () => {
         const cambio = event.target.value
         setTelefono(cambio)
     }
+
     const handleCurpChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
         const cambio = event.target.value
         setCurp(cambio)
     }
+
     const handleImssChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
         const cambio = event.target.value
         setImss(cambio)
     }
 
-    const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = event.target.value
-        setEmail(cambio)
-    }
     const handleNumCuentaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
         const cambio = +event.target.value
         setNumCuenta(cambio)
     }
+
     const handleNoLicencia = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
         const cambio = +event.target.value
         setNumlicencia(cambio)
     }
+
     const handleIneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
         const cambio = event.target.value
         setIneNumber(cambio)
     }
+
     const setInfoTag = (event: React.MouseEvent<HTMLDivElement>, tag: string) => {
         setInfoTab(tag);
     }
-    const openUploader = (event: React.MouseEvent<HTMLDivElement>) => {
+
+    const openUploader = () => {
         setUploaderOpen(prev => !prev);
     }
+
     const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>, file_title: string, capacitacion: boolean) => {
         const file = event.target.files?.[0];
-        let now = new Date()
-        let date_name = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
-        let file_name = date_name + file_title;
+        const now = new Date()
+        const date_name = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
+        const file_name = date_name + file_title;
 
         if (file) {
             console.log('File selected:', file);
             console.log(await supabase.auth.getUser())
-            let query = supabase
+            const query = supabase
             let url = ""
             const { data, error } = await query
                 .storage
@@ -322,17 +293,17 @@ const EmpleadosCard = () => {
                 })
             console.log(data)
             //TODO CAMBIAR URL POR VARIABLE DE DESARROLLO
-            url = "https://stnrrgqnedpadgelrkbx.supabase.co/storage/v1/object/public/documentos_empleados/" + data?.path
+            url = `https://stnrrgqnedpadgelrkbx.supabase.co/storage/v1/object/public/documentos_empleados/${data?.path}`
             try {
 
-                let query = supabase.from("Documentos_empleados")
-                const { data, error } = await query
+                const query = supabase.from("Documentos_empleados")
+                const { error } = await query
 
                     .insert([
                         {
 
                             nombre: file_title,
-                            url: url,
+                            url,
                             id_empleado: id,
                             es_capacitacion: capacitacion
 
@@ -353,45 +324,45 @@ const EmpleadosCard = () => {
             if (error) {
                 console.log(error);
             }
+            return;
 
 
-        } else {
-            console.log('No file selected');
         }
+        console.log('No file selected');
     }
 
     const fetchEmpleados = async (id: any) => {
         try {
-            let query = supabase
+            const query = supabase
             const { data, error } = await query
                 .from("Empleados")
                 .select(`*`)
                 .eq("id", id)
 
             if (!error) {
-                const { data: docsDat, error:docsError } = await query
-                .from("Documentos_empleados")
-                .select(`*`)
-                .eq("id_empleado", id)
-                if (!docsError){
+                const { data: docsDat, error: docsError } = await query
+                    .from("Documentos_empleados")
+                    .select(`*`)
+                    .eq("id_empleado", id)
+                if (!docsError) {
                     setEmpleados(docsDat as any)
                 }
                 console.log(data)
-               
-                if (data){
-                setNombre(data[0]?.nombre ?? "")
-                setTelefono(data[0]?.telefono as any)
-                setPuesto(data[0]?.puesto as string)
-                setEmpleadoStatus(data[0]?.activo as boolean)
-                setFechaDeNacimiento(data[0]?.fecha_nacimiento as Date | any)
-                setIneNumber(data[0]?.ine as string)
-                setCurp(data[0]?.curp as string)
-                setImss(data[0]?.imss as string)
-                //@ts-ignore
-                setNumCuenta(data[0]?.cuenta_bancaria as any)
-                setNumlicencia(data[0]?.licencia_de_conducir as number)
-                setVigenciaDeConducirStart(data[0]?.vigencia_conducir_start as Date | any)
-                setVigenciaDeConducirEnd(data[0]?.vigencia_conducir_end as Date | any)
+
+                if (data) {
+                    setNombre(data[0]?.nombre ?? "")
+                    setTelefono(data[0]?.telefono as any)
+                    setPuesto(data[0]?.puesto as string)
+                    setEmpleadoStatus(data[0]?.activo as boolean)
+                    setFechaDeNacimiento(data[0]?.fecha_nacimiento as Date | any)
+                    setIneNumber(data[0]?.ine as string)
+                    setCurp(data[0]?.curp as string)
+                    setImss(data[0]?.imss as string)
+                    //@ts-ignore
+                    setNumCuenta(data[0]?.cuenta_bancaria as any)
+                    setNumlicencia(data[0]?.licencia_de_conducir as number)
+                    setVigenciaDeConducirStart(data[0]?.vigencia_conducir_start as Date | any)
+                    setVigenciaDeConducirEnd(data[0]?.vigencia_conducir_end as Date | any)
                 }
             }
             console.log(error)
@@ -403,7 +374,7 @@ const EmpleadosCard = () => {
     }
     const fetchDocs = async (id: any) => {
         try {
-            let query = supabase
+            const query = supabase
             const { data, error } = await query
                 .from("Documentos_empleados")
                 .select(`*`)
@@ -411,12 +382,12 @@ const EmpleadosCard = () => {
 
             if (!error) {
                 console.log(data)
-               setDocs(data)
-            
+                setDocs(data)
+
             }
             console.log(error)
 
-          
+
         }
 
         catch (err) {
@@ -426,22 +397,22 @@ const EmpleadosCard = () => {
 
     const updateGeneralEmployeeData = async () => {
         try {
-            let query = supabase
-            const { data, error } = await query
+            const query = supabase
+            const { error } = await query
                 .from("Empleados")
                 .update([
                     {
-                        nombre: nombre,
+                        nombre,
                         activo: empladoStatus,
-                        fecha_nacimiento: fecha_nacimiento,
-                        puesto: puesto,
-                        telefono: telefono,
+                        fecha_nacimiento,
+                        puesto,
+                        telefono,
 
                     },
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
                 .select();
-                location.reload()
+            location.reload()
 
 
             if (error) {
@@ -456,17 +427,17 @@ const EmpleadosCard = () => {
     }
     const updateWorkEmployeeData = async () => {
         try {
-            let query = supabase
-            const { data, error } = await query
+            const query = supabase
+            const { error } = await query
                 .from("Empleados")
                 .update([
                     {
                         ine: ineNumber,
-                        curp: curp,
-                        imss: imss,
+                        curp,
+                        imss,
                         licencia_de_conducir: numLicencia,
-                        vigencia_conducir_start: vigencia_conducir_start,
-                        vigencia_conducir_end: vigencia_conducir_end,
+                        vigencia_conducir_start,
+                        vigencia_conducir_end,
                         cuenta_bancaria: numCuenta
 
 
@@ -474,7 +445,7 @@ const EmpleadosCard = () => {
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
                 .select();
-                location.reload()
+            location.reload()
 
             if (error) {
                 console.log(error)
@@ -516,12 +487,12 @@ const EmpleadosCard = () => {
     }
     const handlPuestoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
-        let cambio = event.target.value
+        const cambio = event.target.value
         setPuesto(cambio)
     }
     const handleEstatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
-        let cambio = event.target.value
+        const cambio = event.target.value
         setEmpleadoStatusString(cambio)
         if (cambio === "true") {
             setEmpleadoStatus(true)
@@ -543,12 +514,12 @@ const EmpleadosCard = () => {
     },
         [])
     useEffect(() => {
-      fetchDocs(id)
-    
-    
-    },[])
-   
-    
+        fetchDocs(id)
+
+
+    }, [])
+
+
 
 
 
@@ -586,9 +557,7 @@ const EmpleadosCard = () => {
                                             id="textInputs"
                                             className="textInputs"
                                             onChange={handleNameChange}
-                                            value={nombre}
-                                        >
-                                        </CardInputs>
+                                            value={nombre} />
                                     </div>
 
                                 </div>
@@ -600,36 +569,27 @@ const EmpleadosCard = () => {
                                 <NumberInputs style={inputWidthStyle} id="textInputs" className="textInputs"
                                     type="string"
                                     onChange={handleTelefonoChange}
-                                    value={telefono}
-                                >
-                                </NumberInputs>
+                                    value={telefono} />
                             </InputsContainer>
                             <InputsContainer style={{ width: "100%", background: "none" }}>
                                 <DetailsTitle>
                                     Fecha de nacimiento</DetailsTitle>
                                 <div style={{ width: "20.003rem", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", }}>
-                                    <DateInput
-
-                                        wrapperClassName="datepicker"
+                                    <DateInput wrapperClassName="datepicker"
                                         dateFormat="YYYY-MM-dd"
                                         onChange={(date) => { handleFechaDeNacimeintoChange(date); }}
-                                        selected={fecha_nacimiento}
-                                    >
-                                    </DateInput>
+                                        selected={fecha_nacimiento} />
                                 </div>
                             </InputsContainer>
                             <InputsContainer>
                                 <DetailsTitle>
                                     Puesto
                                 </DetailsTitle>
-                                <CardInputs
-                                    style={inputWidthStyle}
+                                <CardInputs style={inputWidthStyle}
                                     className="textInputs"
                                     type="text"
                                     value={puesto}
-                                    onChange={handlPuestoChange}
-                                >
-                                </CardInputs>
+                                    onChange={handlPuestoChange} />
                             </InputsContainer>
                             <InputsContainer>
                                 <DetailsTitle>
@@ -659,9 +619,7 @@ const EmpleadosCard = () => {
                                             id="textInputs"
                                             className="textInputs"
                                             onChange={handleIneChange}
-                                            value={ineNumber}
-                                        >
-                                        </CardInputs>
+                                            value={ineNumber} />
                                     </div>
 
                                 </div>
@@ -673,33 +631,25 @@ const EmpleadosCard = () => {
                                 <NumberInputs style={inputWidthStyle} id="textInputs" className="textInputs"
                                     type="text"
                                     onChange={handleCurpChange}
-                                    value={curp}
-                                >
-                                </NumberInputs>
+                                    value={curp} />
                             </InputsContainer>
                             <InputsContainer>
                                 <DetailsTitle>
                                     Alta del IMSS                        </DetailsTitle>
-                                <CardInputs
-                                    style={inputWidthStyle}
+                                <CardInputs style={inputWidthStyle}
                                     className="textInputs"
                                     type='text'
                                     onChange={handleImssChange}
-                                    value={imss}
-                                >
-                                </CardInputs>
+                                    value={imss} />
                             </InputsContainer>
                             <InputsContainer>
                                 <DetailsTitle>
                                     Cuenta bancaria                        </DetailsTitle>
-                                <CardInputs
-                                    style={inputWidthStyle}
+                                <CardInputs style={inputWidthStyle}
                                     className="textInputs"
                                     type='number'
                                     onChange={handleNumCuentaChange}
-                                    value={numCuenta}
-                                >
-                                </CardInputs>
+                                    value={numCuenta} />
                             </InputsContainer>
                             <InputsContainer style={{ width: "100%" }}>
                                 <div className="licencias">
@@ -707,14 +657,11 @@ const EmpleadosCard = () => {
                                         <DetailsTitle >
                                             No licencia
                                         </DetailsTitle>
-                                        <CardInputs
-                                            style={{ width: "100%" }}
+                                        <CardInputs style={{ width: "100%" }}
                                             className="textInputs"
                                             type="text"
                                             onChange={handleNoLicencia}
-                                            value={numLicencia}
-                                        >
-                                        </CardInputs>
+                                            value={numLicencia} />
                                     </div>
                                     <div className="licenciasInputsFormat2">
                                         <DetailsTitle>
@@ -723,26 +670,20 @@ const EmpleadosCard = () => {
                                         <div className="dateInputFormat">
                                             <div style={{ width: "45%", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", height: "2.638rem", margin: 0, display: "flex", alignItems: "center" }}>
                                                 <DateInput
-                                                    //@ts-ignore
+                                                    //@ts-ignore //@ts-ignore
                                                     wid="6.91rem"
                                                     height="2.638rem"
                                                     wrapperClassName="datepicker"
                                                     dateFormat="YYYY-MM-dd"
                                                     onChange={(date) => { handleVigenciaDeConducirStart(date); }}
-                                                    selected={vigencia_conducir_start}
-
-                                                >
-                                                </DateInput>
+                                                    selected={vigencia_conducir_start} />
                                             </div>
                                             <div style={{ width: "45%", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", height: "2.638rem", margin: 0 }}>
-                                                <DateInput
-
-                                                    wrapperClassName="datepicker"
+                                                <DateInput wrapperClassName="datepicker"
                                                     dateFormat="YYYY-MM-dd"
                                                     onChange={(date) => { handleVigenciaDeConducirEnd(date); }}
                                                     selected={vigencia_conducir_end}
-                                                >
-                                                </DateInput>
+                                                />
                                             </div>
 
                                         </div>
@@ -753,70 +694,63 @@ const EmpleadosCard = () => {
                         </>
                     }
                     {infoTab === "docs" &&
-                        <>
-                            <InputsContainer
-                                className="docsInfoContainer"
-                                style={{ positio: "relative" }}
-                            >
-                                <div className="uploaderContainer">
-                                    <ButtonComponents
-                                        background="white"
-                                        width="55%"
-                                        height="3rem"
-                                        color="#0D4E80"
-                                        justify="space-between"
-                                        onClick={(e: any) => { openUploader(e) }}
-                                    ><p>{!uploaderOpen ? "Subir un archivo" : "Ver archivos"}</p><MdFileUpload /></ButtonComponents>
-                                    <ButtonComponents
-                                        background="white"
-                                        width="30%"
-                                        height="3rem"
-                                        color="#0D4E80"
-                                        justify="space-between"
-                                        onClick={handleMostrarCapacitaciones}
-                                    ><p>{!mostrarCapacitaciones ? "Capacitaciones" : "Documentos"}</p></ButtonComponents>
-                                </div>
-                                {uploaderOpen &&
-                                    <FileUpload
-                                    onChange={async (e) => {
-                                        await uploadImage(e, file_title, esCapacitacion);
-                                        fetchDocs(id);
-                                      }}
-                                        onValueChange={handleValueChange}
-                                        onDocTypeChange={handleDocTypeChange}
-                                    ></FileUpload>
-                                }
-                                {docs
-                                 //@ts-ignore
-                                    .filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)  
-                                    .map((docs) => (
-                                        !uploaderOpen && (
-                                            <FileDownloader
-                                                file_id={docs.id}
-                                                triggerFunction={triggerFromChild}
-                                                key={docs.id}  
-                                                file_url={docs.url as string}  
-                                                file_name={docs.nombre as string}
-                                            />
-                                        )
-                                    ))}
+                        <InputsContainer
+                            className="docsInfoContainer"
+                            style={{ positio: "relative" }}
+                        >
+                            <div className="uploaderContainer">
+                                <ButtonComponents
+                                    background="white"
+                                    width="55%"
+                                    height="3rem"
+                                    color="#0D4E80"
+                                    justify="space-between"
+                                    onClick={openUploader}
+                                >
+                                    <p>{uploaderOpen ? "Ver archivos" : "Subir un archivo"}</p>
+                                    <MdFileUpload />
+                                </ButtonComponents>
+                                <ButtonComponents
+                                    background="white"
+                                    width="30%"
+                                    height="3rem"
+                                    color="#0D4E80"
+                                    justify="space-between"
+                                    onClick={handleMostrarCapacitaciones}
+                                >
+                                    <p>{mostrarCapacitaciones ? "Documentos" : "Capacitaciones"}</p>
+                                </ButtonComponents>
+                            </div>
+                            {uploaderOpen &&
+                                <FileUpload onChange={async (e) => {
+                                    await uploadImage(e, file_title, esCapacitacion);
+                                    fetchDocs(id);
+                                }}
+                                    onValueChange={handleValueChange}
+                                    onDocTypeChange={handleDocTypeChange}
+                                />
+                            }
+                            {docs.filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)
+                                .map((docs) => (
+                                    !uploaderOpen && (
+                                        <FileDownloader
+                                            file_id={docs.id}
+                                            triggerFunction={triggerFromChild}
+                                            key={docs.id}
+                                            file_url={docs.url as string}
+                                            file_name={docs.nombre as string}
+                                        />
+                                    )
+                                ))}
 
-                            </InputsContainer>
-
-
-
-                        </>
+                        </InputsContainer>
                     }
                 </ClientCardContainer>
                 {responsableExists && (
-                    <>
-                        <ResponsableCard
-                            updaterPass={updater}
-                            onValueChange={handleChildValue}
-                            onStateChange={handleChildStateChange}
-                        ></ResponsableCard>
-
-                    </>
+                    <ResponsableCard updaterPass={updater}
+                        onValueChange={handleChildValue}
+                        onStateChange={handleChildStateChange}
+                    />
                 )}
 
             </BodyContainer>

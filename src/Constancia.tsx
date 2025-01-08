@@ -9,10 +9,8 @@ type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
 type Responsables = Tables<"Responsables">
 type Registros = Tables<"RegistroAplicacion">
-type plaguicidas = Tables<"plaguicidas">
+type Productos = Tables<"Productos">
 type Direcciones = Tables<"Direcciones">
-
-
 
 // Font.register({
 //     family: 'Open Sans',
@@ -256,7 +254,7 @@ const MyDocument = () => {
         Responsables: Responsables
     };
     type RegistrosPlaguicidas = Registros & {
-        plaguicidas: plaguicidas | null
+        plaguicidas: Productos | null
     };
     const [servicio, setServicio] = useState<ServicioConClientes[]>([])
     const { folio } = useParams();
@@ -267,7 +265,7 @@ const MyDocument = () => {
     const [otraFrecuencia, setOtraFrecuencia] = useState<boolean>(false)
     const fetchServicio = async () => {
         try {
-            const { data: serv, error: error } = await supabase
+            const { data: serv } = await supabase
                 .from("Servicios")
                 .select(`*, Clientes!inner(*), Responsables!inner(*)`)
                 .filter("folio", "eq", folio)

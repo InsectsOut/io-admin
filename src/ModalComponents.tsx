@@ -8,7 +8,7 @@ import { aplicacionOptions } from "./tipo_servicios";
 import { useParams } from 'react-router-dom';
 
 
-export const RegistroModal = styled.div /*style*/ `
+export const RegistroModal = styled.div`
 position:absolute;
 width:100vw;
 height:inherit;
@@ -33,7 +33,7 @@ gap:.5rem;
 }
 `
 
-export const ModalContent = styled.div /*style*/ `
+export const ModalContent = styled.div`
 position:relative;
 width: 30.78%;
 height:55.625%;
@@ -50,7 +50,7 @@ gap:1rem;
 width: 85%;
 }
 `
-const CloseButton = styled.div /*style*/ `
+const CloseButton = styled.div`
 width: 9.46px;
 height:9.46px;
 color:#727272;
@@ -63,7 +63,7 @@ cursor: pointer;
 transform:scale(1.2)
 }
 `
-const Titulo = styled.h1 /*style*/ `
+const Titulo = styled.h1`
  
 font-style: normal;
 color:black;
@@ -74,7 +74,7 @@ display: flex;
 text-align:center;
 margin-bottom:unset;
 `
-const HojaInputs = styled.input /*style*/ `
+const HojaInputs = styled.input`
 width: 19.815rem;
 height:2.513rem;
 all:unset;
@@ -88,9 +88,10 @@ all:unset;
   &::-webkit-outer-spin-button:hover {
     background-color: #ddd;
   }
+}
 `
 
-const ModalInputs = styled(FormatoInputs) /*style*/ `
+const ModalInputs = styled(FormatoInputs)`
 margin-left:unset;
 gap:.5rem;
 
@@ -129,7 +130,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     const [registroId, setRegistroId] = useState<number>(registroApId as number)
     const [servicioId, setServicioId] = useState<number>()
     const { folio } = useParams()
-    const [addButtonState, setAddButtonState] = useState<boolean>(addBtnClicked)
+    const [addButtonState,] = useState<boolean>(addBtnClicked)
 
 
     const HandleplagaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -140,10 +141,10 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     const fetchProducto = async () => {
         try {
             const { data, error } = await supabase
-                .from("plaguicidas")
+                .from("Productos")
                 .select("*")
             if (data) {
-                await setProducto(data)
+                setProducto(data)
             }
             if (error) {
                 throw new Error(error.message)
@@ -191,7 +192,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     const fetchServicioId = async () => {
         try {
             console.log("hola", folio)
-            const { data, error } = await supabase
+            const { data, } = await supabase
                 .from("Servicios")
                 .select("id")
                 .filter("folio", "eq", folio)
@@ -220,7 +221,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
         }
 
         try {
-            const { data, error } = await supabase
+            const { data, } = await supabase
                 .from("RegistroAplicacion")
                 .select("*")
                 .order("id", { ascending: false })
@@ -229,7 +230,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
             if (data) {
                 console.log(data)
                 const [registro] = data
-           
+
                 setCantidad(registro.cantidad ?? 0)
                 setArea_aplicacion(registro.area_aplicacion ?? "")
                 setProductoId(registro?.producto_id ?? -1)
@@ -238,7 +239,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 setUnidad(registro?.unidad ?? "")
                 setRegistroId(registro?.id)
                 setTipoPlaga(registro?.tipo_plaga_id)
-              
+
             }
         }
 
@@ -258,11 +259,11 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     .update(
                         [{
                             //id:registroId,
-                            unidad: unidad,
-                            cantidad: cantidad,
-                            tipo_aplicacion: tipo_aplicacion,
+                            unidad,
+                            cantidad,
+                            tipo_aplicacion,
                             producto_id: productoId,
-                            area_aplicacion: area_aplicacion,
+                            area_aplicacion,
                             servicio_id: servicioId,
                             tipo_plaga_id: tipoPlaga
                         }] as any
@@ -281,11 +282,11 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     .insert(
                         [{
                             //id:registroId,
-                            unidad: unidad,
-                            cantidad: cantidad,
-                            tipo_aplicacion: tipo_aplicacion,
+                            unidad,
+                            cantidad,
+                            tipo_aplicacion,
                             producto_id: productoId,
-                            area_aplicacion: area_aplicacion,
+                            area_aplicacion,
                             servicio_id: servicioId,
                             tipo_plaga_id: tipoPlaga
                         }] as any
@@ -308,7 +309,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     useEffect(() => {
         console.log("h0alas")
         fetchRegistroInfo()
-        console.log("registro id" + registroApId)
+        console.log(`registro id${registroApId}`)
         console.log(addButtonState)
     }, [])
 
@@ -358,14 +359,12 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 </ModalInputs>
                 <ModalInputs style={{ width: "90%" }}>
                     <DetailsTitle>Área de aplicación</DetailsTitle>
-                    <HojaInputs
-                        style={{ overflowX: "scroll", display: "flex", flexDirection: "column", flexWrap: "wrap" }}
-                        className="textInputs"
-                        type="text"
-                        value={area_aplicacion}
-                        onChange={handleAreaChange}
-                        placeholder="Especifique el área de aplicación"
-                    ></HojaInputs>
+                    <HojaInputs style={{ overflowX: "scroll", display: "flex", flexDirection: "column", flexWrap: "wrap" }}
+                    className="textInputs"
+                    type="text"
+                    value={area_aplicacion}
+                    onChange={handleAreaChange}
+                    placeholder="Especifique el área de aplicación" />
                 </ModalInputs>
                 <ModalInputs >
                     <div style={{ display: "inline-flex", gap: "1rem" }}>
@@ -396,14 +395,12 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                 <DetailsTitle>Cantidad</DetailsTitle>
                                 <div style={{ display: "flex", gap: "1rem" }}>
                                     <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
-                                        <HojaInputs
-                                            style={{ overflowX: "scroll", display: "flex", flexDirection: "column", flexWrap: "wrap", width: "5.063rem" }}
-                                            className="textInputs"
-                                            type="number"
-                                            min={0}
-                                            onChange={handleCantidadChange}
-                                            value={cantidad}
-                                        ></HojaInputs>
+                                        <HojaInputs style={{ overflowX: "scroll", display: "flex", flexDirection: "column", flexWrap: "wrap", width: "5.063rem" }}
+                                        className="textInputs"
+                                        type="number"
+                                        min={0}
+                                        onChange={handleCantidadChange}
+                                        value={cantidad} />
                                         <SubTitles>Número</SubTitles>
                                     </div>
                                     <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>

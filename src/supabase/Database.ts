@@ -122,7 +122,7 @@ export type Database = {
           },
         ]
       }
-      Documentos_empleados: {
+      DocumentosEmpleados: {
         Row: {
           created_at: string
           es_capacitacion: boolean | null
@@ -231,6 +231,47 @@ export type Database = {
           },
         ]
       }
+      ErroresSistema: {
+        Row: {
+          created_at: string
+          descripcion: string | null
+          id: number
+          id_user: number
+          imagen: string | null
+          tipo_error: string | null
+          titulo: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          descripcion?: string | null
+          id?: number
+          id_user: number
+          imagen?: string | null
+          tipo_error?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          descripcion?: string | null
+          id?: number
+          id_user?: number
+          imagen?: string | null
+          tipo_error?: string | null
+          titulo?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ErroresSistema_id_user_fkey"
+            columns: ["id_user"]
+            isOneToOne: false
+            referencedRelation: "Empleados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Plagas: {
         Row: {
           created_at: string
@@ -249,7 +290,7 @@ export type Database = {
         }
         Relationships: []
       }
-      plaguicidas: {
+      Productos: {
         Row: {
           dosis_max: string | null
           dosis_min: string | null
@@ -321,6 +362,7 @@ export type Database = {
         Row: {
           area_aplicacion: string | null
           cantidad: number | null
+          cantidad_usada: number | null
           created_at: string
           id: number
           producto_id: number | null
@@ -333,6 +375,7 @@ export type Database = {
         Insert: {
           area_aplicacion?: string | null
           cantidad?: number | null
+          cantidad_usada?: number | null
           created_at?: string
           id?: number
           producto_id?: number | null
@@ -345,6 +388,7 @@ export type Database = {
         Update: {
           area_aplicacion?: string | null
           cantidad?: number | null
+          cantidad_usada?: number | null
           created_at?: string
           id?: number
           producto_id?: number | null
@@ -359,7 +403,7 @@ export type Database = {
             foreignKeyName: "RegistroAplicacion_producto_id_fkey"
             columns: ["producto_id"]
             isOneToOne: false
-            referencedRelation: "plaguicidas"
+            referencedRelation: "Productos"
             referencedColumns: ["id"]
           },
           {
@@ -413,7 +457,7 @@ export type Database = {
           {
             foreignKeyName: "Responsables_cliente_id_fkey"
             columns: ["cliente_id"]
-            isOneToOne: false
+            isOneToOne: true
             referencedRelation: "Clientes"
             referencedColumns: ["id"]
           },
@@ -427,6 +471,7 @@ export type Database = {
           created_at: string | null
           direccion_id: number | null
           fecha_servicio: string
+          firma_cliente: string | null
           folio: number
           frecuencia_recomendada:
             | Database["public"]["Enums"]["FrecuenciaServicio"]
@@ -455,6 +500,7 @@ export type Database = {
           created_at?: string | null
           direccion_id?: number | null
           fecha_servicio: string
+          firma_cliente?: string | null
           folio?: number
           frecuencia_recomendada?:
             | Database["public"]["Enums"]["FrecuenciaServicio"]
@@ -483,6 +529,7 @@ export type Database = {
           created_at?: string | null
           direccion_id?: number | null
           fecha_servicio?: string
+          firma_cliente?: string | null
           folio?: number
           frecuencia_recomendada?:
             | Database["public"]["Enums"]["FrecuenciaServicio"]
