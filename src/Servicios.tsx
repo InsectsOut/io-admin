@@ -244,7 +244,6 @@ font-weight: 400;
 font-size: 1.141rem;
 line-height: 24px;
 }
-}
 .optionsContainer {
 gap:.5rem;
 display:flex;

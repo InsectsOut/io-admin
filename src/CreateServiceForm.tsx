@@ -66,6 +66,7 @@ box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
 width:95%;
 overflow:scroll;
 min-height:99%;
+}
 `
 
 const CreateContainer = styled(ServiciosContainer) /*style*/ `
