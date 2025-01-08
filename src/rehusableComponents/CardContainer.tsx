@@ -10,6 +10,7 @@ border-radius: 0.718rem;
 margin-left:5.875rem;
 padding-left:1.5rem;
 padding-top:.75rem;
+padding-bottom:2rem;
 display:flex;
 flex-direction:column;
 gap:1rem;
