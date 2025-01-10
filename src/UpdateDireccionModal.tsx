@@ -110,6 +110,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = (props) => {
     const [zipCode, setZipCode] = useState<string>("")
     const [estado, setEstado] = useState<string>("")
     const [ciudad, setCiudad] = useState<string>("")
+    const [url, setUrl]= useState<string |null>("")
     const [cancelarButton, setCancelarButton] = useState<boolean>(true)
     const [direccion, setDireccion] = useState<Direccion[]>()
     const [renderStatus, setRenderStatus] = useState<string>("")
@@ -153,6 +154,9 @@ const DirerccionModal: React.FC<UpdateDirProps> = (props) => {
     const handleCiudadChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCiudad(event.target.value);
     }
+    const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setUrl(event.target.value);
+    }
 
     const FetchDireccion = async () => {
         try {
@@ -172,6 +176,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = (props) => {
                 setPiso(respuesta?.piso)
                 setZipCode(respuesta?.codigo_postal)
                 setCiudad(respuesta?.ciudad)
+                setUrl(respuesta?.ubicacion)
                 console.table(direcciones);
             }
             else {
@@ -200,6 +205,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = (props) => {
                             numero_ext: numeExt,
                             numero_int: numInt,
                             piso: piso,
+                            ubicacion:url
                         },
                     ] as any)
                     .filter("id", "eq", props.direccionId)
@@ -242,7 +248,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = (props) => {
         <>
 
             <ModalOverlay>
-                <div style={{height:`${props.renderStat  === "DELETE" ? "fit-content" : ""}`}} className="modalContainer">
+                <div style={{height:`${props.renderStat  === "DELETE" ? "fit-content" : "50%"}`}} className="modalContainer">
 
                     <DetallesTitulo id="title">
                         {props.renderStat === "UPDATE"
@@ -343,9 +349,20 @@ const DirerccionModal: React.FC<UpdateDirProps> = (props) => {
                                 >
                                 </ResCardInputs>
                             </InputsContainer>
+                            <InputsContainer style={{ width: "45%" }}>
+                                <DetailsTitle>Google maps url</DetailsTitle>
+                                <ResCardInputs
+                                    onChange={handleUrlChange}
+                                    value={url}
+                                    id="textInputs"
+                                    className="textInputs"
+                                    placeholder="Ingrese url de google"
+                                >
+                                </ResCardInputs>
+                            </InputsContainer>
 
 
-                            <div id="" onClick={() => { update().then(() => { props.closeModal(); props.fetchNewDir() }); }} className="addButton">Actualizar Dirección</div>
+                            <div className="addButton"  style={{ width: "39.164%", maxWidth:"39.164%", marginRight:"35px"}} id="" onClick={() => { update().then(() => { props.closeModal(); props.fetchNewDir() }); }} >Actualizar Dirección</div>
 
 
 
