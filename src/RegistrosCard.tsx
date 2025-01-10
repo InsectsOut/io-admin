@@ -80,7 +80,7 @@ flex-grow:1;
     display:none;
     }
     .bottomContent{
-    
+    overflow-x:hidden;
     }
 width:100%;
 height:53vh;    
@@ -92,7 +92,11 @@ interface registrosProps {
     openModal: () => void
     sendDataParent: any
 }
-
+enum registroEnums {
+    actualizar = "actualizar",
+    añadir = "añadir"
+  }
+  
 const RegistrosCard: React.FC<registrosProps> = (props) => {
     const [clicked, setClicked] = useState<boolean>(false)
     const [registros, setRegistros] = useState<RegistroAplicacion[]>([])
@@ -172,7 +176,10 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
                                 className="listElement"
                                 onClick={() => {
                                     setRegistroId(data?.id);
+                    
+                                    // Pass both `data.id` and a specific `upsertFlag` value (e.g., actualizar or añadir)
                                     handleClick(data?.id);
+                    
                                     props.openModal();
                                 }}
                             >

@@ -11,29 +11,7 @@ import { useEffect, useState } from "react";
 import DirerccionModal from "./UpdateDireccionModal";
 type Cliente = Tables<"Clientes">
 type Direccion = Tables<"Direcciones">
-
-// const SaveButton = styled.button /*style*/ `
-// all:unset;
-//   background-color: #0D4E80;
-//   display:flex;
-//   justify-content:center;
-//   align-items: center;
-//   padding:0;
-//   font-weight:bold;
-//   width:9.62rem;
-//   height:2.226rem;
-//   margin-bottom: .5rem; 
-//   margin-right: 1rem; 
-//   font-size:.8rem;
-//   border-radius:.359rem;
-//   &:hover{
-// cursor: pointer;
-// background-color: #2980b9;
-// transform: scale(1.05);
-// }
-
-// `
-
+ 
 interface ResponsableCardProps {
     onValueChange?: (nuevoValor: string) => void;
     updaterPass?: boolean;
@@ -160,6 +138,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
     const [modalOpen, setModalOpen] = useState<boolean>(false)
     const [direccionId, setDireccionId] = useState<number | null>(null)
     const [deleteRenderStatus, setDeleteRenderStatus] = useState<string>("")
+    const [url, setUrl] = useState<string>("");
+
 
 
     const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -252,12 +232,16 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
     }
 
     const handleCancelarChange = () => {
-        if (calle == "" && ciudad == "" && zipCode == "" && colonia == "" && estado == "" && numeExt == "" && numInt == "" && piso == "") {
+        if (calle == "" && ciudad == "" && zipCode == "" && colonia == "" && estado == "" && numeExt == "" && numInt == "" && piso == "" && url == "") {
             setCancelarButton(true);
         }
         else {
             setCancelarButton(false);
         }
+    }
+    const handleUrlChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        let cambio = event.target.value;
+        setUrl(cambio)
     }
 
     const FetchDireccion = async () => {
@@ -328,7 +312,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                             numero_ext: numeExt,
                             numero_int: numInt,
                             piso: piso,
-                            cliente_id: id
+                            cliente_id: id,
+                            ubicacion:url
                         },
                     ] as any)
                 if (error) {
@@ -460,6 +445,17 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                     id="textInputs"
                                     className="textInputs"
                                     placeholder="ingrese el código postal"
+                                >
+                                </ResCardInputs>
+                            </InputsContainer>
+                            <InputsContainer style={{ width: "100%" }}>
+                                <DetailsTitle>Google maps URL</DetailsTitle>
+                                <ResCardInputs
+                                    onChange={handleUrlChange}
+                                    value={url}
+                                    id="textInputs"
+                                    className="textInputs"
+                                    placeholder="ingrese la url de la dirección"
                                 >
                                 </ResCardInputs>
                             </InputsContainer>

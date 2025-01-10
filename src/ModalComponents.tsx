@@ -115,7 +115,7 @@ color: #838383;
 interface cardProps {
     closeModal?: () => void
     plagas?: any[];
-    registroApId?: number
+    registroApId?: number | null
     addBtnClicked: boolean
 }
 
@@ -211,14 +211,10 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
 
     const fetchRegistroInfo = async () => {
 
-        if (!registroId) {
+        if (!registroId || addBtnClicked ) {
             return
         }
 
-        if (addBtnClicked) {
-
-            return
-        }
 
         try {
             const { data, } = await supabase
@@ -307,7 +303,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
 
 
     useEffect(() => {
-        console.log("h0alas")
         fetchRegistroInfo()
         console.log(`registro id${registroApId}`)
         console.log(addButtonState)

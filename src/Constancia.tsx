@@ -254,7 +254,7 @@ const MyDocument = () => {
         Responsables: Responsables
     };
     type RegistrosPlaguicidas = Registros & {
-        plaguicidas: Productos | null
+        Productos: Productos | null
     };
     const [servicio, setServicio] = useState<ServicioConClientes[]>([])
     const { folio } = useParams();
@@ -297,14 +297,14 @@ const MyDocument = () => {
         try {
             const { data: reg, error: error } = await supabase
                 .from("RegistroAplicacion")
-                .select(`*, plaguicidas!inner(*)`)
+                .select(`*, Productos!inner(*)`)
                 .filter("servicio_id", "eq", servicioId)
 
             if (!reg) {
                 console.error(error)
             }
             setRegistroAp(reg as any)
-
+            console.log(reg)
         }
 
         catch (err) {
@@ -471,15 +471,15 @@ const MyDocument = () => {
                                             <Text>{registro?.area_aplicacion}</Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.plaguicidas?.nombre}</Text>
+                                            <Text>{registro?.Productos?.nombre}</Text>
                                         </View>
                                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", width: "14%", padding: 0, margin: 0 }}>
                                             <Text style={{ width: "100%", padding: 0, margin: 0, flexGrow: 1 }}>
-                                                {registro?.plaguicidas?.dosis_max ? registro?.plaguicidas?.dosis_max : ""} {registro?.plaguicidas?.dosis_min}
+                                                {registro?.Productos?.dosis_max ? registro?.Productos?.dosis_max : ""} {registro?.Productos?.dosis_min}
                                             </Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.plaguicidas?.registro}</Text>
+                                            <Text>{registro?.Productos?.registro}</Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text></Text>

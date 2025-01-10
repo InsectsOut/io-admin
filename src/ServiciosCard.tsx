@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react"
 import styled from "styled-components"
 import { IoIosAddCircleOutline } from "react-icons/io";
-import { Tables } from "../src/supabase/Database";
+import { Enums, Tables } from "../src/supabase/Database";
 import { FormatoInputs } from "./CreateServiceForm";
 import { Titulo } from "./Servicios";
 import { useParams } from 'react-router-dom';
@@ -253,7 +253,7 @@ const ServiciosCard = () => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
     const [plagaSelected, setPlagaSelected] = useState<number[]>([])
-    const [dataFromRegistros, setDataFromRegistros] = useState<number>()
+    const [dataFromRegistros, setDataFromRegistros] = useState<number | null >(null)
     const navigate = useNavigate()
     const [addButtonClicked, setAddButtonClicked] = useState(false)
     const [direccion_id, setDireccion_id] = useState<string>("")
@@ -265,9 +265,17 @@ const ServiciosCard = () => {
         Clientes: Cliente | null
     };
 
+    enum registroEnums {
+        actualizar = "actualizar",
+        añadir = "añadir"
+      }
+      
+
     const handleChildData = async (data: number) => {
+        
         setDataFromRegistros(data)
         setAddButtonClicked(false)
+        
     }
 
     const FetchServicios = async () => {
@@ -494,6 +502,10 @@ const ServiciosCard = () => {
         setInfoTab(tag);
     }
 
+    const hanldeSetData = async (data:number| null) => {
+        await setDataFromRegistros(data)
+    }
+
     const selectTag = (infoTab: string) => {
         return (
             <div className="selectTag">
@@ -517,7 +529,7 @@ const ServiciosCard = () => {
         <>
             {modalOpen && (
                 <Modal
-                    registroApId={dataFromRegistros}
+                    registroApId={addButtonClicked ? null : dataFromRegistros}
                     closeModal={closeModal}
                     plagas={plagas}
                     addBtnClicked={addButtonClicked}
@@ -710,14 +722,19 @@ const ServiciosCard = () => {
                         </>
                     )}
                     {infoTab === "registros" && (
-                        <div>
+                        <div style={{position:"relative"}}>
                             <ButtonComponents
                                 background="white"
                                 height="3rem"
                                 color="#0D4E80"
                                 justify="center"
                                 gap={1}
-                                onClick={() => { setModalOpen(true); setAddButtonClicked(true) }}
+                                onClick={() => {
+                                    hanldeSetData(null).then(() => {
+                                        setModalOpen(true);
+                                        setAddButtonClicked(true);
+                                    });
+                                }}                            
                             >
                                 <p>Añadir registro</p> <IoIosAddCircleOutline
                                     size={25}
