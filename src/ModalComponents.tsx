@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { supabase } from "./utils/ClientSupabase";
 import { aplicacionOptions } from "./tipo_servicios";
 import { useParams } from 'react-router-dom';
+import { Database, Tables } from "./supabase/Database";
 
 
 export const RegistroModal = styled.div`
@@ -119,18 +120,38 @@ interface cardProps {
     addBtnClicked: boolean
 }
 
+enum dosis_recomendada {
+    max = "max",
+    min = "min"
+  }
+
+type Productos = Tables<"Productos">
+type TipoProducto = Database["public"]["Enums"]["tipo_producto"];
+
+enum TipoProductoEnum {
+    Plaguicida = "plaguicida",
+    Trampa = "trampa",
+    Cebo = "cebo",
+    Gel = "gel",
+  }
+
+  
+
 const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnClicked }) => {
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null)
-    const [producto, setProducto] = useState<any[]>()
+    const [producto, setProducto] = useState<Productos[]>()
     const [productoId, setProductoId] = useState<number>(0)
     const [area_aplicacion, setArea_aplicacion] = useState<string>("")
     const [tipo_aplicacion, setTipo_aplicacion] = useState<string>("")
-    const [cantidad, setCantidad] = useState<number | undefined>()
+    const [cantidad, setCantidad] = useState<number | undefined>(0)
     const [unidad, setUnidad] = useState("")
     const [registroId, setRegistroId] = useState<number>(registroApId as number)
     const [servicioId, setServicioId] = useState<number>()
     const { folio } = useParams()
     const [addButtonState,] = useState<boolean>(addBtnClicked)
+    const [dosisRecomendada,setDosisRecomendada] = useState<dosis_recomendada>()
+    const [tipo_producto, setTipoProducto] = useState<TipoProducto | null>(null);
+
 
 
     const HandleplagaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -144,7 +165,9 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 .from("Productos")
                 .select("*")
             if (data) {
+                const [producto] = data
                 setProducto(data)
+                setTipoProducto(producto.tipo_de_producto);
             }
             if (error) {
                 throw new Error(error.message)
@@ -158,6 +181,10 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     const handleProductoIdChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const cambio = +event.target.value
         setProductoId(cambio)
+    }
+    const handleTipoProductoChange = (tipo:TipoProductoEnum) => {
+        setTipoProducto(tipo)
+        console.log(tipo);
     }
 
     useEffect(() => {
@@ -186,6 +213,14 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
         const cambio = event.target.value
         setUnidad(cambio)
     }
+    const handeleDosisRecomendadaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const cambio = event.target.value as dosis_recomendada
+        if (Object.values(dosis_recomendada).includes(cambio)) {
+            setDosisRecomendada(cambio);
+          } else {
+            console.error(`Invalid value: ${cambio}`);
+          }
+    }
 
 
 
@@ -200,7 +235,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
             if (data) {
                 const [id] = data
                 setServicioId(id?.id)
-                //setTipoPlaga(id?.tipo_plaga_id)
             }
         }
 
@@ -235,6 +269,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 setUnidad(registro?.unidad ?? "")
                 setRegistroId(registro?.id)
                 setTipoPlaga(registro?.tipo_plaga_id)
+                setDosisRecomendada(registro?.dosis_recomendada as dosis_recomendada)
+
 
             }
         }
@@ -261,7 +297,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                             producto_id: productoId,
                             area_aplicacion,
                             servicio_id: servicioId,
-                            tipo_plaga_id: tipoPlaga
+                            tipo_plaga_id: tipoPlaga,
+                            dosis_recomendada:dosisRecomendada ?? null
                         }] as any
                     )
                     .filter("id", "eq", registroId)
@@ -284,7 +321,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                             producto_id: productoId,
                             area_aplicacion,
                             servicio_id: servicioId,
-                            tipo_plaga_id: tipoPlaga
+                            tipo_plaga_id: tipoPlaga,
+                            dosis_recomendada:dosisRecomendada ?? null
                         }] as any
 
                     )
@@ -305,7 +343,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     useEffect(() => {
         fetchRegistroInfo()
         console.log(`registro id${registroApId}`)
-        console.log(addButtonState)
     }, [])
 
 
@@ -370,13 +407,22 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                 <DetailsTitle>Producto</DetailsTitle>
                                 <select
                                     style={mainStyle}
-                                    onChange={handleProductoIdChange}
+                                    onChange={(e) => {
+                                        const selectedProductId = +e.target.value;
+                                        const selectedProduct = producto?.find((p) => p.id === selectedProductId);
+                                        if (selectedProduct) {
+                                          handleTipoProductoChange(selectedProduct.tipo_de_producto as TipoProductoEnum);
+                                        }
+                                        handleProductoIdChange(e)
+                                      }}
                                     value={productoId}
                                 >
-                                    <option>-- Elegir el producto utilizado --</option>
+                                    <option value={""}>-Elegir producto-</option>
                                     {producto?.map((product) => (
 
-                                        <option key={product.id} value={product.id}>{product.nombre}</option>
+                                        <option 
+                                        key={product.id} value={product.id}
+                                        >{product.nombre}</option>
 
                                     ))}
                                 </select>
@@ -410,6 +456,20 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                         </select>
                                         <SubTitles>g/ml</SubTitles>
                                     </div>
+                                    {tipo_producto === TipoProductoEnum.Plaguicida &&(
+                                    <div style={{ display: "flex", flexDirection: "column", gap: ".25rem", marginRight:"1.25rem"}}>
+                                        <select
+                                            value={dosisRecomendada}
+                                            onChange={handeleDosisRecomendadaChange}
+                                            style={{ ...mainStyle, width: "5.063rem" }}
+                                        >
+                                            <option hidden selected>- Dosis -</option>
+                                            <option value={dosis_recomendada.max} >-- {dosis_recomendada.max} --</option>
+                                            <option value={dosis_recomendada.min}>-- {dosis_recomendada.min} --</option>
+                                        </select>
+                                        <SubTitles>max/min</SubTitles>
+                                    </div>
+                                    )}
                                 </div>
                             </div>
                         </ModalInputs>

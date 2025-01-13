@@ -299,6 +299,7 @@ export type Database = {
           nombre: string | null
           presentacion: string | null
           registro: string | null
+          tipo_de_producto: Database["public"]["Enums"]["tipo_producto"] | null
         }
         Insert: {
           dosis_max?: string | null
@@ -308,6 +309,7 @@ export type Database = {
           nombre?: string | null
           presentacion?: string | null
           registro?: string | null
+          tipo_de_producto?: Database["public"]["Enums"]["tipo_producto"] | null
         }
         Update: {
           dosis_max?: string | null
@@ -317,6 +319,7 @@ export type Database = {
           nombre?: string | null
           presentacion?: string | null
           registro?: string | null
+          tipo_de_producto?: Database["public"]["Enums"]["tipo_producto"] | null
         }
         Relationships: []
       }
@@ -364,6 +367,9 @@ export type Database = {
           cantidad: number | null
           cantidad_usada: number | null
           created_at: string
+          dosis_recomendada:
+            | Database["public"]["Enums"]["dosis_recomendada"]
+            | null
           id: number
           producto_id: number | null
           servicio_id: number
@@ -377,6 +383,9 @@ export type Database = {
           cantidad?: number | null
           cantidad_usada?: number | null
           created_at?: string
+          dosis_recomendada?:
+            | Database["public"]["Enums"]["dosis_recomendada"]
+            | null
           id?: number
           producto_id?: number | null
           servicio_id: number
@@ -390,6 +399,9 @@ export type Database = {
           cantidad?: number | null
           cantidad_usada?: number | null
           created_at?: string
+          dosis_recomendada?:
+            | Database["public"]["Enums"]["dosis_recomendada"]
+            | null
           id?: number
           producto_id?: number | null
           servicio_id?: number
@@ -489,7 +501,6 @@ export type Database = {
           tipo_plaga_array_id: number[] | null
           tipo_plaga_id: number | null
           tipo_servicio: string | null
-          ubicacion: string | null
           updated_at: string | null
           user_id: string | null
         }
@@ -518,7 +529,6 @@ export type Database = {
           tipo_plaga_array_id?: number[] | null
           tipo_plaga_id?: number | null
           tipo_servicio?: string | null
-          ubicacion?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -547,7 +557,6 @@ export type Database = {
           tipo_plaga_array_id?: number[] | null
           tipo_plaga_id?: number | null
           tipo_servicio?: string | null
-          ubicacion?: string | null
           updated_at?: string | null
           user_id?: string | null
         }
@@ -604,6 +613,7 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
+      dosis_recomendada: "min" | "max"
       FrecuenciaServicio:
         | "Ninguna"
         | "Semanal"
@@ -614,6 +624,7 @@ export type Database = {
         | "Semestral"
         | "Anual"
       RolesEmpleado: "tecnico" | "administrador" | "superadmin"
+      tipo_producto: "plaguicida" | "trampa" | "cebo" | "gel"
     }
     CompositeTypes: {
       [_ in never]: never

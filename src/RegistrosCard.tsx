@@ -92,10 +92,6 @@ interface registrosProps {
     openModal: () => void
     sendDataParent: any
 }
-enum registroEnums {
-    actualizar = "actualizar",
-    añadir = "añadir"
-  }
   
 const RegistrosCard: React.FC<registrosProps> = (props) => {
     const [clicked, setClicked] = useState<boolean>(false)
