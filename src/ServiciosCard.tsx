@@ -102,6 +102,10 @@ type StyledButtonProps = {
     position?: string
 }
 
+interface serviciosProps {
+    organizacion?: string;
+  }
+
 export const StyledButton = styled.button<StyledButtonProps>`
     all:unset;
     background-color: ${props => (props.clicado ? '#0D4E80' : 'gray')};
@@ -228,7 +232,7 @@ right:0;
 
 
 
-const ServiciosCard = () => {
+const ServiciosCard:React.FC<serviciosProps>  = (props) => {
     const [readOnly, setReadOnly] = useState(true);
     const [nombreEditable, setNombreEditable] = useState(true)
     const [fechaEditable, setFechaEditable] = useState(true)
@@ -287,6 +291,7 @@ const ServiciosCard = () => {
                 .from("Servicios")
                 .select(`*,Clientes!inner(*)`)
                 .filter("folio", "eq", `${folio}`)
+                .filter("organizacion", "eq", props.organizacion)
             const { data: servicio } = await query;
             if (servicio) {
                 setServicios(servicio)
@@ -341,6 +346,7 @@ const ServiciosCard = () => {
             const query = supabase
                 .from("Empleados")
                 .select("*")
+                .filter("organizacion", "eq", props.organizacion)
             const { data: empleado } = await query;
             if (empleado) {
                 setEmpleados(empleado)

@@ -8,14 +8,14 @@ import { supabase } from "./utils/ClientSupabase";
 
 
 type DownloaderProps = {
- editable?:boolean
+    editable?: boolean
 
 }
 
 const DownloaderContainer = styled.div<DownloaderProps> /*style*/  `
 width:95%;
 max-width:85%;
-background:${props => (props.editable ? "rgb(211,211,211)": "white")};
+background:${props => (props.editable ? "rgb(211,211,211)" : "white")};
 color:black;
 display:flex;
 align-items:center;
@@ -48,71 +48,73 @@ margin-left:.5rem;
 
 `
 
-const EditorContainer =styled.div /*style*/ `
+const EditorContainer = styled.div /*style*/ `
 background:red;
 position:absolute;
 width:100%;
 `
 type styledDownloaderProps = {
     file_url: string;
-    file_name:string;
-    file_id:number
+    file_name: string;
+    file_id: number
     triggerFunction: () => void;
+    onclick?: () => void
+
 
 }
 
 const FileDownloader: React.FC<styledDownloaderProps> = (props) => {
-    const [editorOpen,setEditorOpen] = useState<boolean>(false)
-    const [fileNombre,setFileNombre] = useState<string>("")
+    const [editorOpen, setEditorOpen] = useState<boolean>(false)
+    const [fileNombre, setFileNombre] = useState<string>("")
 
-    const openEditor = () =>{
-        setEditorOpen(prev =>!prev)
+    const openEditor = () => {
+        setEditorOpen(prev => !prev)
     }
 
-    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) =>{
+    const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         let cambio = event.target.value;
-         setFileNombre(cambio);
+        setFileNombre(cambio);
     }
-    
-    const downloadFile = (url:string) =>{
-        if (!editorOpen){
-        window.location.href = url;
-        }
+
+    const downloadFile = (url: string) => {
+        // if (!editorOpen) {
+        //     window.open(url, "_blank"); // Opens the URL in a new tab
+        // }
     }
 
     const editFileName = async () => {
         try {
-            
+
             let query = supabase
-            const {data,error} = await query
-            .from("Documentos_empleados")
-            .update([
-                {
-                    nombre: fileNombre,
-                   
-                },
-            ] as  any)
-            .filter("id", "eq", props.file_id)
-            .select()
+            const { data, error } = await query
+                .from("Documentos_empleados")
+                .update([
+                    {
+                        nombre: fileNombre,
+
+                    },
+                ] as any)
+                .filter("id", "eq", props.file_id)
+                .select()
             openEditor();
-            if(error){
+            if (error) {
                 window.alert(`Error al actualizar el dato error`)
                 console.log(error)
             }
 
             //location.reload()
         }
-   
-        catch(err){
+
+        catch (err) {
             console.error(err)
         }
     }
     return (
         <>
-            <DownloaderContainer 
-            editable={editorOpen}
+            <DownloaderContainer
+                editable={editorOpen}
             >
-                
+
                 {/* {editorOpen && 
                 <EditorContainer>
                     <p>Editor de documentos</p>
@@ -121,33 +123,42 @@ const FileDownloader: React.FC<styledDownloaderProps> = (props) => {
                     />
                 </EditorContainer>
             } */}
-            {editorOpen &&
-            <>
-                <input
-            className="editorInput"
-            type="text"
-            placeholder={props.file_name}
-            onChange={handleNameChange}
-            onBlur={async () => {
-                try {
-                  await editFileName();
-                  props.triggerFunction();
-                } catch (error) {
-                  // Handle the error
-                  console.error('Error:', error);
+                {editorOpen &&
+                    <>
+                        <input
+                            className="editorInput"
+                            type="text"
+                            placeholder={props.file_name}
+                            onChange={handleNameChange}
+                            onBlur={async () => {
+                                try {
+                                    await editFileName();
+                                    props.triggerFunction();
+                                } catch (error) {
+                                    // Handle the error
+                                    console.error('Error:', error);
+                                }
+                            }}
+                        />
+                    </>
                 }
-              }}
-/>
-             </>
-            }
-                 {!editorOpen &&
-                <FileName>{props.file_name}</FileName>
-                 }
+                {!editorOpen &&
+                    <FileName>{props.file_name}</FileName>
+                }
                 <div className="iconsContainer">
-                <FaEdit size={25} style={{ color: 'black' , cursor:"pointer"}}
-                onClick={openEditor}
-                ></FaEdit>
-                < FaFileDownload onClick={()=>{downloadFile(props.file_url)}} size={23}  style={{ color: 'black' , cursor:"pointer"}}></FaFileDownload>
+                    <FaEdit size={25} style={{ color: 'black', cursor: "pointer" }}
+                        onClick={openEditor}
+                    ></FaEdit>
+                    <FaFileDownload
+                        onClick={() => {
+                            Promise.resolve(props.onclick?.()) // Wrap in Promise to allow `.then()`
+                                .then(() => {
+                                    downloadFile(props.file_url);
+                                });
+                        }}
+                        size={23}
+                        style={{ color: 'black', cursor: "pointer" }}
+                    />
                 </div>
             </DownloaderContainer>
         </>

@@ -23,8 +23,8 @@ const AppRoutes = () => {
     const navigate = useNavigate()
     const [token, setToken] = useState<any>(null)
     const [session, setSessionData] = useState<any>()
-    const [user_id,setUser_id] = useState<string >("")
-    const [org,setOrg] = useState<string>("")
+    const [user_id, setUser_id] = useState<string>("")
+    const [org, setOrg] = useState<string>("")
     const [loading, setLoading] = useState<boolean>(true); // Add loading state to prevent premature rendering
 
 
@@ -39,7 +39,7 @@ const AppRoutes = () => {
             setSessionData(data?.session);
             const userId = data?.session?.user?.id ?? "";
             setUser_id(userId);
-            localStorage.setItem("user_id", data?.session?.user?.id??  "");
+            localStorage.setItem("user_id", data?.session?.user?.id ?? "");
 
             await fetchOrganización(userId);
         } catch (err) {
@@ -63,24 +63,24 @@ const AppRoutes = () => {
         })
     }
 
-    const fetchOrganización = async (user_id:string | null) =>{
+    const fetchOrganización = async (user_id: string | null) => {
         try {
             let query = supabase;
             const { data, error } = await query
-            .from("Empleados")
-            .select("organizacion")
-            .filter("user_id","eq",user_id)
-         //@ts-ignore
-         setOrg(data?.[0]?.organizacion ??  "")
-          //@ts-ignore
-         localStorage.setItem("org", data?.[0]?.organizacion ??  "");
+                .from("Empleados")
+                .select("organizacion")
+                .filter("user_id", "eq", user_id)
+            //@ts-ignore
+            setOrg(data?.[0]?.organizacion ?? "")
+            //@ts-ignore
+            localStorage.setItem("org", data?.[0]?.organizacion ?? "");
         }
-        catch(err){
+        catch (err) {
             console.log(err)
         }
     }
-   
-    
+
+
     useEffect(() => {
         authSupabase()
         getSession()
@@ -108,27 +108,31 @@ const AppRoutes = () => {
                     <Route path="/inicio" element={<><Dashboard /></>}></Route>
                     <Route path="/Servicios" element={<><Servicios organizacion={localStorage.getItem("org") ?? ""} /></>}></Route>
                     <Route path="/Clientes" element={<><Clientes
-                    organizacion={localStorage.getItem("org") ?? ""}
+                        organizacion={localStorage.getItem("org") ?? ""}
                     /></>}></Route>
-                    <Route path="/Servicios/:folio" element={<><ServiciosCard /></>}></Route>
-                    <Route path="/Clientes/:id" element={<><ClientesCard /></>}></Route>
-                    <Route path="/nuevo-servicio" element={<><CreateServiceForm 
-                    user_id={localStorage.getItem("user_id") ?? ""}
+                    <Route path="/Servicios/:folio" element={<><ServiciosCard
+                        organizacion={localStorage.getItem("org") ?? ""}
                     /></>}></Route>
-                    <Route path="/nuevo-cliente" element={<><CreateClientForm 
-                    organizacion={localStorage.getItem("org") ?? ""}
-                    user_id={localStorage.getItem("user_id") ?? ""}
+                    <Route path="/Clientes/:id" element={<><ClientesCard
+                        organizacion={localStorage.getItem("org") ?? ""}
+                    /></>}></Route>
+                    <Route path="/nuevo-servicio" element={<><CreateServiceForm
+                        user_id={localStorage.getItem("user_id") ?? ""}
+                    /></>}></Route>
+                    <Route path="/nuevo-cliente" element={<><CreateClientForm
+                        organizacion={localStorage.getItem("org") ?? ""}
+                        user_id={localStorage.getItem("user_id") ?? ""}
                     /></>}></Route>
                     <Route path="/Servicios/pdf/:folio" element={<MyDocument />} />
                     <Route path="/calendar" element={<Calendar
-                    organizacion={localStorage.getItem("org") ?? ""}
+                        organizacion={localStorage.getItem("org") ?? ""}
                     />} />
-                    <Route path="/empleados" element={<DocumentUploader 
-                    organizacion={localStorage.getItem("org") ?? ""}
+                    <Route path="/empleados" element={<DocumentUploader
+                        organizacion={localStorage.getItem("org") ?? ""}
                     />} />
                     <Route path="/empleados/:id" element={<EmpleadosCard />} />
                     <Route path="/nuevo-empleado" element={<CreateEmployee
-                    organizacion={localStorage.getItem("org") ?? ""}
+                        organizacion={localStorage.getItem("org") ?? ""}
                     />} />
                 </>
             }
