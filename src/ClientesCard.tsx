@@ -18,6 +18,9 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import DireccionCard from "./DireccionCard";
 
 type Cliente = Tables<"Clientes">
+interface serviciosProps {
+    organizacion?: string;
+  }
 
 const ClientCardContainer = styled(CardContainer) /*style*/`
 height:fit-content;
@@ -73,7 +76,7 @@ const TextoAddCard = styled.h1 /*style*/`
   color: #727272;
 `;
 
-const ClientesCard = () => {
+const ClientesCard: React.FC<serviciosProps> = (props) => {
     const [cliente, setCliente] = useState<Cliente[] | null>([])
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
@@ -185,6 +188,7 @@ const ClientesCard = () => {
                 .from("Clientes")
                 .select("*")
                 .filter("id", "eq", `${id}`)
+                .filter("organizacion", "eq", props.organizacion)
             const { data: cliente } = await query
             
           
@@ -221,11 +225,6 @@ const ClientesCard = () => {
     useEffect(() => {
         fetchClientes()
     }, []);
-    // useEffect(() => {
-    //     fetchClientes().then(() => {
-    //         insertResponsable();
-    //     });
-    // }, []);
     const handleTipoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
         const cambio = event.target.value

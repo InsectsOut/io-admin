@@ -143,7 +143,8 @@ const Calendar: React.FC<calendarProps> = (props) => {
 
   const fetchClientes = async () => {
     try {
-      let query = await supabase.from("Clientes").select(`*`);
+      let query = await supabase.from("Clientes").select(`*`)
+      .filter("organizacion", "eq", props.organizacion)
       const { data, error } = query;
       if (error) {
         console.log(error);

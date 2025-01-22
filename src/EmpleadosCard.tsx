@@ -31,6 +31,7 @@ type StyledButtonProps = {
     justify?: string
     gap?: number
 
+
 }
 
 export const ButtonComponents = styled.div<StyledButtonProps>`
@@ -173,6 +174,15 @@ export const AddResponsableCard = styled.div`
   }
 `
 
+const FileContainer = styled.div `
+display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 1rem;
+  overflow: scroll;
+  max-height: 21rem;
+`
+
 const EmpleadosCard = () => {
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
@@ -200,6 +210,7 @@ const EmpleadosCard = () => {
     const [numCuenta, setNumCuenta] = useState<number | null>()
     const [esCapacitacion, setEsCapacitacion] = useState<boolean>(false);
     const [mostrarCapacitaciones, setMostrarCapacitaciones] = useState<boolean>(false)
+    const [fileUrl,setFileUrl] = useState<string>("")
 
     const handleMostrarCapacitaciones = () => {
         setMostrarCapacitaciones(prev => !prev)
@@ -254,10 +265,11 @@ const EmpleadosCard = () => {
     }
 
     const handleNoLicencia = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = +event.target.value
-        setNumlicencia(cambio)
-    }
+        setClicked(true);
+
+        const cambio = +event.target.value;
+        setNumlicencia(isNaN(cambio) ? numLicencia : cambio);
+    };
 
     const handleIneChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
@@ -273,37 +285,67 @@ const EmpleadosCard = () => {
         setUploaderOpen(prev => !prev);
     }
 
+    const fetchDocumentUrl = async (docPath: string) => {
+        console.log(docPath)
+        try {
+            const { data, error } = await supabase
+                .storage
+                .from('documentos_empleados')
+                .createSignedUrl(docPath, 3600); // 3600 seconds = 1 hour
+
+            if (error) {
+                console.error('Failed to create signed URL:', error.message);
+                return;
+            }
+
+            if (data?.signedUrl) {
+                console.log('Signed Document URL:', data.signedUrl);
+                let url = data?.signedUrl
+                console.log(url)
+                 setFileUrl(url)
+            
+            } else {
+                console.error('No signed Document URL returned.');
+             
+            }
+        } catch (err) {
+            console.error('Error fetching Document:', err);
+        }
+    };
+
     const uploadImage = async (event: React.ChangeEvent<HTMLInputElement>, file_title: string, capacitacion: boolean) => {
         const file = event.target.files?.[0];
         const now = new Date()
         const date_name = `${now.getFullYear()}${(now.getMonth() + 1).toString().padStart(2, '0')}${now.getDate().toString().padStart(2, '0')}${now.getHours().toString().padStart(2, '0')}${now.getSeconds().toString().padStart(2, '0')}`;
-        const file_name = date_name + file_title;
+        const file_name = date_name + `_${file_title}`;
 
         if (file) {
             console.log('File selected:', file);
             console.log(await supabase.auth.getUser())
             const query = supabase
             let url = ""
+            let trimNombre = nombre.trim().replace(/\s+/g, '_');
             const { data, error } = await query
                 .storage
                 .from('documentos_empleados')
-                .upload(`Documentos/${file_name}`, file, {
+                .upload(`Documentos/${trimNombre}/${file_name}`, file, {
                     cacheControl: '3600',
                     upsert: false
                 })
             console.log(data)
             //TODO CAMBIAR URL POR VARIABLE DE DESARROLLO
-            url = `https://stnrrgqnedpadgelrkbx.supabase.co/storage/v1/object/public/documentos_empleados/${data?.path}`
+            // url = `https://stnrrgqnedpadgelrkbx.supabase.co/storage/v1/object/public/documentos_empleados/${data?.path}`
+            console.log("path", data?.path);
             try {
 
-                const query = supabase.from("Documentos_empleados")
+                const query = supabase.from("DocumentosEmpleados")
                 const { error } = await query
 
                     .insert([
                         {
 
                             nombre: file_title,
-                            url,
+                            url: data?.path,
                             id_empleado: id,
                             es_capacitacion: capacitacion
 
@@ -341,7 +383,7 @@ const EmpleadosCard = () => {
 
             if (!error) {
                 const { data: docsDat, error: docsError } = await query
-                    .from("Documentos_empleados")
+                    .from("DocumentosEmpleados")
                     .select(`*`)
                     .eq("id_empleado", id)
                 if (!docsError) {
@@ -376,7 +418,7 @@ const EmpleadosCard = () => {
         try {
             const query = supabase
             const { data, error } = await query
-                .from("Documentos_empleados")
+                .from("DocumentosEmpleados")
                 .select(`*`)
                 .eq("id_empleado", id)
 
@@ -433,14 +475,12 @@ const EmpleadosCard = () => {
                 .update([
                     {
                         ine: ineNumber,
-                        curp,
-                        imss,
+                        curp:curp,
+                        imss:imss,
                         licencia_de_conducir: numLicencia,
-                        vigencia_conducir_start,
-                        vigencia_conducir_end,
+                        vigencia_conducir_start:vigencia_conducir_start,
+                        vigencia_conducir_end:vigencia_conducir_end,
                         cuenta_bancaria: numCuenta
-
-
                     },
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
@@ -519,8 +559,12 @@ const EmpleadosCard = () => {
 
     }, [])
 
-
-
+    useEffect(() => {
+        if (fileUrl) {
+            // Trigger the download only when fileUrl changes
+            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
+        }
+    }, [fileUrl]);
 
 
 
@@ -730,19 +774,21 @@ const EmpleadosCard = () => {
                                     onDocTypeChange={handleDocTypeChange}
                                 />
                             }
+                            <FileContainer >
                             {docs.filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)
                                 .map((docs) => (
                                     !uploaderOpen && (
                                         <FileDownloader
+                                            onclick={()=>{fetchDocumentUrl(docs?.url ?? "")}}
                                             file_id={docs.id}
                                             triggerFunction={triggerFromChild}
                                             key={docs.id}
-                                            file_url={docs.url as string}
+                                            file_url={fileUrl}
                                             file_name={docs.nombre as string}
                                         />
                                     )
                                 ))}
-
+                                </FileContainer>
                         </InputsContainer>
                     }
                 </ClientCardContainer>

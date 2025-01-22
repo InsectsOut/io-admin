@@ -4,6 +4,7 @@ import { supabase } from './utils/ClientSupabase';
 import { useEffect, useState } from 'react';
 import { Enums, Tables } from "../src/supabase/Database";
 import { useParams } from 'react-router-dom';
+const { IO_SUPABASE_URL } = import.meta.env;
 
 type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
@@ -11,6 +12,7 @@ type Responsables = Tables<"Responsables">
 type Registros = Tables<"RegistroAplicacion">
 type Productos = Tables<"Productos">
 type Direcciones = Tables<"Direcciones">
+type Recomendaciones = Tables<"Recomendaciones">
 
 // Font.register({
 //     family: 'Open Sans',
@@ -139,6 +141,7 @@ const styles = StyleSheet.create({
         display: "flex",
         flexDirection: 'row',
         alignItems: 'center',
+        marginLeft: "20px"
 
     },
     checkbox: {
@@ -200,6 +203,9 @@ const styles = StyleSheet.create({
         borderWidth: 1,
         borderColor: "black",
     },
+    rotateImage: {
+       transform:"rotate(270deg) scale(.9)",
+    },
     firmasContainer: {
         width: "50%",
         display: "flex",
@@ -251,7 +257,8 @@ const recommendationsMIP2 = [
 const MyDocument = () => {
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null,
-        Responsables: Responsables
+        Responsables: Responsables,
+        Recomendaciones: Recomendaciones
     };
     type RegistrosPlaguicidas = Registros & {
         Productos: Productos | null
@@ -263,29 +270,90 @@ const MyDocument = () => {
     const [direccion, setDireccion] = useState<Direcciones[]>([])
     const [frecuencia_recomendada, setFrecuencia_recomendada] = useState<Enums<"FrecuenciaServicio">>("Ninguna")
     const [otraFrecuencia, setOtraFrecuencia] = useState<boolean>(false)
+    const [firmaClientePath, setFirmaClientePath] = useState<string>("")
+    const [firma, setFirma] = useState<string>("")
+    const [recomendaciones, setRecomendaciones] = useState<Recomendaciones[]>()
+    const [imagenUrl, setImagenUrl] = useState<string[]>([]);
+
     const fetchServicio = async () => {
         try {
             const { data: serv } = await supabase
                 .from("Servicios")
-                .select(`*, Clientes!inner(*), Responsables!inner(*)`)
+                .select(`
+                    *,
+                    Clientes(*),
+                    Responsables(*),
+                    Empleados:aplicador_Responsable(*),
+                    Recomendaciones(*)
+                  `)
                 .filter("folio", "eq", folio)
 
             if (!serv) {
                 console.error("No existe servicio relacionado a ese folio")
             }
             if (serv) {
-                setServicio(serv as any ?? [])
-                setServicioId(serv?.[0]?.id)
-                fetchDireccion(serv[0]?.direccion_id ?? 0)
+                setServicio(serv as any ?? []);
+                setServicioId(serv?.[0]?.id);
+                fetchDireccion(serv[0]?.direccion_id ?? 0);
+                //console.log(serv[0].Recomendaciones[0])
+
+                // Set firmaClientePath and fetch the firma image
+                const firmaClientePath = serv[0]?.firma_cliente ?? "";
+                //console.log(getSignatureUrl("imagenes_servicios",firmaClientePath))
+
+                if (firmaClientePath) {
+                    fetchFirmaImg(firmaClientePath); // Ensure this function updates the 'firma' state
+                }
+
                 if (serv[0]?.frecuencia_recomendada) {
-                    setFrecuencia_recomendada(serv[0]?.frecuencia_recomendada)
-                    
+                    setFrecuencia_recomendada(serv[0]?.frecuencia_recomendada);
 
                     if (!["Quincenal", "Semanal", "Mensual", "Ninguna"].includes(serv[0]?.frecuencia_recomendada)) {
-                        setOtraFrecuencia(true)
+                        setOtraFrecuencia(true);
                     }
                 }
             }
+
+        }
+
+        catch (err) {
+            console.log(err)
+        }
+    }
+
+    const fetchRecomendaciones = async () => {
+        try {
+            const { data: rec } = await supabase
+                .from("Recomendaciones")
+                .select(`
+                    *
+                  `)
+                .filter("servicio_id", "eq", servicioId)
+
+            if (!rec) {
+                console.error("No existen recomendaciones relacionados a ese servicio")
+            }
+            // rec?.forEach(element => {
+            //     if (Array.isArray(element.imagen)) {
+            //         setImagenUrl(element.imagen);
+            //     } else if (typeof element.imagen === "string") {
+            //         setImagenUrl([element.imagen]); // Convert single URL to array
+            //     }
+            // });
+
+            if (rec) {
+                setRecomendaciones(rec)
+                // Fetch all image URLs asynchronously
+                Promise.all(rec.map(async (img) => {
+                    const imgUrl = await fetchRecImagen(img.imagen ?? "");
+                    return imgUrl ?? ""; // Default to empty string if imgUrl is undefined
+                }))
+                .then(imagenesArray => {
+                    setImagenUrl(imagenesArray); // Now imagenesArray is always a string[] (no undefined)
+                })
+                .catch(error => console.error("Error fetching images:", error));
+            }
+    
 
         }
 
@@ -330,21 +398,79 @@ const MyDocument = () => {
         }
     };
 
+    const fetchFirmaImg = async (firmaCliente: string) => {
+        try {
+            const { data, error } = await supabase
+                .storage
+                .from('imagenes_servicios')
+                .createSignedUrl(firmaCliente, 3600); // 3600 seconds = 1 hour
+
+            if (error) {
+                console.error('Failed to create signed URL:', error.message);
+                return;
+            }
+
+            if (data?.signedUrl) {
+               // console.log('Signed URL:', data.signedUrl);
+                setFirma(data.signedUrl); // Set the signed URL
+            } else {
+                console.error('No signed URL returned.');
+            }
+        } catch (err) {
+            console.error('Error fetching firma image:', err);
+        }
+    };
+    const fetchRecImagen = async (imagenRec: string) => {
+        try {
+            const { data, error } = await supabase
+                .storage
+                .from('imagenes_servicios')
+                .createSignedUrl(imagenRec, 3600); // 3600 seconds = 1 hour
+
+            if (error) {
+                console.error('Failed to create signed URL:', error.message);
+                return;
+            }
+
+            if (data?.signedUrl) {
+                console.log('Signed Image URL:', data.signedUrl);
+                return(data?.signedUrl); // Set the signed URl
+            } else {
+                console.error('No signed Image URL returned.');
+            }
+        } catch (err) {
+            console.error('Error fetching firma image:', err);
+        }
+    };
+
+    const getSignatureUrl = (bucket: string, filepathUrl: string) => {
+        const url = `${IO_SUPABASE_URL}/storage/v1/object/sign/${bucket}/${filepathUrl}`;
+        console.log()
+        return (url)
+
+    }
+
 
     useEffect(() => {
         fetchServicio()
+        fetchRecImagen("108/reporte-2025-01-20-cl-0")
     }, [])
+    useEffect(() => {
+     console.log(imagenUrl)
+    }, [imagenUrl])
 
     useEffect(() => {
         if (servicioId !== undefined) {
             fetchRegistros();
+            fetchRecomendaciones();
         }
     }, [servicioId]);
 
 
     return (
         <PDFViewer width="100%" height="100%">
-            < Document >
+            < Document
+            >
                 <Page size={"LETTER"} style={styles.body}>
                     <View style={styles.container}></View>
                     <View style={styles.header}>
@@ -377,13 +503,13 @@ const MyDocument = () => {
                                 <View style={{ width: "30%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>Hora Entrada</Text>
                                 </View>
-                                <Text style={styles.fechaUnderline}> {servicio[0]?.horario_servicio}</Text>
+                                <Text style={styles.fechaUnderline}> {servicio[0]?.horario_entrada}</Text>
                             </View>
                             <View style={styles.fechaElement}>
                                 <View style={{ width: "30%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>Hora Salida</Text>
                                 </View>
-                                <Text style={styles.fechaUnderline}></Text>
+                                <Text style={styles.fechaUnderline}>{servicio[0]?.horario_salida}</Text>
                             </View>
                         </View>
                     </View>
@@ -475,7 +601,7 @@ const MyDocument = () => {
                                         </View>
                                         <View style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", width: "14%", padding: 0, margin: 0 }}>
                                             <Text style={{ width: "100%", padding: 0, margin: 0, flexGrow: 1 }}>
-                                                {registro?.Productos?.dosis_max ? registro?.Productos?.dosis_max : ""} {registro?.Productos?.dosis_min}
+                                                {registro?.dosis_recomendada === "max" ? registro?.Productos?.dosis_max : registro?.dosis_recomendada === "min" ? registro?.Productos?.dosis_min : ""}
                                             </Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
@@ -485,7 +611,7 @@ const MyDocument = () => {
                                             <Text></Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.cantidad} {registro?.unidad}</Text>
+                                            <Text>{registro?.cantidad} {registro?.Productos?.tipo_de_producto === "plaguicida" ? registro?.unidad : registro?.Productos?.tipo_de_producto === "cebo" ? "pzs" : "pzs"}</Text>
                                         </View>
                                     </View>
 
@@ -527,7 +653,7 @@ const MyDocument = () => {
                             <Text style={styles.label}>Único puntual</Text>
                         </View>
 
-                        <View style={styles.checkboxContainer}>
+                        <View style={{ ...styles.checkboxContainer }}>
 
                             <View style={styles.checkboxContainer}>
                                 {otraFrecuencia ? (
@@ -540,7 +666,7 @@ const MyDocument = () => {
 
                                     <>
                                         <View style={[styles.checkbox, { backgroundColor: 'white' }]} />
-                                        <Text style={styles.label}>Potro</Text>
+                                        <Text style={styles.label}>Otro</Text>
                                     </>
 
 
@@ -567,38 +693,75 @@ const MyDocument = () => {
                             ))}
                         </View>
                     </View>
-                    <View style={{ ...styles.fechaSection, marginTop: "30px", color: "rgb(214,43,51)" }}>
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "30%" }} >
+                    <View style={{ ...styles.fechaSection, marginTop: "30px" }}>
+                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "30%", minHeight: "20px", maxHeight:"20px",}} >
                             <Text style={{ paddingLeft: "3px" }}>INSPECCIÓN Y RECOMENDACIONES DE ACUERDO A MANEJO INTEGRADO DE PLAGAS</Text>
                         </View>
-                        <View style={{ display: "flex", flexDirection: "row", }}>
+                        <View style={{ ...styles.fechaTitle, alignItems: "center", width: "100%", height: "20px", minHeight: "20px", maxHeight:"20px", display: "flex", flexDirection: "row", justifyContent: "space-between", fontSize: "10px", padding: "0px 10px 0px 10px" }}>
+                            <View style={{ display: "flex", flexDirection: "column", maxWidth: "30%", flexGrow: 1 }}>
+                                <Text>Problema</Text>
+                            </View>
+                            <View style={{ display: "flex", flexDirection: "column", maxWidth: "30%", flexGrow: 1 }}>
+                                <Text>Recomendaciones</Text>
 
-                            <View style={{ ...styles.checkboxContainer, width: "50%", flexDirection: "column", alignContent: "flex-start" }}>
-                                {recommendationsMIP.map((recos) => (
-                                    <View style={{ display: "flex", flexDirection: "row", height: "30%", width: "100%" }}>
-                                        <View style={[styles.checkbox, { backgroundColor: 'white', borderColor: "rgb(214,43,51)" }]} >
-                                        </View>
-                                        <View style={{ display: "flex", flexDirection: "row", height: "100%" }}>
-                                            <Text style={styles.label}>{recos}</Text>
-                                            < View style={{ ...styles.recsUnderline, width: "50%", height: "100%", position: "relative" }}><Text style={{ position: "absolute", bottom: "0", color: "black" }}>lorem ipsum lorem ipsum</Text></View>
-                                        </View>
-                                    </View>
-                                ))}
                             </View>
-                            <View style={{ ...styles.checkboxContainer, width: "50%", flexDirection: "column", alignContent: "flex-start", justifyContent: "center" }}>
-                                {recommendationsMIP2.map((recos) => (
-                                    <View style={{ display: "flex", flexDirection: "row", height: "30%", width: "100%" }}>
-                                        <View style={[styles.checkbox, { backgroundColor: 'white', borderColor: "rgb(214,43,51)" }]} >
-                                        </View>
-                                        <View style={{ display: "flex", flexDirection: "row", height: "100%" }}>
-                                            <Text style={styles.label}>{recos}</Text>
-                                            <View style={{ ...styles.recsUnderline, width: "50%", height: "100%", marginTop: "-16px", marginLeft: "12px", color: "black", position: "relative" }}><Text style={{ position: "absolute", top: "12px", }}>lorem ipsum lorem ipsum</Text></View>
-                                        </View>
-                                    </View>
-                                ))}
+                            <View style={{ display: "flex", flexDirection: "column", maxWidth: "30%", flexGrow: 1 }}>
+                                <Text>Foto</Text>
                             </View>
+
                         </View>
+                        {recomendaciones?.map((rec, index) => (
+                            <View
+                                key={index}
+                                style={{
+                                    display: 'flex',
+                                    flexDirection: 'row',
+                                    justifyContent: 'space-between',
+                                    fontSize: 10,
+                                    padding: 10,
+                                    borderWidth: 1,
+                                    height: 85,
+                                    minHeight: 75,
+                                    marginBottom:"3px"
+                                }}
+                            >
+                                {/* Left Column */}
+                                <View style={{ display: 'flex', flexDirection: 'column', maxWidth: '30%', flexGrow: 1 }}>
+                                    <View>
+                                        <Text>{rec.problema}</Text>
+                                    </View>
+                                </View>
+
+                                {/* Middle Column */}
+                                <View style={{ display: 'flex', flexDirection: 'column', maxWidth: '30%', flexGrow: 1 }}>
+                                    {rec?.acciones?.map?.((accion, index) => (
+                                        <View key={index} style={{ display: 'flex', flexDirection: 'row', marginBottom: 3 }}>
+                                            <Text>{index + 1} </Text>
+                                            {/* @ts-ignore */}
+                                            <Text>{accion}</Text>
+                                        </View>
+                                    ))}
+                                </View>
+
+                                {/* Right Column */}
+                                <View style={{ display: 'flex', flexDirection: 'column', maxWidth: '30%', flexGrow: 2 }}>
+                                    <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
+                                        {imagenUrl[index] !=="" ? (
+                                            <Image
+
+                                            src={imagenUrl[index]} style={{ ...styles.rotateImage, width:"75px",}} />
+                                        ) : (
+                                            <Text style={{color: 'black', marginBottom: "10px" }}>Sin imagen disponible...</Text>
+                                        )}
+                                    </View>
+                                </View>
+                            </View>
+                        ))}
                     </View>
+
+
+                </Page>
+                <Page size={"LETTER"} style={styles.body}>
                     <View>
                         <View style={{ ...styles.reporteFotográficoContainer, height: "50%" }} >
                             <View style={{ display: "flex", height: "10%", flexDirection: "row" }}>
@@ -611,8 +774,33 @@ const MyDocument = () => {
                             </View>
                             <View style={{ ...styles.reporteFotográficoInfo, height: "90%", flexDirection: "row" }}
                             >
-                                <View style={styles.firmasContainer}><Text>NOMBRE Y FIRMA</Text></View>
-                                <View style={styles.firmasContainer}><Text>NOMBRE Y FIRMA</Text></View>
+
+                                <View style={styles.firmasContainer}>
+                                    {firma ? (
+                                        <Image src={firma} style={{ width: '600px', backgroundColor: "transparent" }} />
+                                    ) : (
+                                        <Text style={{ color: "black", marginBottom: "10px" }}>Loading firma...</Text>
+                                    )}
+
+                                    <Text style={{ color: "black", marginBottom: "10px" }}>
+                                        {/* @ts-ignore */}
+                                        {servicio[0]?.Empleados?.nombre}</Text>
+                                    <View style={{ ...styles.firmasContainer, marginBottom: "5px" }}><Text>NOMBRE Y FIRMA TÉCNICO</Text></View>
+                                </View>
+                                <View style={styles.firmasContainer}>
+                                    {firma ? (
+                                        <Image src={firma} style={{ width: '600px', backgroundColor: "transparent" }} />
+                                    ) : (
+                                        <Text style={{ color: "black", marginBottom: "10px" }}>Loading firma...</Text>
+                                    )}
+
+                                    <Text style={{ color: "black", marginBottom: "10px" }}>
+
+                                        {/* @ts-ignore */}
+                                        {servicio[0]?.Clientes?.nombre} {servicio[0]?.Clientes?.apellidos}
+                                    </Text>
+                                    <View style={{ ...styles.firmasContainer, width: "60%", marginBottom: "5px" }}><Text>NOMBRE Y FIRMA DEL CLIENTE</Text></View>
+                                </View>
                             </View>
                         </View>
                         <View style={{ display: "flex", height: "15%", flexDirection: "column", marginTop: "8px" }}>
@@ -635,16 +823,6 @@ const MyDocument = () => {
                                 </View>
                             </View>
                         </View>
-                    </View>
-
-                </Page>
-                <Page size={"LETTER"} style={styles.body}>
-                    <View style={styles.container}></View>
-                    <View style={{ ...styles.reporteFotográficoContainer }} >
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "10%" }} >
-                            <Text style={{ paddingLeft: "3px" }}>REPORTE RFOTOGRÁFICO</Text>
-                        </View>
-                        <View style={styles.reporteFotográficoInfo}></View>
                     </View>
                 </Page>
             </Document >
