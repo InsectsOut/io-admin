@@ -903,9 +903,16 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
 
 
-  useEffect(() => {
-    returnRotation()
-  }, [modalPosition])
+ 
+
+  useEffect(()=>{
+    if (!modalVisible){
+        setIsRotated(false)
+        setIsRotated2(false)
+        setIsRotated3(false)
+        setIsRotated4(false)
+    }
+},[modalVisible])
 
 
 

@@ -108,9 +108,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
 
     const handleModalCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
-
         setSelectedOptions(value);
-        console.log(selectedOptions)
     }
 
     const handlePageChange = (page: number) => {
@@ -121,7 +119,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
 
     useEffect(() => {
         FetchEmpleados()
-    }, [empleadosFijos])
+    }, [])
 
     const FetchEmpleados = async () => {
         try {
@@ -138,7 +136,8 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                 // console.log("Recividos datos de clientes");
                 setEmpleados(data)
                 setEmpleadosFijos(data)
-                setModalVisible(false)
+                console.log("jeronimo")
+               // setModalVisible(false)
             }
 
         }
@@ -160,6 +159,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                 break;
 
             case "Puesto":
+                 console.log("Pipip")
                 filtroQuery = "puesto"
                 parametros = selectedOptions
                 setBarraBusqueda("")
@@ -190,7 +190,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
             const { data: empleado, count } = await query
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
-
+            console.log(empleado)
             if (empleado) {
                 setEmpleados(empleado)
                 setModalVisible(false)
@@ -258,6 +258,13 @@ const Empleados: React.FC<empleadosProps> = (props) => {
         }
     }
 
+    useEffect(()=>{
+        if (!modalVisible){
+            setIsRotated(false)
+            setIsRotated2(false)
+        }
+    },[modalVisible])
+
     return (
         <>
 
@@ -322,11 +329,11 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                                     >
                                         <EstatusForma>
                                             <div className="optionsContainer" id="realizadoContainer">
-                                                <input type="radio" className="checked" id="residencial" name="choice" value="TRUE" onChange={handleModalCheck} />
+                                                <input type="radio" className="checked" id="residencial" name="choice" value="TRUE" onChange={(e) => {handleModalCheck(e)}} />
                                                 <label id="realizado2" htmlFor="residencial">Activo</label>
                                             </div>
                                             <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="industrial" name="choice" value="FALSE" onChange={handleModalCheck} />
+                                                <input type="radio" className="checked" id="industrial" name="choice" value="FALSE" onChange={(e) => {handleModalCheck(e)}} />
                                                 <label id="noRealizado2" htmlFor="industrial">Inactivo</label>
                                             </div>
 
@@ -340,7 +347,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                                                      FetchEmpleados()
                                                     .then(() => {
                                                         setCurrentPage(1);
-                                                        setIsRotated(false);
+                                                        setModalVisible(false)
                                                     });
                                             }}>Limpiar</button>
                                             <button className="actionButtonsStyles" id="aplicar"
@@ -369,7 +376,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                                                 )
                                                 .map((empleado) => (
                                                     <div className="optionsContainer" id="realizadoContainer" key={empleado.id}> {/* Add a unique key prop */}
-                                                        <input type="radio" className="checked" id={`residencial-${empleado.id}`} name="choice" value={empleado?.puesto as string} onChange={handleModalCheck} />
+                                                        <input type="radio" className="checked" id={`residencial-${empleado.id}`} name="choice" value={empleado?.puesto as string} onChange={(e) => {handleModalCheck(e)}} />
                                                         <label id="realizado2" htmlFor={`residencial-${empleado.id}`}>{empleado.puesto}</label>
                                                     </div>
                                                 ))}
@@ -383,7 +390,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                                                      FetchEmpleados()
                                                     .then(() => {
                                                         setCurrentPage(1);
-                                                        setIsRotated2(false);
+                                                        setModalVisible(false)
                                                     });
                                             }}>Limpiar</button>
                                             <button className="actionButtonsStyles" id="aplicar" onClick={() => {
@@ -391,6 +398,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                                                     .then(() => {
                                                         setCurrentPage(1);
                                                         setIsRotated2(false);
+                                                       
                                                     });
                                             }}>Aplicar</button>
                                         </div>

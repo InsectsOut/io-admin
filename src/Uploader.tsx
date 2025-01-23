@@ -1,6 +1,6 @@
 import styled from 'styled-components';
 import { colors } from 'react-select/dist/declarations/src/theme';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { CardInputs } from './rehusableComponents/CardInputs';
 
 type styledInputButton = {
@@ -21,7 +21,7 @@ const UploadContainer = styled.div /*style*/ `
   font-family: Arial, sans-serif;
 position: absolute;
 left: 11%;
-bottom: 15%;
+bottom: 5%;
 
 `;
 
@@ -66,6 +66,7 @@ type UploadProps = {
   onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
   onValueChange: (value: string) => void;
   onDocTypeChange: (isCapacitacion: boolean) => void; // New prop for the parent callback
+  firmaSelected: boolean;
 
 };
 
@@ -102,56 +103,68 @@ const FileUpload: React.FC<UploadProps> = (props) => {
     props.onDocTypeChange(valBool);
     console.log(valBool)
   };
+
+  useEffect(()=>{
+    if(props.firmaSelected){
+      setDisabled(false)
+    }
+  },[])
     
    // Pass the value to the parent component };
   return (
-    <UploadContainer>
-      <Title>Subir archivo</Title>
-      <CardInputs
-      style={{background:"none",
-        width:"85%",
-      color:"black"
-      }}
-      type='text'
-      placeholder='Nombra el archivo antes de subirlo'
-      value={nameValue}
-      onChange={handleChange}
-      ></CardInputs>
-     <div style={{ display: 'flex', flexDirection: 'column', background: "none", color: "black", width: "85%" }}>
-  <label style={{ marginBottom: '8px' }}>
-    <CardInputs
-      type='radio'
-      value='capacitacion'
-      name='option'
-      onChange={handleDocTypeChange}
-      style={{
-        marginRight: '8px',
-        width: '16px',        // Adjust size here
-        height: '16px',       // Adjust size here
-           // Remove default styling if needed
-        borderRadius: '50%',  // Make it a circle if it's not by default
-        border: '2px solid black' // Border style for the circle
-      }}
-    />
-    Capacitación
-  </label>
-  <label>
-    <CardInputs
-      type='radio'
-      value='documento'
-      name='option'
-      onChange={handleDocTypeChange}
-      style={{
-        marginRight: '8px',
-        width: '16px',        // Adjust size here
-        height: '16px',       // Adjust size here  // Remove default styling if needed
-        borderRadius: '50%',  // Make it a circle if it's not by default
-        border: '2px solid black' // Border style for the circle
-      }}
-    />
-    Documento
-  </label>
-</div>
+    <UploadContainer
+    style={{bottom:props.firmaSelected ? "30%" : "5%"}}
+    >
+      
+      <Title>{!props.firmaSelected ? "Subir archivo" : "Subir Firma"}</Title>
+      {!props.firmaSelected &&
+      <><CardInputs
+          style={{
+            background: "none",
+            width: "85%",
+            color: "black",
+            marginBottom: "1rem"
+          }}
+          type='text'
+          placeholder='Nombra el archivo antes de subirlo'
+          value={nameValue}
+          onChange={handleChange}
+        ></CardInputs><div style={{ display: 'flex', flexDirection: 'column', background: "none", color: "black", width: "85%" }}>
+            <label style={{ marginBottom: '8px' }}>
+              <CardInputs
+                type='radio'
+                value='capacitacion'
+                name='option'
+                onChange={handleDocTypeChange}
+                style={{
+                  marginRight: '8px',
+                  width: '16px', // Adjust size here
+                  height: '16px', // Adjust size here
+
+                  // Remove default styling if needed
+                  borderRadius: '50%', // Make it a circle if it's not by default
+                  border: '2px solid black' // Border style for the circle
+                }} />
+              Capacitación
+            </label>
+            <label>
+              <CardInputs
+                type='radio'
+                value='documento'
+                name='option'
+                onChange={handleDocTypeChange}
+                style={{
+                  marginRight: '8px',
+                  width: '16px', // Adjust size here
+                  height: '16px', // Adjust size here  // Remove default styling if needed
+                  borderRadius: '50%', // Make it a circle if it's not by default
+                  border: '2px solid black' // Border style for the circle
+                }} />
+              Documento
+            </label>
+          </div>
+          </>
+}
 
       <Message>Selecciona o arrastra un archivo</Message>
       <FileInput disabled={disabled}  onChange={props.onChange} type="file" id="file-upload" />

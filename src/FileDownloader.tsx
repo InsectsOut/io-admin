@@ -4,6 +4,8 @@ import { MdEditSquare } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
+import { MdFileUpload } from "react-icons/md";
+
 import { supabase } from "./utils/ClientSupabase";
 
 
@@ -59,6 +61,7 @@ type styledDownloaderProps = {
     file_id: number
     triggerFunction: () => void;
     onclick?: () => void
+    openUploader?: () => void
 
 
 }
@@ -146,9 +149,16 @@ const FileDownloader: React.FC<styledDownloaderProps> = (props) => {
                     <FileName>{props.file_name}</FileName>
                 }
                 <div className="iconsContainer">
+                    {props.file_name!=="Firma" &&
                     <FaEdit size={25} style={{ color: 'black', cursor: "pointer" }}
                         onClick={openEditor}
                     ></FaEdit>
+                }
+                 {props.file_name==="Firma" &&
+                    <MdFileUpload size={25} style={{ color: 'black', cursor: "pointer" }}
+                        onClick={props.openUploader}
+                    ></MdFileUpload>
+                 }
                     <FaFileDownload
                         onClick={() => {
                             Promise.resolve(props.onclick?.()) // Wrap in Promise to allow `.then()`

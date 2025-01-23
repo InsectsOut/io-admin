@@ -270,6 +270,13 @@ const Clientes: React.FC<clientesProps> = (props) => {
         }
     }
 
+    useEffect(()=>{
+        if (!modalVisible){
+            setIsRotated(false)
+            setIsRotated2(false)
+        }
+    },[modalVisible])
+
     return (
         <>
 
