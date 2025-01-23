@@ -13,6 +13,7 @@ type Registros = Tables<"RegistroAplicacion">
 type Productos = Tables<"Productos">
 type Direcciones = Tables<"Direcciones">
 type Recomendaciones = Tables<"Recomendaciones">
+type Plagas = Tables<"Plagas">
 
 // Font.register({
 //     family: 'Open Sans',
@@ -204,7 +205,7 @@ const styles = StyleSheet.create({
         borderColor: "black",
     },
     rotateImage: {
-       transform:"rotate(270deg) scale(.9)",
+       transform:"rotate(-90deg) scale(.9)",
     },
     firmasContainer: {
         width: "50%",
@@ -232,25 +233,6 @@ const recommendations = [
     "Entrar al inmueble después de 2 horas de haberse realizado el servicio.",
     "Lavar todos los utensilios de cocina expuestos durante el servicio."
 ];
-const recommendationsMIP = [
-    "Tapar coladeras en",
-    "Instalar guardapolvo en puerta",
-    "Mantener corto el césped",
-    "Reparar fuga de agua en",
-    "Recoger alimentos y trastes sucios",
-    "Sellar orificios, grietas y/o endiduras",
-];
-
-
-const recommendationsMIP2 = [
-    "No trapear en dos dias a 15 cm de la pared",
-    "Instalar mosquiteros en",
-    "Limpiar derrames en piso y paredes No dejar alimento de mascota expuesto",
-    "No introducir alimento sin revisar cajas de carton o madera Almacenar a 10 cm. Del piso y la pared.",
-    "Utilizar cubre colchon y lavar la ropa con agua caliente"
-];
-
-
 
 
 
@@ -262,6 +244,7 @@ const MyDocument = () => {
     };
     type RegistrosPlaguicidas = Registros & {
         Productos: Productos | null
+        Plagas: Plagas | null
     };
     const [servicio, setServicio] = useState<ServicioConClientes[]>([])
     const { folio } = useParams();
@@ -274,6 +257,7 @@ const MyDocument = () => {
     const [firma, setFirma] = useState<string>("")
     const [recomendaciones, setRecomendaciones] = useState<Recomendaciones[]>()
     const [imagenUrl, setImagenUrl] = useState<string[]>([]);
+    const [firmaUrl,setFirmaUrl] = useState<string>("")
 
     const fetchServicio = async () => {
         try {
@@ -295,11 +279,11 @@ const MyDocument = () => {
                 setServicio(serv as any ?? []);
                 setServicioId(serv?.[0]?.id);
                 fetchDireccion(serv[0]?.direccion_id ?? 0);
-                //console.log(serv[0].Recomendaciones[0])
+                //@ts-ignore
+                FetchFirmaEmpleado(serv[0]?.Empleados?.Firma)
 
                 // Set firmaClientePath and fetch the firma image
                 const firmaClientePath = serv[0]?.firma_cliente ?? "";
-                //console.log(getSignatureUrl("imagenes_servicios",firmaClientePath))
 
                 if (firmaClientePath) {
                     fetchFirmaImg(firmaClientePath); // Ensure this function updates the 'firma' state
@@ -333,24 +317,18 @@ const MyDocument = () => {
             if (!rec) {
                 console.error("No existen recomendaciones relacionados a ese servicio")
             }
-            // rec?.forEach(element => {
-            //     if (Array.isArray(element.imagen)) {
-            //         setImagenUrl(element.imagen);
-            //     } else if (typeof element.imagen === "string") {
-            //         setImagenUrl([element.imagen]); // Convert single URL to array
-            //     }
-            // });
+           
 
             if (rec) {
                 setRecomendaciones(rec)
                 // Fetch all image URLs asynchronously
-                Promise.all(rec.map(async (img) => {
-                    const imgUrl = await fetchRecImagen(img.imagen ?? "");
+                Promise.all(rec.map(async (img,index) => {
+                    const imgUrl = await fetchRecImagen(img?.imagen ?? "");
                     return imgUrl ?? ""; // Default to empty string if imgUrl is undefined
                 }))
                 .then(imagenesArray => {
                     setImagenUrl(imagenesArray); // Now imagenesArray is always a string[] (no undefined)
-                })
+                })  
                 .catch(error => console.error("Error fetching images:", error));
             }
     
@@ -365,14 +343,17 @@ const MyDocument = () => {
         try {
             const { data: reg, error: error } = await supabase
                 .from("RegistroAplicacion")
-                .select(`*, Productos!inner(*)`)
+                .select(`
+                    *,
+                    Productos(*),
+                    Plagas(*)
+                  `)
                 .filter("servicio_id", "eq", servicioId)
 
             if (!reg) {
                 console.error(error)
             }
             setRegistroAp(reg as any)
-            console.log(reg)
         }
 
         catch (err) {
@@ -411,8 +392,28 @@ const MyDocument = () => {
             }
 
             if (data?.signedUrl) {
-               // console.log('Signed URL:', data.signedUrl);
                 setFirma(data.signedUrl); // Set the signed URL
+            } else {
+                console.error('No signed URL returned.');
+            }
+        } catch (err) {
+            console.error('Error fetching firma image:', err);
+        }
+    };
+    const FetchFirmaEmpleado = async (firmaCliente: string) => {
+        try {
+            const { data, error } = await supabase
+                .storage
+                .from('documentos_empleados')
+                .createSignedUrl(firmaCliente, 3600); // 3600 seconds = 1 hour
+
+            if (error) {
+                console.error('Failed to create signed URL:', error.message);
+                return;
+            }
+
+            if (data?.signedUrl) {
+                setFirmaUrl(data?.signedUrl); // Set the signed URL
             } else {
                 console.error('No signed URL returned.');
             }
@@ -433,7 +434,6 @@ const MyDocument = () => {
             }
 
             if (data?.signedUrl) {
-                console.log('Signed Image URL:', data.signedUrl);
                 return(data?.signedUrl); // Set the signed URl
             } else {
                 console.error('No signed Image URL returned.');
@@ -443,24 +443,17 @@ const MyDocument = () => {
         }
     };
 
-    const getSignatureUrl = (bucket: string, filepathUrl: string) => {
-        const url = `${IO_SUPABASE_URL}/storage/v1/object/sign/${bucket}/${filepathUrl}`;
-        console.log()
-        return (url)
-
-    }
-
+ 
 
     useEffect(() => {
         fetchServicio()
-        fetchRecImagen("108/reporte-2025-01-20-cl-0")
     }, [])
     useEffect(() => {
-     console.log(imagenUrl)
     }, [imagenUrl])
 
     useEffect(() => {
         if (servicioId !== undefined) {
+          //  fetchRecImagen("108/reporte-2025-01-20-cl-0")
             fetchRegistros();
             fetchRecomendaciones();
         }
@@ -471,12 +464,12 @@ const MyDocument = () => {
         <PDFViewer width="100%" height="100%">
             < Document
             >
-                <Page size={"LETTER"} style={styles.body}>
+                <Page  wrap={false} size={"LETTER"} style={{...styles.body}}>
                     <View style={styles.container}></View>
                     <View style={styles.header}>
                         <View style={{ display: "flex", flexDirection: "row", width: "75%", alignItems: "center" }}>
                             <Image src={logo} style={{ width: "25%" }} />
-                            <Text style={styles.title}> INSECTS OUT PREVENCIÓN Y MANEJO INTEGREAL DE PLAGAS, S.A DE C.V</Text>
+                            <Text style={{...styles.title,fontSize:"12px"}}> INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V</Text>
                         </View>
                         <View style={styles.folioSection} >
                             <Text style={{ color: "red", fontSize: "12px" }}>FOLIO</Text>
@@ -503,7 +496,7 @@ const MyDocument = () => {
                                 <View style={{ width: "30%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>Hora Entrada</Text>
                                 </View>
-                                <Text style={styles.fechaUnderline}> {servicio[0]?.horario_entrada}</Text>
+                                <Text style={styles.fechaUnderline}> {servicio[0]?.horario_entrada || servicio[0]?.horario_servicio}</Text>
                             </View>
                             <View style={styles.fechaElement}>
                                 <View style={{ width: "30%" }}>
@@ -578,23 +571,29 @@ const MyDocument = () => {
                         <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "space-around", gap: "12px", marginBottom: "0" }} >
                             <Text style={{ paddingLeft: "3px" }}>TIPO APLICACION</Text>
                             <Text style={{ paddingLeft: "3px" }}>AREA</Text>
+                            <Text style={{ paddingLeft: "3px" }}>PLAGA</Text>
                             <Text style={{ paddingLeft: "3px" }}>PLAGUICIDA</Text>
                             <Text style={{ paddingLeft: "3px" }}>DOSIFICACION</Text>
                             <Text style={{ paddingLeft: "3px" }}>NUM. REGISTRO</Text>
                             <Text style={{ paddingLeft: "3px" }}>LOTE</Text>
-                            <Text style={{ paddingLeft: "3px" }}>TOTAL UTILIZADO</Text>
+                            {/* <Text style={{ paddingLeft: "3px" }}>TOTAL UTILIZADO</Text> */}
                         </View>
                         {true &&
                             <View style={{ display: "flex", flexDirection: "column", gap: 0, height: "90px", justifyContent: "space-around", flexShrink: 1 }}>
 
                                 {registroAp?.map((registro) =>
 
-                                    <View style={styles.registrosINfo}>
+                                    <View
+                                    key={registro?.id}
+                                    style={{...styles.registrosINfo,marginLeft:"15px"}}>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.tipo_aplicacion}</Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.area_aplicacion}</Text>
+                                        </View>
+                                        <View style={styles.registrosStyleInfoContainer}>
+                                            <Text>{registro?.Plagas?.plaga}</Text>
                                         </View>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.Productos?.nombre}</Text>
@@ -610,9 +609,9 @@ const MyDocument = () => {
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text></Text>
                                         </View>
-                                        <View style={styles.registrosStyleInfoContainer}>
+                                        {/* <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.cantidad} {registro?.Productos?.tipo_de_producto === "plaguicida" ? registro?.unidad : registro?.Productos?.tipo_de_producto === "cebo" ? "pzs" : "pzs"}</Text>
-                                        </View>
+                                        </View> */}
                                     </View>
 
                                 )}
@@ -635,7 +634,7 @@ const MyDocument = () => {
                             <Text style={{ paddingLeft: "3px" }}>SERVICIO SUGERIDO DE ACUERDO A LA PROBLEMÁTICA DE PLAGAS</Text>
                         </View>
                     </View>
-                    <View style={styles.section}>
+                    <View style={{...styles.section, marginBottom:"50px"}}>
                         <View style={styles.checkboxContainer}>
                             <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Semanal" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Semanal</Text>
@@ -676,14 +675,10 @@ const MyDocument = () => {
                         </View>
 
                     </View>
-                    <View style={{ ...styles.fechaTitle, width: "100%", backgroundColor: "white", alignItems: "center", justifyContent: "center", color: "red", fontSize: "8px", marginTop: "15px" }} >
+                    <View style={{ ...styles.fechaTitle, width: "100%", backgroundColor: "white", alignItems: "center", justifyContent: "center", color: "red", fontSize: "8px", height:"10px", }} >
                         <Text style={{ paddingLeft: "3px", height: "100%" }}>GARANTIA DE ACUERDO AL TIEMPO SUGERIDO PARA REALIZAR EL PROXIMO SERVICIO Y CUMPLIR CON LAS RECOMENDACIONES SIGUIENTES:</Text>
                     </View>
-
-                </Page>
-                <Page size={"LETTER"} style={styles.body}>
-                    <View style={styles.container}></View>
-                    <View style={styles.recomendacionesContent}>
+                    <View style={{...styles.recomendacionesContent, height:"68px", marginTop:"0"}}>
                         <Text style={styles.recomendacionesHeader}>RECOMENDACIONES GENERALES IMPORTANTES</Text>
                         <View style={styles.listContainer}>
                             {recommendations.map((item, index) => (
@@ -693,10 +688,17 @@ const MyDocument = () => {
                             ))}
                         </View>
                     </View>
+
+                </Page>
+                <Page size={"LETTER"} style={styles.body}>
+                    <View style={styles.container}></View>
+
                     <View style={{ ...styles.fechaSection, marginTop: "30px" }}>
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "30%", minHeight: "20px", maxHeight:"20px",}} >
+                    <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "40px", minHeight: "40px", maxHeight:"40px",flexDirection:"column"}} >
+                            <Text style={{ paddingLeft: "30px", fontSize:"14px", fontWeight:"bold"}}>REPORTE FOTOGRÁFICO</Text>
                             <Text style={{ paddingLeft: "3px" }}>INSPECCIÓN Y RECOMENDACIONES DE ACUERDO A MANEJO INTEGRADO DE PLAGAS</Text>
                         </View>
+                 
                         <View style={{ ...styles.fechaTitle, alignItems: "center", width: "100%", height: "20px", minHeight: "20px", maxHeight:"20px", display: "flex", flexDirection: "row", justifyContent: "space-between", fontSize: "10px", padding: "0px 10px 0px 10px" }}>
                             <View style={{ display: "flex", flexDirection: "column", maxWidth: "30%", flexGrow: 1 }}>
                                 <Text>Problema</Text>
@@ -777,7 +779,7 @@ const MyDocument = () => {
 
                                 <View style={styles.firmasContainer}>
                                     {firma ? (
-                                        <Image src={firma} style={{ width: '600px', backgroundColor: "transparent" }} />
+                                        <Image src={firmaUrl} style={{ maxWidth: '600px', backgroundColor: "transparent" }} />
                                     ) : (
                                         <Text style={{ color: "black", marginBottom: "10px" }}>Loading firma...</Text>
                                     )}

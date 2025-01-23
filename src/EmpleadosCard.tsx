@@ -174,7 +174,7 @@ export const AddResponsableCard = styled.div`
   }
 `
 
-const FileContainer = styled.div `
+const FileContainer = styled.div`
 display: flex;
   flex-direction: column;
   width: 100%;
@@ -186,7 +186,7 @@ display: flex;
 const EmpleadosCard = () => {
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
-    const { id } = useParams<string>()
+    const { id } = useParams<string >()
     const [, setResponsable] = useState<string>("")
     const [isClicked, setClicked] = useState<boolean>(false);
     const [responsableExists] = useState<boolean | null>(false)
@@ -210,7 +210,9 @@ const EmpleadosCard = () => {
     const [numCuenta, setNumCuenta] = useState<number | null>()
     const [esCapacitacion, setEsCapacitacion] = useState<boolean>(false);
     const [mostrarCapacitaciones, setMostrarCapacitaciones] = useState<boolean>(false)
-    const [fileUrl,setFileUrl] = useState<string>("")
+    const [fileUrl, setFileUrl] = useState<string>("")
+    const [firmaSelected,setFirmaSelected] = useState<boolean>(false)
+    const [FirmaUrl,setFirmaUrl] = useState<string>("")
 
     const handleMostrarCapacitaciones = () => {
         setMostrarCapacitaciones(prev => !prev)
@@ -281,9 +283,11 @@ const EmpleadosCard = () => {
         setInfoTab(tag);
     }
 
-    const openUploader = () => {
+    const openUploader = (firmaSelected:boolean) => {
+        setFirmaSelected(firmaSelected)
         setUploaderOpen(prev => !prev);
     }
+
 
     const fetchDocumentUrl = async (docPath: string) => {
         console.log(docPath)
@@ -302,11 +306,11 @@ const EmpleadosCard = () => {
                 console.log('Signed Document URL:', data.signedUrl);
                 let url = data?.signedUrl
                 console.log(url)
-                 setFileUrl(url)
-            
+                setFileUrl(url)
+
             } else {
                 console.error('No signed Document URL returned.');
-             
+
             }
         } catch (err) {
             console.error('Error fetching Document:', err);
@@ -332,15 +336,13 @@ const EmpleadosCard = () => {
                     cacheControl: '3600',
                     upsert: false
                 })
-            console.log(data)
-            //TODO CAMBIAR URL POR VARIABLE DE DESARROLLO
-            // url = `https://stnrrgqnedpadgelrkbx.supabase.co/storage/v1/object/public/documentos_empleados/${data?.path}`
-            console.log("path", data?.path);
+
+            if(!firmaSelected){
             try {
 
                 const query = supabase.from("DocumentosEmpleados")
                 const { error } = await query
-
+                
                     .insert([
                         {
 
@@ -360,9 +362,40 @@ const EmpleadosCard = () => {
                 setUploaderOpen(false)
 
             }
+        
             catch (err) {
                 console.log(err)
             }
+        }
+            if(firmaSelected){
+                console.log("firma selected")
+                console.log("path", data?.path);
+            try {
+
+                const query = supabase.from("Empleados")
+                const { error } = await query
+                
+                    .update([
+                        {
+                            Firma: data?.path,
+                        },
+                    ] as any)
+                .eq("id", Number(id))
+                .select();
+
+                if (error) {
+                    console.log(error)
+                }
+                setUploaderOpen(false)
+                fetchEmpleados(id);
+             //   await setFirmaSelected(false)
+
+            }
+        
+            catch (err) {
+                console.log(err)
+            }
+        }
             if (error) {
                 console.log(error);
             }
@@ -405,6 +438,7 @@ const EmpleadosCard = () => {
                     setNumlicencia(data[0]?.licencia_de_conducir as number)
                     setVigenciaDeConducirStart(data[0]?.vigencia_conducir_start as Date | any)
                     setVigenciaDeConducirEnd(data[0]?.vigencia_conducir_end as Date | any)
+                    setFirmaUrl(data[0]?.Firma ?? "")
                 }
             }
             console.log(error)
@@ -475,11 +509,11 @@ const EmpleadosCard = () => {
                 .update([
                     {
                         ine: ineNumber,
-                        curp:curp,
-                        imss:imss,
+                        curp: curp,
+                        imss: imss,
                         licencia_de_conducir: numLicencia,
-                        vigencia_conducir_start:vigencia_conducir_start,
-                        vigencia_conducir_end:vigencia_conducir_end,
+                        vigencia_conducir_start: vigencia_conducir_start,
+                        vigencia_conducir_end: vigencia_conducir_end,
                         cuenta_bancaria: numCuenta
                     },
                 ] as Empleado | any)
@@ -565,6 +599,23 @@ const EmpleadosCard = () => {
             window.open(fileUrl, "_blank"); // Opens the URL in a new tab
         }
     }, [fileUrl]);
+    
+    useEffect(() => {
+        if (fileUrl) {
+            // Trigger the download only when fileUrl changes
+            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
+        }
+    }, []);
+    
+    useEffect(() => {
+        if (fileUrl) {
+            // Trigger the download only when fileUrl changes
+            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
+        }
+    }, []);
+    
+
+    
 
 
 
@@ -572,7 +623,9 @@ const EmpleadosCard = () => {
         <>
             <Titulo>Empleados</Titulo>
             <BodyContainer id="bodyContainer">
-                <ClientCardContainer style={{ position: "relative" }}>
+                <ClientCardContainer 
+
+                style={{ position: "relative" }}>
                     <DetallesTitulo>Información del Empleado</DetallesTitulo>
 
                     <div className="selectTag">
@@ -749,7 +802,7 @@ const EmpleadosCard = () => {
                                     height="3rem"
                                     color="#0D4E80"
                                     justify="space-between"
-                                    onClick={openUploader}
+                                    onClick={() => {openUploader(false)}}
                                 >
                                     <p>{uploaderOpen ? "Ver archivos" : "Subir un archivo"}</p>
                                     <MdFileUpload />
@@ -766,7 +819,9 @@ const EmpleadosCard = () => {
                                 </ButtonComponents>
                             </div>
                             {uploaderOpen &&
-                                <FileUpload onChange={async (e) => {
+                                <FileUpload
+                                firmaSelected={firmaSelected}
+                                onChange={async (e) => {
                                     await uploadImage(e, file_title, esCapacitacion);
                                     fetchDocs(id);
                                 }}
@@ -775,20 +830,31 @@ const EmpleadosCard = () => {
                                 />
                             }
                             <FileContainer >
-                            {docs.filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)
-                                .map((docs) => (
-                                    !uploaderOpen && (
-                                        <FileDownloader
-                                            onclick={()=>{fetchDocumentUrl(docs?.url ?? "")}}
-                                            file_id={docs.id}
-                                            triggerFunction={triggerFromChild}
-                                            key={docs.id}
-                                            file_url={fileUrl}
-                                            file_name={docs.nombre as string}
-                                        />
-                                    )
-                                ))}
-                                </FileContainer>
+
+                                {!uploaderOpen  && !mostrarCapacitaciones &&
+                                <FileDownloader
+                                    onclick={() => { fetchDocumentUrl(FirmaUrl) }}
+                                    file_id={0}
+                                    triggerFunction={triggerFromChild}
+                                    file_url={fileUrl}
+                                    file_name={"Firma"}
+                                    openUploader={() =>{openUploader(true)}}
+                                />
+                            }
+                                {docs.filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)
+                                    .map((docs) => (
+                                        !uploaderOpen && (
+                                            <FileDownloader
+                                                onclick={() => { fetchDocumentUrl(docs?.url ?? "") }}
+                                                file_id={docs.id}
+                                                triggerFunction={triggerFromChild}
+                                                key={docs.id}
+                                                file_url={fileUrl}
+                                                file_name={docs.nombre as string}
+                                            />
+                                        )
+                                    ))}
+                            </FileContainer>
                         </InputsContainer>
                     }
                 </ClientCardContainer>

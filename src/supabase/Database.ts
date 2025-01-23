@@ -165,6 +165,7 @@ export type Database = {
           curp: string | null
           direccion: number | null
           fecha_nacimiento: string | null
+          Firma: string | null
           id: number
           imss: string | null
           ine: string | null
@@ -186,6 +187,7 @@ export type Database = {
           curp?: string | null
           direccion?: number | null
           fecha_nacimiento?: string | null
+          Firma?: string | null
           id?: number
           imss?: string | null
           ine?: string | null
@@ -207,6 +209,7 @@ export type Database = {
           curp?: string | null
           direccion?: number | null
           fecha_nacimiento?: string | null
+          Firma?: string | null
           id?: number
           imss?: string | null
           ine?: string | null

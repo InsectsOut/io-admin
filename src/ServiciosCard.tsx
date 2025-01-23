@@ -475,7 +475,7 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
     }
 
     const handleNavigate = () => {
-        navigate(`/Servicios/pdf/${servicios[0].folio}`);
+        window.open(`/Servicios/pdf/${servicios[0].folio}`);
     };
 
     const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
