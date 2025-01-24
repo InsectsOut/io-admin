@@ -1,11 +1,11 @@
-import { Page, Text, Document, StyleSheet, View, Image, Font, PDFViewer } from '@react-pdf/renderer';
+import { Page, Text, Document, StyleSheet, View, Image, Font, PDFViewer, BlobProvider } from '@react-pdf/renderer';
 import logo from '../src/assets/logoGrande.png'
 import { supabase } from './utils/ClientSupabase';
 import { useEffect, useState } from 'react';
 import { Enums, Tables } from "../src/supabase/Database";
 import { useParams } from 'react-router-dom';
+import styled from 'styled-components';
 const { IO_SUPABASE_URL } = import.meta.env;
-
 type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
 type Responsables = Tables<"Responsables">
@@ -19,6 +19,46 @@ type Plagas = Tables<"Plagas">
 //     family: 'Open Sans',
 //     src: 'http://fonts.gstatic.com/s/opensans/v13/cJZKeOuBrn4kERxqtaUH3aCWcynf_cDxXwCLxiixG1c.ttf',
 // });
+
+const LoadingContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100;  // Full viewport height to center the text
+  background-color: #f0f4f8; // Light background
+  color: #333;  // Dark text color for good contrast
+  font-family: 'Arial', sans-serif;  // Clean, modern font
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); // Soft shadow around the box
+  //transition: all 0.3s ease-in-out;
+
+  h1 {
+    font-size: 2rem;
+    color: #2395FF; // Vibrant blue color for the title
+    margin-bottom: 10px;
+  }
+
+  h2 {
+    font-size: 1.2rem;
+    color: #555;  // Subtle color for the secondary text
+    text-align: center;
+    margin-top: 0;
+  }
+
+  // Add a simple fade-in animation on page load
+  //animation: fadeIn 1s ease-in;
+
+  /* @keyframes fadeIn {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  } */
+`;
 
 
 const styles = StyleSheet.create({
@@ -241,7 +281,7 @@ const recommendations = [
 
 
 
-const MyDocument = () => {
+const MyConstanciaMobile = () => {
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null,
         Responsables: Responsables,
@@ -263,6 +303,9 @@ const MyDocument = () => {
     const [recomendaciones, setRecomendaciones] = useState<Recomendaciones[]>()
     const [imagenUrl, setImagenUrl] = useState<string[]>([]);
     const [firmaUrl,setFirmaUrl] = useState<string>("")
+    const [blobUrl,setBlobUrl] = useState<string>("")
+    const [showPdf, setShowPdf] = useState<boolean>(false);
+    const [dontShow, setDs] = useState<boolean>(false)
 
     const fetchServicio = async () => {
         try {
@@ -464,19 +507,18 @@ const MyDocument = () => {
         }
     }, [servicioId]);
 
+    const renderDocument = () => {
+        return   <Document
 
-    return (
-        <PDFViewer width="100%" height="100%">
-            < Document
-            >
-                <Page  wrap={false} size={"LETTER"} style={{...styles.body}}>
+        >
+                <Page wrap={false} size={"LETTER"} style={{ ...styles.body }}>
                     <View style={styles.container}></View>
                     <View style={styles.header}>
                         <View style={{ display: "flex", flexDirection: "row", width: "75%", alignItems: "center" }}>
                             <Image src={logo} style={{ width: "25%" }} />
-                            <Text style={{...styles.title,fontSize:"12px"}}> INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V</Text>
+                            <Text style={{ ...styles.title, fontSize: "12px" }}> INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V</Text>
                         </View>
-                        <View style={styles.folioSection} >
+                        <View style={styles.folioSection}>
                             <Text style={{ color: "red", fontSize: "12px" }}>FOLIO</Text>
                             <View style={styles.folioBox}><Text>{folio}</Text></View>
                         </View>
@@ -487,7 +529,7 @@ const MyDocument = () => {
                         </View>
                     </View>
                     <View style={{ ...styles.fechaSection, marginBottom: "-100px" }}>
-                        <View style={styles.fechaTitle} >
+                        <View style={styles.fechaTitle}>
                             <Text style={{ paddingLeft: "3px" }}>FECHA Y HORA DE ENTRADA Y SALIDA DEL SERVICIO</Text>
                         </View>
                         <View style={{ display: "flex", flexDirection: "row", gap: "10px" }}>
@@ -511,8 +553,8 @@ const MyDocument = () => {
                             </View>
                         </View>
                     </View>
-                    <View style={{ ...styles.fechaSection }} >
-                        <View style={styles.fechaTitle} >
+                    <View style={{ ...styles.fechaSection }}>
+                        <View style={styles.fechaTitle}>
                             <Text style={{ paddingLeft: "3px" }}>INFORMACIÓN GENERAL DEL CLIENTE</Text>
                         </View>
                         <View style={{ display: "flex", gap: "10px", width: "100%" }}>
@@ -566,14 +608,14 @@ const MyDocument = () => {
                         </View>
                     </View>
                     <View style={{ ...styles.fechaSection, marginTop: "0" }}>
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center" }} >
+                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center" }}>
                             <Text style={{ paddingLeft: "3px" }}>APLICACIONES REALIZADAS</Text>
                         </View>
                     </View>
                     <View style={{
                         ...styles.fechaSection, marginTop: "-120px", gap: "12px",
                     }}>
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "space-around", gap: "12px", marginBottom: "0" }} >
+                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "space-around", gap: "12px", marginBottom: "0" }}>
                             <Text style={{ paddingLeft: "3px" }}>TIPO APLICACION</Text>
                             <Text style={{ paddingLeft: "3px" }}>AREA</Text>
                             <Text style={{ paddingLeft: "3px" }}>PLAGA</Text>
@@ -586,60 +628,57 @@ const MyDocument = () => {
                         {true &&
                             <View style={{ display: "flex", flexDirection: "column", gap: 0, height: "90px", justifyContent: "space-around", flexShrink: 1 }}>
 
-                                {registroAp?.map((registro) =>
-
-                                    <View
+                                {registroAp?.map((registro) => <View
                                     key={registro?.id}
-                                    style={{...styles.registrosINfo,marginLeft:"15px"}}>
-                                        <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.tipo_aplicacion}</Text>
-                                        </View>
-                                        <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.area_aplicacion}</Text>
-                                        </View>
-                                        <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.Plagas?.plaga}</Text>
-                                        </View>
-                                        <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.Productos?.nombre}</Text>
-                                        </View>
-                                        <View style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", width: "14%", padding: 0, margin: 0 }}>
-                                            <Text style={{ width: "100%", padding: 0, margin: 0, flexGrow: 1 }}>
-                                                {registro?.dosis_recomendada === "max" ? registro?.Productos?.dosis_max : registro?.dosis_recomendada === "min" ? registro?.Productos?.dosis_min : ""}
-                                            </Text>
-                                        </View>
-                                        <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.Productos?.registro}</Text>
-                                        </View>
-                                        <View style={styles.registrosStyleInfoContainer}>
-                                            <Text></Text>
-                                        </View>
-                                        {/* <View style={styles.registrosStyleInfoContainer}>
-                                            <Text>{registro?.cantidad} {registro?.Productos?.tipo_de_producto === "plaguicida" ? registro?.unidad : registro?.Productos?.tipo_de_producto === "cebo" ? "pzs" : "pzs"}</Text>
-                                        </View> */}
+                                    style={{ ...styles.registrosINfo, marginLeft: "15px" }}>
+                                    <View style={styles.registrosStyleInfoContainer}>
+                                        <Text>{registro?.tipo_aplicacion}</Text>
                                     </View>
+                                    <View style={styles.registrosStyleInfoContainer}>
+                                        <Text>{registro?.area_aplicacion}</Text>
+                                    </View>
+                                    <View style={styles.registrosStyleInfoContainer}>
+                                        <Text>{registro?.Plagas?.plaga}</Text>
+                                    </View>
+                                    <View style={styles.registrosStyleInfoContainer}>
+                                        <Text>{registro?.Productos?.nombre}</Text>
+                                    </View>
+                                    <View style={{ display: "flex", flexDirection: "row", justifyContent: "flex-start", width: "14%", padding: 0, margin: 0 }}>
+                                        <Text style={{ width: "100%", padding: 0, margin: 0, flexGrow: 1 }}>
+                                            {registro?.dosis_recomendada === "max" ? registro?.Productos?.dosis_max : registro?.dosis_recomendada === "min" ? registro?.Productos?.dosis_min : ""}
+                                        </Text>
+                                    </View>
+                                    <View style={styles.registrosStyleInfoContainer}>
+                                        <Text>{registro?.Productos?.registro}</Text>
+                                    </View>
+                                    <View style={styles.registrosStyleInfoContainer}>
+                                        <Text></Text>
+                                    </View>
+                                    {/* <View style={styles.registrosStyleInfoContainer}>
+                    <Text>{registro?.cantidad} {registro?.Productos?.tipo_de_producto === "plaguicida" ? registro?.unidad : registro?.Productos?.tipo_de_producto === "cebo" ? "pzs" : "pzs"}</Text>
+                </View> */}
+                                </View>
 
                                 )}
 
-                            </View>
-                        }
+                            </View>}
                     </View>
                     <View style={{ ...styles.fechaSection, marginTop: "-20px", }}>
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", backgroundColor: "rgb(14,78,127)" }} >
+                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", backgroundColor: "rgb(14,78,127)" }}>
                             <Text style={{ paddingLeft: "3px" }}>INFORMACIÓN DEL CLIENTE</Text>
                         </View>
                         <View style={{ ...styles.registrosINfo, justifyContent: "flex-start", paddingHorizontal: "12px" }}>
-                            <Text >{servicio[0]?.observaciones} </Text>
+                            <Text>{servicio[0]?.observaciones} </Text>
                         </View>
                     </View>
                     <View style={{
                         ...styles.fechaSection, marginTop: "-90px",
                     }}>
-                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", backgroundColor: "rgb(14,78,127)" }} >
+                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", backgroundColor: "rgb(14,78,127)" }}>
                             <Text style={{ paddingLeft: "3px" }}>SERVICIO SUGERIDO DE ACUERDO A LA PROBLEMÁTICA DE PLAGAS</Text>
                         </View>
                     </View>
-                    <View style={{...styles.section, marginBottom:"50px"}}>
+                    <View style={{ ...styles.section, marginBottom: "50px" }}>
                         <View style={styles.checkboxContainer}>
                             <View style={[styles.checkbox, { backgroundColor: frecuencia_recomendada === "Semanal" ? 'black' : "white" }]} />
                             <Text style={styles.label}>Semanal</Text>
@@ -680,10 +719,10 @@ const MyDocument = () => {
                         </View>
 
                     </View>
-                    <View style={{ ...styles.fechaTitle, width: "100%", backgroundColor: "white", alignItems: "center", justifyContent: "center", color: "red", fontSize: "8px", height:"10px", }} >
+                    <View style={{ ...styles.fechaTitle, width: "100%", backgroundColor: "white", alignItems: "center", justifyContent: "center", color: "red", fontSize: "8px", height: "10px", }}>
                         <Text style={{ paddingLeft: "3px", height: "100%" }}>GARANTIA DE ACUERDO AL TIEMPO SUGERIDO PARA REALIZAR EL PROXIMO SERVICIO Y CUMPLIR CON LAS RECOMENDACIONES SIGUIENTES:</Text>
                     </View>
-                    <View style={{...styles.recomendacionesContent, height:"68px", marginTop:"0"}}>
+                    <View style={{ ...styles.recomendacionesContent, height: "68px", marginTop: "0" }}>
                         <Text style={styles.recomendacionesHeader}>RECOMENDACIONES GENERALES IMPORTANTES</Text>
                         <View style={styles.listContainer}>
                             {recommendations.map((item, index) => (
@@ -699,12 +738,12 @@ const MyDocument = () => {
                     <View style={styles.container}></View>
 
                     <View style={{ ...styles.fechaSection, marginTop: "30px" }}>
-                    <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "40px", minHeight: "40px", maxHeight:"40px",flexDirection:"column"}} >
-                            <Text style={{ paddingLeft: "30px", fontSize:"14px", fontWeight:"bold"}}>REPORTE FOTOGRÁFICO</Text>
+                        <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "center", height: "40px", minHeight: "40px", maxHeight: "40px", flexDirection: "column" }}>
+                            <Text style={{ paddingLeft: "30px", fontSize: "14px", fontWeight: "bold" }}>REPORTE FOTOGRÁFICO</Text>
                             <Text style={{ paddingLeft: "3px" }}>INSPECCIÓN Y RECOMENDACIONES DE ACUERDO A MANEJO INTEGRADO DE PLAGAS</Text>
                         </View>
-                 
-                        <View style={{ ...styles.fechaTitle, alignItems: "center", width: "100%", height: "20px", minHeight: "20px", maxHeight:"20px", display: "flex", flexDirection: "row", justifyContent: "space-between", fontSize: "10px", padding: "0px 10px 0px 10px" }}>
+
+                        <View style={{ ...styles.fechaTitle, alignItems: "center", width: "100%", height: "20px", minHeight: "20px", maxHeight: "20px", display: "flex", flexDirection: "row", justifyContent: "space-between", fontSize: "10px", padding: "0px 10px 0px 10px" }}>
                             <View style={{ display: "flex", flexDirection: "column", maxWidth: "30%", flexGrow: 1 }}>
                                 <Text>Problema</Text>
                             </View>
@@ -729,7 +768,7 @@ const MyDocument = () => {
                                     borderWidth: 1,
                                     height: 85,
                                     minHeight: 75,
-                                    marginBottom:"3px"
+                                    marginBottom: "3px"
                                 }}
                             >
                                 {/* Left Column */}
@@ -753,12 +792,12 @@ const MyDocument = () => {
                                 {/* Right Column */}
                                 <View style={{ display: 'flex', flexDirection: 'row', maxWidth: '30%', flexGrow: 2 }}>
                                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
-                                        {imagenUrl[index] !=="" ? (
+                                        {imagenUrl[index] !== "" ? (
                                             <Image
 
-                                            src={imagenUrl[index]} style={{ ...styles.rotateImage, width:"75px"}} />
+                                                src={imagenUrl[index]} style={{ ...styles.rotateImage, width: "75px" }} />
                                         ) : (
-                                            <Text style={{color: 'black', marginBottom: "10px" }}>Sin imagen disponible...</Text>
+                                            <Text style={{ color: 'black', marginBottom: "10px" }}>Sin imagen disponible...</Text>
                                         )}
                                     </View>
                                 </View>
@@ -770,12 +809,12 @@ const MyDocument = () => {
                 </Page>
                 <Page size={"LETTER"} style={styles.body}>
                     <View>
-                        <View style={{ ...styles.reporteFotográficoContainer, height: "50%" }} >
+                        <View style={{ ...styles.reporteFotográficoContainer, height: "50%" }}>
                             <View style={{ display: "flex", height: "10%", flexDirection: "row" }}>
-                                <View style={{ ...styles.fechaTitle, width: "50%", alignItems: "center", justifyContent: "center", height: "100%" }} >
+                                <View style={{ ...styles.fechaTitle, width: "50%", alignItems: "center", justifyContent: "center", height: "100%" }}>
                                     <Text style={{ paddingLeft: "3px" }}>CLIENTE RECIBE SERVICIO Y RECOMENDACIONES</Text>
                                 </View>
-                                <View style={{ ...styles.fechaTitle, width: "50%", alignItems: "center", justifyContent: "center", height: "100%" }} >
+                                <View style={{ ...styles.fechaTitle, width: "50%", alignItems: "center", justifyContent: "center", height: "100%" }}>
                                     <Text style={{ paddingLeft: "3px" }}>INSECTS OUT</Text>
                                 </View>
                             </View>
@@ -811,7 +850,7 @@ const MyDocument = () => {
                             </View>
                         </View>
                         <View style={{ display: "flex", height: "15%", flexDirection: "column", marginTop: "8px" }}>
-                            <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "flex-start", height: "100%", flexDirection: "column" }} >
+                            <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "flex-start", height: "100%", flexDirection: "column" }}>
                                 <Text style={{ paddingLeft: "3px", fontSize: "16px" }}>Faro de San Sebastian 115 - A Frac. El Faro. León Gto.</Text>
                                 <Text style={{ paddingLeft: "3px", fontSize: "12px", marginVertical: "5px" }}>Tel: 777-85-64        477-228-75-65</Text>
                                 <View style={{ display: "flex", justifyContent: "space-around", flexDirection: "row", width: "100%" }}>
@@ -821,7 +860,7 @@ const MyDocument = () => {
                             </View>
                         </View>
                         <View style={{ display: "flex", height: "8%", flexDirection: "column", marginTop: "8px", justifyContent: "center" }}>
-                            <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "flex-start", height: "100%", flexDirection: "column" }} >
+                            <View style={{ ...styles.fechaTitle, width: "100%", alignItems: "center", justifyContent: "flex-start", height: "100%", flexDirection: "column" }}>
                                 <Text style={{ paddingLeft: "3px", fontSize: "16px", marginTop: "4px" }}>LICENCIA SANITARIA 08-11A182</Text>
                                 <View style={{ display: "flex", alignItems: "flex-end", flexDirection: "column", width: "100%", gap: "8px", marginRight: "12px", marginBottom: "20px", textAlign: "center" }}>
                                     <Text style={{ fontSize: "4px" }}>FO-GG-0000</Text>
@@ -832,9 +871,81 @@ const MyDocument = () => {
                         </View>
                     </View>
                 </Page>
-            </Document >
-        </PDFViewer>
+            </Document>
+            ; // Return your actual document component
+      };
+
+
+      useEffect(() => {
+        if (blobUrl && showPdf) {
+            const timer = setTimeout(() => {
+                window.location.href = blobUrl;
+            }, 3000); // Wait for 5 seconds (5000 milliseconds)
+    
+            // Cleanup the timer if the component unmounts or the effect runs again
+            return () => clearTimeout(timer);
+        }
+    }, [blobUrl, showPdf]);
+
+     
+    return (
+        <>
+        <BlobProvider document={renderDocument() }>
+        {({ loading, blob, url }) => {
+          // Set the blob URL when it is ready and not loading
+          if (!loading && url && blobUrl !== url) {
+            setBlobUrl(url ?? "");
+            setShowPdf(true)
+
+
+          }
+
+          return loading ? (
+            <LoadingContainer>
+        <h1>Cargando Registro de aplicación</h1>
+        <h2>Favor de esperar</h2>
+      </LoadingContainer>
+    // Loading indicator while the PDF is being generated
+          ) : (
+            <div
+            
+              style={{
+                textDecoration: 'none',
+                color: '#2395FF',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '.25rem',
+                flexDirection: 'row',
+                
+              }}
+            >
+              {/* Download Button */}
+             
+              {/* Button to show PDF */}
+             
+      <LoadingContainer>
+        <h1>Cargando Registro de aplicación</h1>
+        <h2>Favor de esperar</h2>
+      </LoadingContainer>
+   
+   
+            </div>
+          );
+        }}
+        
+      </BlobProvider>
+      
+       {/* <iframe
+       style={{width:"100%", height:"100%"}}
+        src={blobUrl}
+        ></iframe>  */}
+   
+      
+       
+             
+      
+            </>
     )
 };
 
-export default MyDocument
+export default MyConstanciaMobile
