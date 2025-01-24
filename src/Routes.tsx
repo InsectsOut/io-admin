@@ -16,6 +16,7 @@ import { PDFViewer } from "@react-pdf/renderer";
 import Calendar from "./Calendar";
 import EmpleadosCard from "./EmpleadosCard";
 import CreateEmployee from "./CreateEmployee";
+import MyConstanciaMobile from "./ConstanciaMobile";
 
 
 
@@ -124,6 +125,7 @@ const AppRoutes = () => {
                         user_id={localStorage.getItem("user_id") ?? ""}
                     /></>}></Route>
                     <Route path="/Servicios/pdf/:folio" element={<MyDocument />} />
+                    <Route path="/Servicios/pdfMobile/:folio" element={<MyConstanciaMobile />} />
                     <Route path="/calendar" element={<Calendar
                         organizacion={localStorage.getItem("org") ?? ""}
                     />} />

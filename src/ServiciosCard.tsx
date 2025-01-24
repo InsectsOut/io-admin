@@ -19,6 +19,7 @@ import { ButtonComponents } from "./EmpleadosCard";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 
+
 type Servicio = Tables<"Servicios">
 type Cliente = Tables<"Clientes">
 type Direcciones = Tables<"Direcciones">
@@ -104,7 +105,7 @@ type StyledButtonProps = {
 
 interface serviciosProps {
     organizacion?: string;
-  }
+}
 
 export const StyledButton = styled.button<StyledButtonProps>`
     all:unset;
@@ -232,7 +233,7 @@ right:0;
 
 
 
-const ServiciosCard:React.FC<serviciosProps>  = (props) => {
+const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const [readOnly, setReadOnly] = useState(true);
     const [nombreEditable, setNombreEditable] = useState(true)
     const [fechaEditable, setFechaEditable] = useState(true)
@@ -257,13 +258,14 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
     const [plagaSelected, setPlagaSelected] = useState<number[]>([])
-    const [dataFromRegistros, setDataFromRegistros] = useState<number | null >(null)
+    const [dataFromRegistros, setDataFromRegistros] = useState<number | null>(null)
     const navigate = useNavigate()
     const [addButtonClicked, setAddButtonClicked] = useState(false)
     const [direccion_id, setDireccion_id] = useState<string>("")
     const [dirección, setDireccion] = useState<Direcciones[]>([])
     const [infoTab, setInfoTab] = useState<string>("general")
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [blobUrl, setBolbUrl] = useState<string>("")
 
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
@@ -272,14 +274,14 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
     enum registroEnums {
         actualizar = "actualizar",
         añadir = "añadir"
-      }
-      
+    }
+
 
     const handleChildData = async (data: number) => {
-        
+
         setDataFromRegistros(data)
         setAddButtonClicked(false)
-        
+
     }
 
     const FetchServicios = async () => {
@@ -477,6 +479,9 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
     const handleNavigate = () => {
         window.open(`/Servicios/pdf/${servicios[0].folio}`);
     };
+    const handleNavigateMobile = () => {
+        window.open(`/Servicios/pdfMobile/${servicios[0].folio}`);
+    };
 
     const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const cambio = event.target.value
@@ -508,7 +513,7 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
         setInfoTab(tag);
     }
 
-    const hanldeSetData = async (data:number| null) => {
+    const hanldeSetData = async (data: number | null) => {
         await setDataFromRegistros(data)
     }
 
@@ -728,7 +733,7 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
                         </>
                     )}
                     {infoTab === "registros" && (
-                        <div style={{position:"relative"}}>
+                        <div style={{ position: "relative" }}>
                             <ButtonComponents
                                 background="white"
                                 height="3rem"
@@ -740,7 +745,7 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
                                         setModalOpen(true);
                                         setAddButtonClicked(true);
                                     });
-                                }}                            
+                                }}
                             >
                                 <p>Añadir registro</p> <IoIosAddCircleOutline
                                     size={25}
@@ -757,12 +762,13 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
                     )}
                     {infoTab === "constancia" && (
                         <div>
+                            
                             <PdfMailButton
                                 position="relative"
                             >
                                 <p>Registro de aplicación</p>
                                 <div style={{ width: "100%", display: "flex", justifyContent: "center", gap: ".25rem" }}
-                                    onClick={handleNavigate}
+                                    onClick={handleNavigateMobile}
                                 >
                                     <IoDownloadOutline size={20} color="#2395FF" />
                                     <p
@@ -771,6 +777,8 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
                                 </div>
 
                             </PdfMailButton>
+
+                            
                         </div>
                     )}
                 </CardContainer>
@@ -806,9 +814,19 @@ const ServiciosCard:React.FC<serviciosProps>  = (props) => {
                         </div>
 
                     </PdfMailButton>
-                    <PdfMailButton
-                        posy="12.3125"
-                    />
+                    <PdfMailButton posy="12.3125">
+                        <p
+                        >Registro de aplicación</p>
+                        <div
+                            style={{
+                                width: "100%",
+                                display: "flex",
+                                justifyContent: "center",
+                                gap: ".25rem"
+                            }}
+                        >
+                        </div>
+                    </PdfMailButton>|
 
                 </div>
             </ServiciosCardContainer>
