@@ -281,6 +281,7 @@ const Calendar: React.FC<calendarProps> = (props) => {
       tipoPlaga: info.event.extendedProps.tipoPlaga,
       ubicacion: info.event.extendedProps.ubicacion,
     });
+    console.log(info)
     setIsModalOpen(true);
   };
 
