@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { Tables } from "../src/supabase/Database";
-type Direcciones = Tables <"Direcciones">
+type Direcciones = Tables<"Direcciones">
 import { supabase } from './utils/ClientSupabase';
+import { useNavigate } from 'react-router-dom';
 
 
 const Backdrop = styled.div`
@@ -47,6 +48,10 @@ const ModalContent = styled.div`
     font-size: 1rem;
     color: #555;
   }
+  .folioCont{
+    display: flex;
+    gap:.15rem;
+  }
 `;
 
 const CloseButton = styled.button`
@@ -70,6 +75,14 @@ const CloseButton = styled.button`
     background: #c0392b;
   }
 `;
+
+const P = styled.p`
+color:#3788d8 !important;
+&:hover{
+  cursor:pointer;
+  text-decoration: underline;
+}
+`
 
 interface EventModalProps {
   isOpen: boolean;
@@ -111,33 +124,34 @@ const EventModal: React.FC<EventModalProps> = ({
   eventUbicacion,
 
 }) => {
-  const [direccion,setDireccion] = useState<Direcciones[]>([])
+  const [direccion, setDireccion] = useState<Direcciones[]>([])
+  const navigate = useNavigate()
 
-  const fetchDireccion = async (direccion_id:number) => {
+  const fetchDireccion = async (direccion_id: number) => {
     try {
       let query = await supabase
-      .from("Direcciones")
-      .select(`*`)
-      .filter("id","eq",direccion_id)
+        .from("Direcciones")
+        .select(`*`)
+        .filter("id", "eq", direccion_id)
       const { data, error } = query;
       if (error) {
         console.log(error);
       }
-      if (data){
-      setDireccion(data);
-      console.log(data)
+      if (data) {
+        setDireccion(data);
+        console.log(data)
       }
     } catch (err) {
       console.log(err);
     }
   };
 
-  useEffect(()=> {
-    if (eventDireccion){
-    fetchDireccion(eventDireccion)
+  useEffect(() => {
+    if (eventDireccion) {
+      fetchDireccion(eventDireccion)
     }
 
-  },[eventDireccion])
+  }, [eventDireccion])
   return (
     <>
       {isOpen && (
@@ -148,13 +162,20 @@ const EventModal: React.FC<EventModalProps> = ({
             <p><strong>Horario de Servicio:</strong> {eventStartTime}</p>
             {eventEndTime && <p><strong>End Time:</strong> {eventEndTime}</p>}
             {eventDescription && <p><strong>Observaciones:</strong> {eventDescription}</p>}
-            {eventFolio && <p><strong>Folio:</strong> {eventFolio}</p>}
+            {eventFolio && (
+              <div className='folioCont'>
+                <p >
+                  <strong>Folio: </strong>
+                </p>
+                <P onClick={() => navigate(`/Servicios/${eventFolio}`)}> {eventFolio}</P>
+              </div>
+            )}
             {eventFrecuencia && <p><strong>Frecuencia Recomendada:</strong> {eventFrecuencia}</p>}
             {eventDireccion && <p><strong>Direccion:</strong> {direccion[0]?.calle} {direccion[0]?.ciudad} {direccion[0]?.colonia} {direccion[0]?.numero_ext} {direccion[0]?.codigo_postal}</p>}
             {eventTipoServicio && <p><strong>Tipo de Servicio:</strong> {eventTipoServicio}</p>}
             {eventTipoFolio && <p><strong>Tipo de Folio:</strong> {eventTipoFolio}</p>}
             {eventRealizado !== undefined && <p><strong>Realizado:</strong> {eventRealizado ? 'Sí' : 'No'}</p>}
-            <p><strong>Aplicador Responsable ID:</strong> {eventAplicadorResponsable}</p>
+            <p><strong>Aplicador Responsable:</strong> {eventAplicadorResponsable}</p>
             {eventTipoPlaga && <p><strong>Tipo de Plaga ID:</strong> {eventTipoPlaga}</p>}
           </ModalContent>
         </Backdrop>

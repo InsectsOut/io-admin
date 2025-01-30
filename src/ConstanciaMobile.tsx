@@ -880,7 +880,7 @@ const MyConstanciaMobile = () => {
         if (blobUrl && showPdf) {
             const timer = setTimeout(() => {
                 window.location.href = blobUrl;
-            }, 3000); // Wait for 5 seconds (5000 milliseconds)
+            }, 5000); // Wait for 5 seconds (5000 milliseconds)
     
             // Cleanup the timer if the component unmounts or the effect runs again
             return () => clearTimeout(timer);
