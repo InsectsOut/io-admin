@@ -453,6 +453,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                             <option hidden selected>-Unidad-</option>
                                             <option value={"gramos"} >-- g --</option>
                                             <option value={"mililitros"}>-- ml --</option>
+                                            <option value={"pza"}>-- pieza --</option>
                                         </select>
                                         <SubTitles>g/ml</SubTitles>
                                     </div>
