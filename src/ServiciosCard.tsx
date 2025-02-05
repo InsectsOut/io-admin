@@ -298,7 +298,10 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             if (servicio) {
                 setServicios(servicio)
                 const initialDateString = servicio[0]?.fecha_servicio;
-                const initialDate = initialDateString ? new Date(initialDateString) : null;
+                const [year, month, day] = initialDateString.split("-").map(Number);
+
+                // Create the date in LOCAL TIME (without any timezone shift)
+                const initialDate = new Date(year, month - 1, day); 
                 setSelectedDate(initialDate)
                 const initialEmpleadoId = servicio[0]?.aplicador_Responsable ?? null;
                 console.log(initialEmpleadoId)
@@ -381,14 +384,25 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
 
     const updateServicios = async () => {
 
+
         try {
+            let utcDate = null;
+            if (selectedDate) {
+                utcDate = new Date(Date.UTC(
+                    selectedDate.getFullYear(),
+                    selectedDate.getMonth(),
+                    selectedDate.getDate()
+                ));
+            }
+
+            const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
             const { data, error } = await supabase
                 .from("Servicios")
                 .update(
                     [
                         {
                             cliente_id: clienteId,
-                            fecha_servicio: selectedDate,
+                            fecha_servicio: formattedDate,
                             horario_servicio: selectedTime,
                             tipo_servicio: tipoServicio,
                             aplicador_Responsable: empleadoId ?? null,
@@ -406,6 +420,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             } else {
                 console.log("Data updated successfully:", data);
             }
+
         }
         catch (err) {
             console.log("Error making the update request")
@@ -517,6 +532,11 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
         await setDataFromRegistros(data)
     }
 
+    const handleDateChange = (date: Date | null) => {
+        if (!date) return; // Handle null case
+        setSelectedDate(date);
+    };
+
     const selectTag = (infoTab: string) => {
         return (
             <div className="selectTag">
@@ -609,7 +629,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                                 placeholderText={servicios[0]?.fecha_servicio}
                                                 selected={selectedDate}
                                                 onChange={(date) => {
-                                                    setSelectedDate(date);
+                                                    handleDateChange(date);
                                                     setClicked(true);
                                                 }}
                                                 dateFormat="YYY/MM/dd"
@@ -660,8 +680,8 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                             >
                                                 {dirección.map((options) => (
                                                     <option value={options.id} key={options.id}>
-                                                        {options.calle} {options.ciudad} {options.colonia}{" "}
-                                                        {options.numero_ext} {options.codigo_postal}
+                                                        {options.calle} {options.numero_ext} {options.colonia}{options.ciudad} {options.estado} {" "}
+                                                        {options.codigo_postal}
                                                     </option>
                                                 ))}
                                             </select>
@@ -762,7 +782,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     )}
                     {infoTab === "constancia" && (
                         <div>
-                            
+
                             <PdfMailButton
                                 position="relative"
                             >
@@ -778,7 +798,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
 
                             </PdfMailButton>
 
-                            
+
                         </div>
                     )}
                 </CardContainer>
