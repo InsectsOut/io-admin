@@ -220,7 +220,7 @@ justify-content:left;
 export const TimeInput = styled.div<{marginTop?:string, marginTopTablet?:string}> /*style*/`
 display:flex;
 flex-direction:column;
-margin-top: ${(props) => props.marginTop ? props.marginTop : "1rem"};
+margin-top: ${(props) => props.marginTop ? props.marginTop : "0"};
 
 @media (max-width: 900px) {
     margin-top: ${(props) => props.marginTopTablet ? props.marginTopTablet : "1rem"};
@@ -516,9 +516,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                                 <DateInput placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" />
                             </div>
                         </FechaInput>
-                        <TimeInput>
+                        <TimeInput
+                        marginTopTablet="0"
+                        >
                             <FormLabels >Horario</FormLabels>
                             <Horario
+                            style={{width:"10rem", margin:0}}
                                 type="time"
                                 value={selectedTime}
                                 onChange={handleTimeChange}

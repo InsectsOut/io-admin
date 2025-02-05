@@ -257,7 +257,7 @@ const CreateEmployee: React.FC<createEmployeeProps> = (props) => {
 
     return (
         <CreateContainer id="createContainer">
-            <Titulo>Clientes</Titulo>
+            <Titulo>Empleados</Titulo>
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo empleado, complete el siguiente formulario.</FormHeader>
                 <CreateServicioForm id="createClientForm">
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>

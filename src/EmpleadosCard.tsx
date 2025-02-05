@@ -425,11 +425,20 @@ const EmpleadosCard = () => {
                 console.log(data)
 
                 if (data) {
+                    const dobString = data[0]?.fecha_nacimiento
+                    if (dobString) {
+                        const [year, month, day] = dobString.split("-").map(Number);
+                        const formattedDob = new Date(year, month - 1, day);
+                        setFechaDeNacimiento(formattedDob)
+                        console.log("Formatted Date of Birth:", formattedDob);
+                    } else {
+                        console.log("Fecha de nacimiento no disponible.");
+                    }
                     setNombre(data[0]?.nombre ?? "")
                     setTelefono(data[0]?.telefono as any)
                     setPuesto(data[0]?.puesto as string)
                     setEmpleadoStatus(data[0]?.activo as boolean)
-                    setFechaDeNacimiento(data[0]?.fecha_nacimiento as Date | any)
+                   
                     setIneNumber(data[0]?.ine as string)
                     setCurp(data[0]?.curp as string)
                     setImss(data[0]?.imss as string)
