@@ -1326,7 +1326,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
           <LowerActionButtons className="lowerActionButtons">
 
-            <div style={{ width: "85%", height: "2.25rem", position: "absolute", top: "90%" }}>
+            <div style={{ width: "85%", height: "2.25rem", position: "absolute", top: "90%" , right:"9%"}}>
               <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
             </div>
           </LowerActionButtons>

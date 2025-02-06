@@ -435,6 +435,13 @@ const Clientes: React.FC<clientesProps> = (props) => {
 
                         )}
                     </FiltrosLeft>
+                    <div>
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </div>
                 </FiltrosContainer>
 
             </ServiciosContainer>
@@ -474,14 +481,8 @@ const Clientes: React.FC<clientesProps> = (props) => {
                 ))}
 
                 <LowerActionButtons >
-                    <div>
-                        <PaginationComponent
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={handlePageChange}
-                        />
-                    </div>
-                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%" }}>
+               
+                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%" , right:"9%"}}>
                         <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
                     </div>
                 </LowerActionButtons>

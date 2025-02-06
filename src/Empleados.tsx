@@ -461,7 +461,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                 <LowerActionButtons>
                 
 
-                <div style={{ width:"82.485625rem",height:"2.25rem",position:"absolute", top:"90%"}}>
+                <div style={{ width:"82.485625rem",height:"2.25rem",position:"absolute", top:"90%", right:"9%"}}>
                 <CreateButton style={{width:"11.5%"}} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
                 </div>
                 </LowerActionButtons>
