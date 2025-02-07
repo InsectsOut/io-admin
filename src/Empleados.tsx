@@ -122,24 +122,48 @@ const Empleados: React.FC<empleadosProps> = (props) => {
     }, [])
 
     const FetchEmpleados = async () => {
-        try {
-
-            const { data, error } = await supabase
+        if (barraBusqueda === "") {
+            const { data:empleado , count } = await supabase
                 .from("Empleados")
-                .select("*")
-                .filter("organizacion","eq",props.organizacion)
+                .select("*", { count: "exact" })
+                .filter("organizacion", "eq", props.organizacion)
+            const totalPages = count && Math.ceil(count / itemsPerPage);
+            setTotalPages(totalPages || 0);
+            if (empleado){
+             setEmpleados(empleado)
+            }
+        }
+        try {
+            let query = supabase
+                .from("Empleados")
+                .select("*", { count: "exact" }) // Include count for pagination
+                .filter("organizacion", "eq", props.organizacion)
+                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        
+            // If search bar has input, modify query before awaiting execution
+            if (barraBusqueda) {
+                query = query.or(`nombre.ilike.%${barraBusqueda}%`);
+            }
+        
+            // Await execution after the query is fully built
+            const { data, error, count } = await query;
+        
             if (error) {
-                setEmpleados([])
-                console.log("Error consiguiendo los datos del cliente", error)
+                console.log("Error consiguiendo los datos del cliente", error);
+                setEmpleados([]);
+                return;
             }
+        
             if (data) {
-                // console.log("Recividos datos de clientes");
-                setEmpleados(data)
-                setEmpleadosFijos(data)
-                console.log("jeronimo")
-               // setModalVisible(false)
+                setEmpleados(data);
+                setEmpleadosFijos(data);
+                console.log("jeronimo");
+        
+                // Set total pages if count is available
+                if (count !== null && count !== undefined) {
+                    setTotalPages(Math.ceil(count / itemsPerPage));
+                }
             }
-
         }
         catch (err) {
             console.log("Ocurrió un error al realizar la operacó", err)
@@ -147,6 +171,8 @@ const Empleados: React.FC<empleadosProps> = (props) => {
     }
 
     const filtrarEmpleados = async () => {
+
+        
 
         let filtroQuery = ""
         let parametros = ""  
@@ -298,7 +324,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                     />
                     <SearchButton
                         type="button"
-                        onClick={() => { filtrarEmpleados(); setModalVisible(false); }}
+                        onClick={() => { FetchEmpleados(); setModalVisible(false); }}
                     >Buscar
                     </SearchButton>
                 </SearchBarForm>
