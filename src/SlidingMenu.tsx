@@ -9,6 +9,7 @@ import { GrLogout } from "react-icons/gr";
 import { FaSprayCan } from "react-icons/fa";
 import { supabase } from "./utils/ClientSupabase";
 import { BsPersonSquare } from "react-icons/bs";
+import { useEffect, useState } from "react";
 
 
 const MenuContainer = styled.div <{ open: boolean }>/*style*/ `
@@ -54,14 +55,13 @@ bottom:.5rem;
 
 `
 
-interface menuProps{
-    isOpen: boolean
-    closing?: () => void
-    }
+interface menuProps {
+    isOpen: boolean;
+    closing?: (event: React.MouseEvent) => void; // Function that expects an event
+}
 
 const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
 
-    
 
     const navigate = useNavigate()
 
@@ -77,6 +77,8 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
     localStorage.clear();
     await supabase.auth.signOut()
     }
+
+  
     
     //TODO HACER LOS BOTONES UN MAP
     return(
@@ -90,7 +92,7 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
         >
         <button
          className="servicios-button"
-        onClick={() => {handleNavigate("/Servicios"); closing?.()}}
+        onClick={(event: React.MouseEvent) => {handleNavigate("/Servicios"); closing?.(event)}}
         >  <FaSprayCan size={40}/>Servicios</button>
         </div>
         <div
@@ -98,7 +100,7 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
         >
         <button
         className="servicios-button"
-        onClick={() => {handleNavigate("/Clientes"); closing?.()}}
+        onClick={(event: React.MouseEvent) => {handleNavigate("/Clientes"); closing?.(event)}}
         ><FaHandshake size={40}/>Clientes</button>
         </div>
         <div
@@ -107,7 +109,7 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
         <button
         style={{fontSize:".9rem"}}
         className="servicios-button"
-        onClick={() => {handleNavigate("/calendar"); closing?.()}}
+        onClick={(event: React.MouseEvent) => {handleNavigate("/calendar"); closing?.(event)}}
         ><FaRegCalendarAlt size={40}/>Calendario</button>
         </div>
         <div
@@ -116,7 +118,7 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
         <button
         style={{fontSize:".9rem"}}
         className="servicios-button"
-        onClick={() => {handleNavigate("/empleados"); closing?.()}}
+        onClick={(event: React.MouseEvent) => {handleNavigate("/empleados"); closing?.(event)}}
         ><BsPersonSquare size={40}/>Empleados</button>
         </div>
         <div
@@ -125,7 +127,7 @@ const SlidingMenu: React.FC<menuProps> = ({isOpen,closing}) => {
         <button
         style={{fontSize:".9rem"}}
         className="servicios-button"
-        onClick={() => {handleNavigate("log_out"); closing?.()}}
+        onClick={(event: React.MouseEvent) => {handleNavigate("log_out"); closing?.(event)}}
         ><GrLogout size={40}/>Cerrar sesión</button>
         </div>
         </>

@@ -52,11 +52,14 @@ const Li = styled.li`
 function NavBar() {
   const [modalOpen, setModalOpena] = useState(false)
   const [home, setHome] = useState(false)
+  const [bodyClicked,setBodyClicked] = useState(false)
+
   const navigate = useNavigate()
 
-  const openModal = () => {
-    setModalOpena((prev) => !prev)
-  }
+    const openModal = (event: React.MouseEvent) => {
+        event.stopPropagation(); // Prevents the body click listener from triggering
+        setModalOpena((prev) => !prev);
+    };
 
   const navegar = () => {
     if (home) {
@@ -68,6 +71,19 @@ function NavBar() {
   useEffect(() => {
     navegar()
   }, [home])
+
+  const bodyClicker = (): void => {
+    document.querySelector("body")?.addEventListener("click", () => {
+      setModalOpena(false)
+       
+    });
+   
+};
+
+useEffect(()=>{
+    bodyClicker()
+},[])
+
 
   return (
     <>
@@ -87,7 +103,7 @@ function NavBar() {
               </Li>
             </IconsContainer>
           </NavContainer>
-          <SlidingMenu isOpen={modalOpen} closing={openModal} />
+          <SlidingMenu isOpen={modalOpen} closing={(e) => openModal(e)} />
         </>
       )}
     </>
