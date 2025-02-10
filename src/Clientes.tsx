@@ -482,7 +482,7 @@ const Clientes: React.FC<clientesProps> = (props) => {
 
                 <LowerActionButtons >
                
-                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%" , right:"9%"}}>
+                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%" , right:"9%", color:"white"}}>
                         <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
                     </div>
                 </LowerActionButtons>
