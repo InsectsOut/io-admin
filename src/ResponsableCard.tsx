@@ -9,7 +9,6 @@ import { DetailsTitle } from "./ServiciosCard";
 import { InputsContainer } from "./ServiciosCard";
 import { mainStyle } from "./ServiciosCard";
 import { DetallesTitulo } from "./ServiciosCard";
-import { StyledButton } from './FormComponents';
 import { supabase } from './utils/ClientSupabase';
 import { useEffect, useState } from "react";
 import { CardInputs } from "./rehusableComponents/CardInputs";

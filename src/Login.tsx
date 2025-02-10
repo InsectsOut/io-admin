@@ -17,7 +17,7 @@ import './App.css'
 
 const LoginCard = styled.div`
     width: 30%;
-    height: 70%;
+    height: 80%;
     margin-right: 5rem;
     padding: 0;
     display: flex;

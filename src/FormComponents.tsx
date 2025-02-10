@@ -33,12 +33,13 @@ export const StyledInput = styled.input /*style*/`
 
 export const StyledButton = styled.button /*style*/`
   color: white;
+  background:#0D4E80;
   padding: 10px;
   margin-top: 10px;
   border: none;
   border-radius: 5px;
   cursor: pointer;
-  width:100%;
+  width:95%;
   &:disabled {
     opacity: 0.5;
   }
