@@ -294,11 +294,11 @@ const CreateEmployee: React.FC<createEmployeeProps> = (props) => {
                     </FormatoInputs>
 
                     <FormatoInputs style={{ width: "19.815rem" }}>
-                        <FormLabels >Feha de Nacimiento:</FormLabels>
+                        <FormLabels >Fecha de Nacimiento:</FormLabels>
                         <div style={{ width: "100%", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", height: "2.638rem", margin: 0, display: "flex", alignItems: "center" }}>
                                                 <DateInput
-                                                    //@ts-ignore
-                                                    wid="6.91rem"
+                                                   //@ts-ignore
+                                                    wid="19rem"
                                                     height="2.638rem"
                                                     wrapperClassName="datepicker"
                                                     dateFormat="YYYY-MM-dd"

@@ -237,6 +237,7 @@ right:0;
 
 
 
+
 const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const [readOnly, setReadOnly] = useState(true);
     const [nombreEditable, setNombreEditable] = useState(true)

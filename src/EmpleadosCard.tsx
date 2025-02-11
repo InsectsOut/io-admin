@@ -182,6 +182,14 @@ display: flex;
   overflow: scroll;
   max-height: 21rem;
 `
+const dateInputStyle = {
+    appearance: 'none',
+    WebkitAppearance: 'none',
+    MozAppearance: 'none',
+    backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>')`,
+    backgroundRepeat: 'no-repeat',
+    backgroundPosition: 'right 10px center',
+  };
 
 const EmpleadosCard = () => {
     const [nombre, setNombre] = useState<string>("")
@@ -682,6 +690,8 @@ const EmpleadosCard = () => {
                                     Fecha de nacimiento</DetailsTitle>
                                 <div style={{ width: "20.003rem", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", }}>
                                     <DateInput wrapperClassName="datepicker"
+                                    //@ts-ignore
+                                        wid="20.003rem"
                                         dateFormat="YYYY-MM-dd"
                                         onChange={(date) => { handleFechaDeNacimeintoChange(date); }}
                                         selected={fecha_nacimiento} />
