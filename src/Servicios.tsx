@@ -903,16 +903,16 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
 
 
- 
 
-  useEffect(()=>{
-    if (!modalVisible){
-        setIsRotated(false)
-        setIsRotated2(false)
-        setIsRotated3(false)
-        setIsRotated4(false)
+
+  useEffect(() => {
+    if (!modalVisible) {
+      setIsRotated(false)
+      setIsRotated2(false)
+      setIsRotated3(false)
+      setIsRotated4(false)
     }
-},[modalVisible])
+  }, [modalVisible])
 
 
 
@@ -1216,14 +1216,19 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
           </FiltrosLeft>
           {screenWidth > 900 &&
 
+            <>
 
-            <div >
-              <PaginationComponent
-                currentPage={currentPage}
-                totalPages={totalPages}
-                onPageChange={handlePageChange}
-              />
-            </div>
+              <div style={{display:"flex", alignItems:"center"}}>
+         
+                  <CreateButton
+                    style={{ position: "relative" }}
+                    to="/nuevo-servicio">Nuevo Servicio</CreateButton>
+             
+                <PaginationComponent
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={handlePageChange} />
+              </div></>
           }
         </FiltrosContainer>
         {screenWidth <= 900 &&
@@ -1324,12 +1329,15 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
               </ServiciosElement>
             ))}
 
-          <LowerActionButtons className="lowerActionButtons">
 
-            <div style={{ width: "85%", height: "2.25rem", position: "absolute", top: "90%" , right:"9%"}}>
-              <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
-            </div>
-          </LowerActionButtons>
+          {screenWidth < 900 &&
+            <LowerActionButtons className="lowerActionButtons">
+
+              <div style={{ width: "85%", height: "2.25rem", position: "absolute", top: "90%", right: "9%" }}>
+                <CreateButton to="/nuevo-servicio" >Nuevo Servicio</CreateButton>
+              </div>
+            </LowerActionButtons>
+          }
 
 
 

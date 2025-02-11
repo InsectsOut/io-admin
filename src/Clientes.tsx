@@ -270,12 +270,12 @@ const Clientes: React.FC<clientesProps> = (props) => {
         }
     }
 
-    useEffect(()=>{
-        if (!modalVisible){
+    useEffect(() => {
+        if (!modalVisible) {
             setIsRotated(false)
             setIsRotated2(false)
         }
-    },[modalVisible])
+    }, [modalVisible])
 
     return (
         <>
@@ -435,13 +435,19 @@ const Clientes: React.FC<clientesProps> = (props) => {
 
                         )}
                     </FiltrosLeft>
-                    <div>
-                        <PaginationComponent
-                            currentPage={currentPage}
-                            totalPages={totalPages}
-                            onPageChange={handlePageChange}
-                        />
-                    </div>
+                    <>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+
+                            <CreateButton
+                                style={{ position: "relative" }}
+                                to="/nuevo-cliente">Nuevo Cliente</CreateButton>
+
+                            <PaginationComponent
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange} />
+                        </div>
+                    </>
                 </FiltrosContainer>
 
             </ServiciosContainer>
@@ -466,7 +472,7 @@ const Clientes: React.FC<clientesProps> = (props) => {
 
                         </ServiciosElement3>
                         <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
-                        screen_width={screenWidth}
+                            screen_width={screenWidth}
                         >
                             <button id="borrarServicio"
                                 onClick={() => { deleteClienteHandler(cliente).then(() => { setDeleteModalVisible(true) }) }}
@@ -479,13 +485,14 @@ const Clientes: React.FC<clientesProps> = (props) => {
 
 
                 ))}
-
+    {screenWidth < 900 &&
                 <LowerActionButtons >
-               
-                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%" , right:"9%", color:"white"}}>
+
+                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%", right: "9%", color: "white" }}>
                         <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
                     </div>
                 </LowerActionButtons>
+}
 
             </ServiciosSelectContainer>
         </>
