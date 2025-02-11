@@ -59,7 +59,7 @@ background:red;
 display:flex;
 flex-direction:column;
 background: #F3F3F3;
-min-height:99vh;
+min-height:65rem;
 height:fit-content ;
 box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
 @media (max-width: 900px) {

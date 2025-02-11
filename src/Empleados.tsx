@@ -20,7 +20,7 @@ transform: scale(1.05);
 }
 `
 interface empleadosProps {
-    organizacion?:string
+    organizacion?: string
 }
 const Empleados: React.FC<empleadosProps> = (props) => {
     const [isRotated, setIsRotated] = useState(false);
@@ -41,7 +41,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false)
     const [deletedEmpleado, setDeletedEmpleado] = useState<any>([])
     const [empleados, setEmpleados] = useState<Empleados[]>()
-    const [empleadosFijos, setEmpleadosFijos] =  useState<Empleados[]>()
+    const [empleadosFijos, setEmpleadosFijos] = useState<Empleados[]>()
     const [estatus, setEstatus] = useState<boolean>()
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
@@ -115,7 +115,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
         setCurrentPage(page);
     };
 
-    
+
 
     useEffect(() => {
         FetchEmpleados()
@@ -123,14 +123,14 @@ const Empleados: React.FC<empleadosProps> = (props) => {
 
     const FetchEmpleados = async () => {
         if (barraBusqueda === "") {
-            const { data:empleado , count } = await supabase
+            const { data: empleado, count } = await supabase
                 .from("Empleados")
                 .select("*", { count: "exact" })
                 .filter("organizacion", "eq", props.organizacion)
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
-            if (empleado){
-             setEmpleados(empleado)
+            if (empleado) {
+                setEmpleados(empleado)
             }
         }
         try {
@@ -139,26 +139,26 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                 .select("*", { count: "exact" }) // Include count for pagination
                 .filter("organizacion", "eq", props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-        
+
             // If search bar has input, modify query before awaiting execution
             if (barraBusqueda) {
                 query = query.or(`nombre.ilike.%${barraBusqueda}%`);
             }
-        
+
             // Await execution after the query is fully built
             const { data, error, count } = await query;
-        
+
             if (error) {
                 console.log("Error consiguiendo los datos del cliente", error);
                 setEmpleados([]);
                 return;
             }
-        
+
             if (data) {
                 setEmpleados(data);
                 setEmpleadosFijos(data);
                 console.log("jeronimo");
-        
+
                 // Set total pages if count is available
                 if (count !== null && count !== undefined) {
                     setTotalPages(Math.ceil(count / itemsPerPage));
@@ -172,10 +172,10 @@ const Empleados: React.FC<empleadosProps> = (props) => {
 
     const filtrarEmpleados = async () => {
 
-        
+
 
         let filtroQuery = ""
-        let parametros = ""  
+        let parametros = ""
 
         switch (text) {
             case "Estatus":
@@ -185,15 +185,15 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                 break;
 
             case "Puesto":
-                 console.log("Pipip")
+                console.log("Pipip")
                 filtroQuery = "puesto"
                 parametros = selectedOptions
                 setBarraBusqueda("")
                 break;
 
             case "limpiar":
-            filtroQuery = ""
-            parametros = "" 
+                filtroQuery = ""
+                parametros = ""
                 break;
             default:
                 filtroQuery = "";
@@ -206,7 +206,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
             let query = supabase
                 .from("Empleados")
                 .select("*", { count: "exact" })
-                .filter("organizacion","eq",props.organizacion)
+                .filter("organizacion", "eq", props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
             if (filtroQuery && parametros !== null) {
@@ -227,7 +227,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
             console.log("Error al filtrar los clientes ", error)
         }
     }
-    
+
 
     useEffect(() => {
         filtrarEmpleados()
@@ -284,12 +284,12 @@ const Empleados: React.FC<empleadosProps> = (props) => {
         }
     }
 
-    useEffect(()=>{
-        if (!modalVisible){
+    useEffect(() => {
+        if (!modalVisible) {
             setIsRotated(false)
             setIsRotated2(false)
         }
-    },[modalVisible])
+    }, [modalVisible])
 
     return (
         <>
@@ -330,119 +330,126 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                 </SearchBarForm>
                 <FiltrosContainer>
                     <FiltrosLeft>
-                    <FiltrosLista
-                        onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
-                    >Estatus <FlechaAbajo
-                            className={isRotated ? "rotated" : ""}
-                        /> </FiltrosLista>
-                    <FiltrosLista
-                        onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
-                    >Puesto <FlechaAbajo
-                            className={isRotated2 ? "rotated2" : ""}
-                        />
-                    </FiltrosLista>
-                    {modalVisible && (
+                        <FiltrosLista
+                            onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
+                        >Estatus <FlechaAbajo
+                                className={isRotated ? "rotated" : ""}
+                            /> </FiltrosLista>
+                        <FiltrosLista
+                            onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
+                        >Puesto <FlechaAbajo
+                                className={isRotated2 ? "rotated2" : ""}
+                            />
+                        </FiltrosLista>
+                        {modalVisible && (
 
-                        <ModalContainer
-                            open={modalVisible}
-                            style={{ top: modalPosition.top, left: modalPosition.left }}
+                            <ModalContainer
+                                open={modalVisible}
+                                style={{ top: modalPosition.top, left: modalPosition.left }}
 
-                        >
-                            {text === "Estatus" && (
-                                <>
-                                    <ModalContentTop
-                                        open={modalVisible}
-                                    >
-                                        <EstatusForma>
-                                            <div className="optionsContainer" id="realizadoContainer">
-                                                <input type="radio" className="checked" id="residencial" name="choice" value="TRUE" onChange={(e) => {handleModalCheck(e)}} />
-                                                <label id="realizado2" htmlFor="residencial">Activo</label>
+                            >
+                                {text === "Estatus" && (
+                                    <>
+                                        <ModalContentTop
+                                            open={modalVisible}
+                                        >
+                                            <EstatusForma>
+                                                <div className="optionsContainer" id="realizadoContainer">
+                                                    <input type="radio" className="checked" id="residencial" name="choice" value="TRUE" onChange={(e) => { handleModalCheck(e) }} />
+                                                    <label id="realizado2" htmlFor="residencial">Activo</label>
+                                                </div>
+                                                <div className="optionsContainer" id="noRealizadoContainer">
+                                                    <input type="radio" className="checked" id="industrial" name="choice" value="FALSE" onChange={(e) => { handleModalCheck(e) }} />
+                                                    <label id="noRealizado2" htmlFor="industrial">Inactivo</label>
+                                                </div>
+
+                                            </EstatusForma>
+                                        </ModalContentTop>
+                                        <ModalContentBottom
+                                            open={modalVisible}
+                                        >
+                                            <div className="filtroActionButtons">
+                                                <button className="actionButtonsStyles" id="limpiar" onClick={() => {
+                                                    FetchEmpleados()
+                                                        .then(() => {
+                                                            setCurrentPage(1);
+                                                            setModalVisible(false)
+                                                        });
+                                                }}>Limpiar</button>
+                                                <button className="actionButtonsStyles" id="aplicar"
+                                                    type="button"
+                                                    onClick={() => {
+                                                        filtrarEmpleados()
+                                                            .then(() => {
+                                                                setCurrentPage(1);
+                                                                setIsRotated(false);
+                                                            });
+                                                    }}
+                                                >Aplicar</button>
                                             </div>
-                                            <div className="optionsContainer" id="noRealizadoContainer">
-                                                <input type="radio" className="checked" id="industrial" name="choice" value="FALSE" onChange={(e) => {handleModalCheck(e)}} />
-                                                <label id="noRealizado2" htmlFor="industrial">Inactivo</label>
-                                            </div>
-
-                                        </EstatusForma>
-                                    </ModalContentTop>
-                                    <ModalContentBottom
-                                        open={modalVisible}
-                                    >
-                                        <div className="filtroActionButtons">
-                                        <button className="actionButtonsStyles" id="limpiar" onClick={() => {
-                                                     FetchEmpleados()
-                                                    .then(() => {
-                                                        setCurrentPage(1);
-                                                        setModalVisible(false)
-                                                    });
-                                            }}>Limpiar</button>
-                                            <button className="actionButtonsStyles" id="aplicar"
-                                                type="button"
-                                                onClick={() => {
+                                        </ModalContentBottom>
+                                    </>
+                                )}
+                                {text === "Puesto" && (
+                                    <>
+                                        <ModalContentTop
+                                            open={modalVisible}
+                                        >
+                                            <EstatusForma>
+                                                {empleadosFijos
+                                                    ?.filter((empleado, index, self) =>
+                                                        index === self.findIndex((e) => e.puesto === empleado.puesto) // Ensure unique puesto
+                                                    )
+                                                    .map((empleado) => (
+                                                        <div className="optionsContainer" id="realizadoContainer" key={empleado.id}> {/* Add a unique key prop */}
+                                                            <input type="radio" className="checked" id={`residencial-${empleado.id}`} name="choice" value={empleado?.puesto as string} onChange={(e) => { handleModalCheck(e) }} />
+                                                            <label id="realizado2" htmlFor={`residencial-${empleado.id}`}>{empleado.puesto}</label>
+                                                        </div>
+                                                    ))}
+                                            </EstatusForma>
+                                        </ModalContentTop>
+                                        <ModalContentBottom
+                                            open={modalVisible}
+                                        >
+                                            <div className="filtroActionButtons">
+                                                <button className="actionButtonsStyles" id="limpiar" onClick={() => {
+                                                    FetchEmpleados()
+                                                        .then(() => {
+                                                            setCurrentPage(1);
+                                                            setModalVisible(false)
+                                                        });
+                                                }}>Limpiar</button>
+                                                <button className="actionButtonsStyles" id="aplicar" onClick={() => {
                                                     filtrarEmpleados()
                                                         .then(() => {
                                                             setCurrentPage(1);
-                                                            setIsRotated(false);
+                                                            setIsRotated2(false);
+
                                                         });
-                                                }}
-                                            >Aplicar</button>
-                                        </div>
-                                    </ModalContentBottom>
-                                </>
-                            )}
-                            {text === "Puesto" && (
-                                <>
-                                    <ModalContentTop
-                                        open={modalVisible}
-                                    >
-                                        <EstatusForma>
-                                            {empleadosFijos
-                                                ?.filter((empleado, index, self) =>
-                                                    index === self.findIndex((e) => e.puesto === empleado.puesto) // Ensure unique puesto
-                                                )
-                                                .map((empleado) => (
-                                                    <div className="optionsContainer" id="realizadoContainer" key={empleado.id}> {/* Add a unique key prop */}
-                                                        <input type="radio" className="checked" id={`residencial-${empleado.id}`} name="choice" value={empleado?.puesto as string} onChange={(e) => {handleModalCheck(e)}} />
-                                                        <label id="realizado2" htmlFor={`residencial-${empleado.id}`}>{empleado.puesto}</label>
-                                                    </div>
-                                                ))}
-                                        </EstatusForma>
-                                    </ModalContentTop>
-                                    <ModalContentBottom
-                                        open={modalVisible}
-                                    >
-                                        <div className="filtroActionButtons">
-                                            <button className="actionButtonsStyles" id="limpiar" onClick={() => {
-                                                     FetchEmpleados()
-                                                    .then(() => {
-                                                        setCurrentPage(1);
-                                                        setModalVisible(false)
-                                                    });
-                                            }}>Limpiar</button>
-                                            <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                                                filtrarEmpleados()
-                                                    .then(() => {
-                                                        setCurrentPage(1);
-                                                        setIsRotated2(false);
-                                                       
-                                                    });
-                                            }}>Aplicar</button>
-                                        </div>
-                                    </ModalContentBottom>
-                                </>
-                            )}
-                        </ModalContainer>
-                    )}
+                                                }}>Aplicar</button>
+                                            </div>
+                                        </ModalContentBottom>
+                                    </>
+                                )}
+                            </ModalContainer>
+                        )}
                     </FiltrosLeft>
-                    <div>
-                    <PaginationComponent
-                    currentPage={currentPage}
-                    totalPages={totalPages}
-                    onPageChange={handlePageChange}
-                />
-                </div>
+                    <>
+                        <div style={{ display: "flex", alignItems: "center" }}>
+
+                            <CreateButton
+                            
+                                style={{ position: "relative", width:"9.65rem" }}
+                                to="/nuevo-empleado">Nuevo Empleado</CreateButton>
+
+                            <PaginationComponent
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={handlePageChange} />
+                        </div>
+                    </>
                 </FiltrosContainer>
-                
+
 
             </ServiciosContainer>
             <ServiciosSelectContainer>
@@ -473,7 +480,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
 
                         </ServiciosElement3>
                         <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
-                        screen_width={screenWidth}
+                            screen_width={screenWidth}
                         >
                             <button id="borrarServicio"
                                 onClick={() => { deleteClienteHandler(empleado).then(() => { setDeleteModalVisible(true) }) }}
@@ -485,13 +492,14 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                     </ServiciosElement>
                 ))}
                 <LowerActionButtons>
-                
 
-                <div style={{ width:"82.485625rem",height:"2.25rem",position:"absolute", top:"90%", right:"9%"}}>
-                <CreateButton style={{width:"11.5%"}} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
-                </div>
+                    {screenWidth < 900 &&
+                        <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%", right: "9%" }}>
+                            <CreateButton style={{ width: "11.5%" }} to="/nuevo-empleado" >Nuevo Empleado</CreateButton>
+                        </div>
+                    }
                 </LowerActionButtons>
-                
+
 
             </ServiciosSelectContainer>
         </>

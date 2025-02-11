@@ -177,8 +177,8 @@ flex-direction:column;
 `
 
 interface createClienteProps {
-    user_id?:string
-    organizacion?:string
+    user_id?: string
+    organizacion?: string
 }
 
 const CreateClientForm: React.FC<createClienteProps> = (props) => {
@@ -204,7 +204,7 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
                         nombre: nombre,
                         apellidos: apellido,
                         user_id: props.user_id,
-                        organizacion:props.organizacion
+                        organizacion: props.organizacion
                     },
                 ] as any)
                 .select();
@@ -260,24 +260,58 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
             <Titulo>Clientes</Titulo>
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo cliente, complete el siguiente formulario.</FormHeader>
                 <CreateServicioForm id="createClientForm">
+                    <FormatoInputs style={{ width: "19.815rem" }}>
+                        <FormLabels >Tipo de Cliente:</FormLabels>
+                        <select id="tipoSelect" value={tipoCliente} onChange={handleTipoCliente} className="textInputs arrowChange"
+                        >
+                            <option value="" disabled selected hidden>Elegir el tipo de servicio...</option>
+                            <option>--Elige el tipo del cliente--</option>
+                            <option value="Residencial" >Residencial</option>
+                            <option value="Industrial" >Industrial</option>
+                            <option value="Comercial" >Comercial</option>
+                            <option value="Gubernamental" >Gubernamental</option>
+                            <option value="Hotelería" >Hotelería</option>
+                            <option value="Escolar" >Escolar</option>
+                        </select>
+                    </FormatoInputs>
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
                         <div style={{ width: "45%" }} >
-                            <FormLabels >Nombre del Cliente</FormLabels>
+                            <FormLabels>
+                                {(() => {
+                                    const tipoSelect = document.getElementById("tipoSelect") as HTMLSelectElement | null;
+                                    return tipoSelect && tipoSelect.value !== "Residencial"
+                                        ? "Nombre de la empresa"
+                                        : "Nombre del Cliente";
+                                })()}
+                            </FormLabels>
                             <CardInputs
                                 value={nombre}
                                 onChange={handleNameChange}
                                 id="textInputs"
                                 className="textInputs" />
                         </div>
-                        <div style={{ width: "45%" }} >
-                            <FormLabels >Apellidos</FormLabels>
-                            <CardInputs
-                                value={apellido}
-                                onChange={handleApellidosChange}
-                                id="textInputs"
-                                className="textInputs"
-                            />
-                        </div>
+             
+
+                            <div style={{ width: "45%" }} >
+                                 {(() => {
+                                    const tipoSelect = document.getElementById
+                                    ("tipoSelect") as HTMLSelectElement | null;
+                                    return tipoSelect && tipoSelect.value === "Residencial"
+                                        ? 
+                                        <>
+                                        <FormLabels >Apellidos</FormLabels>
+                                        <CardInputs
+                                            value={apellido}
+                                            onChange={handleApellidosChange}
+                                            id="textInputs"
+                                            className="textInputs"
+                                        />
+                                        </>
+                                        : null;
+                                })()}
+                                
+                            </div>
+                        
 
                     </FormatoInputs>
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
@@ -302,19 +336,6 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
                         </div>
                     </FormatoInputs>
 
-                    <FormatoInputs style={{ width: "19.815rem" }}>
-                        <FormLabels >Tipo de Cliente:</FormLabels>
-                        <select value={tipoCliente} onChange={handleTipoCliente} className="textInputs arrowChange"
-                        >
-                            <option value="" disabled selected hidden>Elegir el tipo de servicio...</option>
-                            <option value="Residencial" >Residencial</option>
-                            <option value="Industrial" >Industrial</option>
-                            <option value="Comercial" >Comercial</option>
-                            <option value="Gubernamental" >Gubernamental</option>
-                            <option value="Hotelería" >Hotelería</option>
-                            <option value="Escolar" >Escolar</option>
-                        </select>
-                    </FormatoInputs>
                     {/* <FormatoInputs style={{ width: "19.815rem" }}>
                         <FormLabels >Responsable:</FormLabels>
                         <select value={responsableId} onChange={handleResponsableChange}className="textInputs arrowChange"
