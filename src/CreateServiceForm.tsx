@@ -501,7 +501,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         <FormLabels >Nombre del Cliente</FormLabels>
                         <StyledSelect value={clienteId} onChange={handleClientClick}>
                             <option >Elegir al cliente...</option>
-                            {clientes.map((cliente) => (
+                            {clientes.slice()
+                            .sort((a, b) => {
+                              const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
+                              const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
+                              return nameA.localeCompare(nameB);
+                            }).map((cliente) => (
                                 <option value={cliente.id} key={cliente.id} >{cliente.nombre} {cliente.apellidos}</option>
                             ))}
                         </StyledSelect>

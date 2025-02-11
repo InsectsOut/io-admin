@@ -2,9 +2,9 @@ import styled from "styled-components";
 
 
 const DeleteModal = styled.div /*style*/ `
-position:absolute;
+position:fixed;
 width:100vw;
-height:inherit;
+height:100vh;
 z-index:999 ;
 background: rgb(0, 0, 0, 0.7);
 
