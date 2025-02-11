@@ -374,7 +374,9 @@ const ClientesCard: React.FC<serviciosProps> = (props) => {
                 )}
                 <DireccionCard></DireccionCard>
             </BodyContainer>
-            <ReturnButton>Regresar</ReturnButton>
+            <ReturnButton
+             onClick={() => window.history.back()}
+            >Regresar</ReturnButton>
             <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { updateOrInsert(); updateCliente(); }}>
                 Guardar Cambios
             </StyledButton>

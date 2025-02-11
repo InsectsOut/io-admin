@@ -875,7 +875,9 @@ const EmpleadosCard = () => {
                 )}
 
             </BodyContainer>
-            <ReturnButton>Regresar</ReturnButton>
+            <ReturnButton
+             onClick={() => window.history.back()}
+            >Regresar</ReturnButton>
             <StyledButton
                 disabled={!isClicked}
                 clicado={isClicked}

@@ -10,12 +10,12 @@ import { Database, Tables } from "./supabase/Database";
 
 
 export const RegistroModal = styled.div`
-position:absolute;
+position:fixed;
 width:100vw;
-height:inherit;
+height:100vh;
+min-height:100vh;
 z-index:999 ;
 background: rgb(0, 0, 0, 0.7);
-
 top:0;
 display:flex;
 justify-content:center;

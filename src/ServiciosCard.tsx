@@ -137,7 +137,11 @@ export const ReturnButton = styled.button`
   right:12%;
   margin-bottom: .5rem; 
   margin-right: 1rem; 
-  left:50%;
+  left:75%;
+  width: 9.62rem;
+  border-radius:.359rem;
+  border: 0.075rem solid #0D4E80; 
+
 `
 
 const ServiciosCardContainer = styled.div`
@@ -301,7 +305,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 const [year, month, day] = initialDateString.split("-").map(Number);
 
                 // Create the date in LOCAL TIME (without any timezone shift)
-                const initialDate = new Date(year, month - 1, day); 
+                const initialDate = new Date(year, month - 1, day);
                 setSelectedDate(initialDate)
                 const initialEmpleadoId = servicio[0]?.aplicador_Responsable ?? null;
                 console.log(initialEmpleadoId)
@@ -596,11 +600,16 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                         style={{ ...mainStyle, width: "100%" }}
                                         onChange={handleClientClick}
                                     >
-                                        {clientes.map((cliente) => (
-                                            <option value={cliente.id} key={cliente.id}>
-                                                {cliente.nombre} {cliente.apellidos}
-                                            </option>
-                                        ))}
+                                        {clientes.slice()
+                                            .sort((a, b) => {
+                                                const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
+                                                const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
+                                                return nameA.localeCompare(nameB);
+                                            }).map((cliente) => (
+                                                <option value={cliente.id} key={cliente.id}>
+                                                    {cliente.nombre} {cliente.apellidos}
+                                                </option>
+                                            ))}
                                     </select>
 
                                 </InputsContainer>
