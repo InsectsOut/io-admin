@@ -240,10 +240,9 @@ const CreateClientForm: React.FC<createClienteProps> = (props) => {
     }
 
     const handleTelefonoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const telefonoCambio = event.target.value
-        setTelefono(telefonoCambio)
-
-    }
+        const telefonoCambio = event.target.value.replace(/\s/g, ''); // Remove spaces
+        setTelefono(telefonoCambio);
+    };
 
     const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const cambio = event.target.value

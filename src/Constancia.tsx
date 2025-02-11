@@ -796,7 +796,7 @@ const MyDocument = () => {
                                 </View>
                                 <View style={styles.firmasContainer}>
                                     {firma ? (
-                                        <Image src={firma} style={{ width: '600px', backgroundColor: "transparent" }} />
+                                        <Image src={firma} style={{ width: '200px', backgroundColor: "transparent", maxWidth:"200px"}} />
                                     ) : (
                                         <Text style={{ color: "black", marginBottom: "10px" }}>Loading firma...</Text>
                                     )}
