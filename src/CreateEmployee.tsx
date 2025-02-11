@@ -239,7 +239,7 @@ const CreateEmployee: React.FC<createEmployeeProps> = (props) => {
     }
 
     const handleTelefonoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const telefonoCambio = event.target.value
+        const telefonoCambio = event.target.value.replace(/\s/g, '')
         setTelefono(telefonoCambio)
 
     }

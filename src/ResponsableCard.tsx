@@ -221,7 +221,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
     }
 
     const handleTelChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        const cambio = event.target.value
+        const cambio = event.target.value.replace(/\s/g, '')
         setTelefono(cambio)
         onStateChange()
 

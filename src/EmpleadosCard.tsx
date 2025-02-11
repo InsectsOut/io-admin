@@ -244,7 +244,7 @@ const EmpleadosCard = () => {
 
     const handleTelefonoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setClicked(true)
-        const cambio = event.target.value
+        const cambio = event.target.value.replace(/\s/g, '')
         setTelefono(cambio)
     }
 
