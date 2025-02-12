@@ -5,8 +5,9 @@ import { MdAccountCircle } from "react-icons/md";
 import { IoMenuSharp } from "react-icons/io5";
 import SlidingMenu from './SlidingMenu';
 import { useNavigate } from 'react-router-dom';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import './App.css'
+import useBodyClick from './UseBodyClick';
 
 const NavContainer = styled.div`
     width: 100vw;
@@ -52,7 +53,8 @@ const Li = styled.li`
 function NavBar() {
   const [modalOpen, setModalOpena] = useState(false)
   const [home, setHome] = useState(false)
-  const [bodyClicked,setBodyClicked] = useState(false)
+   const slidingRef = useRef<HTMLLIElement>(null);
+
 
   const navigate = useNavigate()
 
@@ -72,18 +74,10 @@ function NavBar() {
     navegar()
   }, [home])
 
-  const bodyClicker = (): void => {
-    document.querySelector("body")?.addEventListener("click", () => {
-      setModalOpena(false)
-       
-    });
-   
-};
 
-useEffect(()=>{
-    bodyClicker()
-},[])
-
+useBodyClick(()=>{
+  setModalOpena(false)
+},[slidingRef])
 
   return (
     <>
@@ -98,12 +92,16 @@ useEffect(()=>{
               <Li>
                 <MdAccountCircle size={30} color="#0E4E7E" />
               </Li>
-              <Li onClick={openModal}>
+              <Li
+              ref={slidingRef}
+              onClick={openModal}>
                 <IoMenuSharp size={30} color="#0E4E7E" />
               </Li>
             </IconsContainer>
           </NavContainer>
-          <SlidingMenu isOpen={modalOpen} closing={(e) => openModal(e)} />
+          <SlidingMenu
+          
+          isOpen={modalOpen} closing={(e) => openModal(e)} />
         </>
       )}
     </>

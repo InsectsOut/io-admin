@@ -1,9 +1,10 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import styled from 'styled-components';
 import { Tables } from "../src/supabase/Database";
 type Direcciones = Tables<"Direcciones">
 import { supabase } from './utils/ClientSupabase';
 import { useNavigate } from 'react-router-dom';
+import useBodyClick from './UseBodyClick';
 
 
 const Backdrop = styled.div`
@@ -102,6 +103,7 @@ interface EventModalProps {
   eventAplicadorResponsable?: number;
   eventTipoPlaga?: number | null;
   eventUbicacion?: string | null;
+  sendRef: (ref: HTMLDivElement | null) => void;
 }
 
 const EventModal: React.FC<EventModalProps> = ({
@@ -122,9 +124,12 @@ const EventModal: React.FC<EventModalProps> = ({
   eventAplicadorResponsable,
   eventTipoPlaga,
   eventUbicacion,
+  sendRef,
 
 }) => {
   const [direccion, setDireccion] = useState<Direcciones[]>([])
+  const [modalOpen,setModalOpen] = useState<boolean>(false)
+    const modalRef = useRef<HTMLDivElement |null>(null);
   const navigate = useNavigate()
 
   const fetchDireccion = async (direccion_id: number) => {
@@ -150,13 +155,22 @@ const EventModal: React.FC<EventModalProps> = ({
     if (eventDireccion) {
       fetchDireccion(eventDireccion)
     }
-
   }, [eventDireccion])
+
+
+
+ 
   return (
     <>
-      {isOpen && (
-        <Backdrop>
-          <ModalContent>
+
+        <Backdrop
+        >
+          <ModalContent
+           ref={(el:HTMLDivElement)=>{
+            modalRef.current=el;
+            sendRef?.(el);
+           }}
+          >
             <CloseButton onClick={onClose}>&times;</CloseButton>
             <h2>{eventTitle}</h2>
             <p><strong>Horario de Servicio:</strong> {eventStartTime}</p>
@@ -179,7 +193,7 @@ const EventModal: React.FC<EventModalProps> = ({
             {eventTipoPlaga && <p><strong>Tipo de Plaga ID:</strong> {eventTipoPlaga}</p>}
           </ModalContent>
         </Backdrop>
-      )}
+  
     </>
   );
 };
