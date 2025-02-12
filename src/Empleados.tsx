@@ -261,7 +261,7 @@ const Empleados: React.FC<empleadosProps> = (props) => {
         console.log("deleted", deletedEmpleado)
     }
 
-    const deleteCliente = async (empleadoId: number) => {
+    const deleteEmpleado = async (empleadoId: number) => {
         try {
             let query = supabase
                 .from("Empleados")
@@ -299,10 +299,9 @@ const Empleados: React.FC<empleadosProps> = (props) => {
                     closeModal={handleModalClose}
                     nombre={deletedEmpleado?.nombre}
                     puesto={deletedEmpleado?.puesto}
-                    //   del={() => {
-                    //     deleteCliente(deletedClient.id).then(() => window.location.reload());
-                    //   }}
-                    del={() => deleteCliente(deletedEmpleado?.id)}
+                      del={() => {
+                        deleteEmpleado(deletedEmpleado.id).then(() => window.location.reload());
+                      }}
                     titulo="¿Seguro quiere eliminar al empleado?"
                     btnText="Eliminar Empleado"
                 ></DelModal>

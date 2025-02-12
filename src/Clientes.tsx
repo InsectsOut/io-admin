@@ -287,10 +287,10 @@ const Clientes: React.FC<clientesProps> = (props) => {
                     nombre={deletedClient?.nombre}
                     apellido={deletedClient?.apellidos}
                     fecha={deletedClient?.fecha_servicio}
-                    //   del={() => {
-                    //     deleteCliente(deletedClient.id).then(() => window.location.reload());
-                    //   }}
-                    del={() => deleteCliente(deletedClient?.id)}
+                      del={() => {
+                        deleteCliente(deletedClient.id).then(() => window.location.reload());
+                      }}
+                   // del={() => deleteCliente(deletedClient?.id)}
                     titulo="¿Seguro quiere eliminar al cliente?"
                     btnText="Eliminar Cliente"
                     tipo={deletedClient?.tipo_cliente}

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import FullCalendar from "@fullcalendar/react";
 import daygrid from "@fullcalendar/daygrid";
 import timegrid from "@fullcalendar/timegrid";
@@ -8,10 +8,12 @@ import { supabase } from "./utils/ClientSupabase";
 import { Tables } from "../src/supabase/Database";
 import { mainStyle } from "./ServiciosCard";
 import styled from "styled-components";
+import useBodyClick from "./UseBodyClick";
 
 type Servicio = Tables<"Servicios">;
 type Empleado = Tables<"Empleados">;
 type Cliente = Tables<"Clientes">;
+
 
 type ServicioConClientes = Servicio & {
   Clientes: Cliente | null;
@@ -48,6 +50,7 @@ const Modal = styled.div`
   border-radius: 0.215rem;
   box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
   flex-direction: column;
+  width: 20rem;
 
   .selectsContainer {
     display: flex;
@@ -101,6 +104,13 @@ const Calendar: React.FC<calendarProps> = (props) => {
   const [selectedAplicador, setSelectedAplicador] = useState<number | undefined>(undefined);
   const [modalActive, setModalActive] = useState<boolean>(false);
   const [isHovered, setIsHovered] = useState(false);
+  const modalRef = useRef<HTMLDivElement>(null);
+  const filterRef = useRef<HTMLDivElement>(null);
+  const eventModalRef = useRef<HTMLDivElement | null>(null);
+  const [hasModalOpened, setHasModalOpened] = useState(false);
+
+
+
   
 
 
@@ -173,7 +183,7 @@ const Calendar: React.FC<calendarProps> = (props) => {
     setIsHovered(false);
   };
 
-  const handleModalOpener = () => {
+  const handleModalOpener = (event: React.MouseEvent) => {
     setModalActive(prev => !prev);
   };
 
@@ -209,6 +219,12 @@ const Calendar: React.FC<calendarProps> = (props) => {
     fetchClientes();
     fetchEmpleados();
   }, []);
+
+  useBodyClick(() => {
+    setModalActive(false); // Close modal when body is clicked
+  }, [modalRef,filterRef]);
+
+ 
 
   const events = filteredServicios.map((item) => ({
     title: `${item.Clientes?.nombre} ${item.Clientes?.apellidos}` || `Client ${item.cliente_id}`,
@@ -290,11 +306,22 @@ const Calendar: React.FC<calendarProps> = (props) => {
     setSelectedEvent(null);
   };
 
+
+  useBodyClick(() => {
+    if (isModalOpen && hasModalOpened) {
+      setIsModalOpen(false); // Close modal if clicked outside
+      setHasModalOpened(false)
+    } else if (!hasModalOpened) {
+      setHasModalOpened(true); // Mark the modal as opened after the first click
+    }
+  }, [eventModalRef]);
+
   return (
     <div style={{ padding: '20px', color: 'black', fontFamily: "Open Sans", position: "relative" }}>
       <FilterContainer className="positioning">
         <RelativeContainer>
           <FilterEvents
+          ref={filterRef}
             hovered={isHovered}
             id="filterEvents"
             onMouseEnter={hoverChange}
@@ -304,7 +331,9 @@ const Calendar: React.FC<calendarProps> = (props) => {
             <p>Filtrar Servicios</p>
           </FilterEvents>
           {modalActive &&
-            <Modal>
+            <Modal
+            ref={modalRef}
+            >
               <div className="selectsContainer">
                 <select
                   value={selectedClient}
@@ -335,7 +364,7 @@ const Calendar: React.FC<calendarProps> = (props) => {
               </div>
               <div className="filtroActionButtons">
                 <button className="actionButtonsStyles" id="limpiar" onClick={clearFilter}>Limpiar</button>
-                <button className="actionButtonsStyles" id="aplicar" type="button" onClick={applyFilter}>Aplicar</button>
+                <button className="actionButtonsStyles" id="aplicar" type="button" onClick={() => {clearFilter();applyFilter()}}>Aplicar</button>
               </div>
             </Modal>
           }
@@ -353,7 +382,9 @@ const Calendar: React.FC<calendarProps> = (props) => {
         eventClick={handleEventClick}
         eventContent={renderEventContent}
       />
+      {isModalOpen &&
       <EventModal
+      sendRef={(ref)=>{eventModalRef.current = ref}}
         isOpen={isModalOpen}
         onClose={closeModal}
         eventTitle={selectedEvent?.title}
@@ -372,6 +403,7 @@ const Calendar: React.FC<calendarProps> = (props) => {
         eventTipoPlaga={selectedEvent?.tipoPlaga}
         eventUbicacion={selectedEvent?.ubicacion}
       />
+}
     </div>
   );
 };
