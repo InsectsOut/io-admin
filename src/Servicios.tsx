@@ -532,9 +532,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [barraBusqueda, setBarraBusqueda] = useState("");
   const [condicion, setCondicion] = useState<TipoFiltro>("");
   const [filtros, setFiltros] = useState("");
-  const [selectedOptions, setSelectedOptions] = useState("")
+  const [selectedOptions, setSelectedOptions] = useState<string>("")
   const [estatus, setEstatus] = useState<boolean | null>(null)
-  const [clientId, setClientId] = useState(0)
+  const [clientId, setClientId] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage: number = 8;
@@ -549,7 +549,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [swipeDirection, setSwipeDirection] = useState("");
   const [showSwipeDeleteMenu, setShowSwipeDeleteMenu] = useState<boolean>(false)
   const [swipedItems, setSwipedItems] = useState<{ [key: number]: boolean }>({});
-  const [swipeData, setSwipeData] = useState<{ [key: number]: { startX: number, startY: number, swipeDirection: string } }>({});
+  const [swipeData, setSwipeData] = useState<{ [key: number]: { startX: number, startY: number, swipeDirection: string } }>
+    ({});
+  const [tipoServicio, setTipoServicio] = useState<string>("")
+  const estatusRefRealizado = useRef<HTMLInputElement>(null);
+  const estatusRefNorealizado = useRef<HTMLInputElement>(null);
+
 
 
 
@@ -621,6 +626,10 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     }
     setSelectedOptions(value);
   }
+  const handleTipoServicio = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const { value } = e.target;
+    setTipoServicio(value)
+  }
 
   const deleteServicioHandler = async (servicio: any) => {
     setDeletedServicio(servicio)
@@ -636,9 +645,20 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     setBarraBusqueda(cambio)
   }
 
+  const clearAllFilters = () => {
+    setClientId(null)
+    setTipoServicio("")
+    setStartDate(null)
+    setEndDate(null)
+    estatusRefRealizado.current && (estatusRefRealizado.current.checked = false);
+    estatusRefNorealizado.current && (estatusRefNorealizado.current.checked = false);
+  }
+
 
   const fetchServicios = async () => {
     setText("");
+    clearAllFilters();
+
 
     if (barraBusqueda === "") {
       const { count } = await supabase
@@ -715,85 +735,139 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const formatDate = (date: Date) => date.toISOString().split('T')[0];  // For date only (YYYY-MM-DD)
 
 
-  const filterServicios = async (text: string) => {
-    let filtroQuery = "";
-    let paramteros = null;
+  // const filterServicios = async (text: string) => {
+  //   let filtroQuery = "";
+  //   let paramteros = null;
+  //   let filterConditions: any[] = []; // Array to hold filter conditions
 
-    switch (text) {
-      case "Cliente":
-        filtroQuery = "Clientes.id";
-        paramteros = clientId;
-        break;
-      case "Tipo":
-        filtroQuery = "tipo_servicio";
-        paramteros = selectedOptions;
-        break;
-      case "fecha":
-        if (startDate && endDate) {
-          filtroQuery = "fecha_servicio"; // Assuming your column name in the database is 'fecha' for the service date
-          paramteros = [startDate, endDate]; // Use an array for start and end date
-        } else {
-          filtroQuery = ""; // If no dates are provided, clear the filter
-          paramteros = null;
-        }
-        break;
-      case "estatus":
-        filtroQuery = "realizado";
-        paramteros = estatus;
-        break;
-      default:
-        filtroQuery = "";
-        paramteros = null;
-        break;
-    }
+  //   switch (text) {
+  //     case "Cliente":
+  //       filtroQuery = "Clientes.id";
+  //       paramteros = clientId;
+  //       break;
+  //     case "Tipo":
+  //       filtroQuery = "tipo_servicio";
+  //       paramteros = selectedOptions;
+  //       break;
+  //     case "fecha":
+  //       if (startDate && endDate) {
+  //         filtroQuery = "fecha_servicio"; // Assuming your column name in the database is 'fecha' for the service date
+  //         paramteros = [startDate, endDate]; // Use an array for start and end date
+  //       } else {
+  //         filtroQuery = ""; // If no dates are provided, clear the filter
+  //         paramteros = null;
+  //       }
+  //       break;
+  //     case "estatus":
+  //       filtroQuery = "realizado";
+  //       paramteros = estatus;
+  //       break;
+  //     default:
+  //       filtroQuery = "";
+  //       paramteros = null;
+  //       break;
+  //   }
 
+  //   try {
+  //     let query = supabase
+  //       .from("Servicios")
+  //       .select(`*, Clientes!inner(*)`, { count: "exact" })
+  //       .order('fecha_servicio', { ascending: false })
+  //       .filter("organizacion", "eq", props.organizacion)
+  //       .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+
+  //     // Apply the date range filter if it's set
+  //     if (filtroQuery === "fecha_servicio" && paramteros && Array.isArray(paramteros) && paramteros.length === 2) {
+  //       const [startDate, endDate] = paramteros;
+  //       // Format the dates before passing them to the query
+  //       const formattedStartDate = formatDate(startDate);
+  //       const formattedEndDate = formatDate(endDate);
+
+  //       query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
+  //     }
+
+  //     // Apply other filters
+  //     if (filtroQuery && paramteros !== null && filtroQuery !== "fecha_servicio") {
+  //       query = query.eq(filtroQuery, paramteros);
+  //     }
+
+  //     const { error, data: servicios, count } = await query;
+
+  //     const totalPages = count && Math.ceil(count / itemsPerPage);
+  //     setTotalPages(totalPages || 0);
+
+  //     if (error) {
+  //       setFetchError("No se pudieron conseguir los datos de servicio");
+  //       setServicios([]);
+  //       console.error("Error fetching data:", error);
+  //     }
+
+  //     if (servicios) {
+  //       setServicios(servicios);
+  //       setFetchError("");
+  //     }
+  //     setModalVisible(false);
+  //   } catch (error) {
+  //     console.error("An unexpected error occurred:", error);
+  //   }
+  // }
+
+  const filterServicios = async () => {
     try {
       let query = supabase
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
-        .order('fecha_servicio', { ascending: false })
+        .order("fecha_servicio", { ascending: false })
         .filter("organizacion", "eq", props.organizacion)
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-      // Apply the date range filter if it's set
-      if (filtroQuery === "fecha_servicio" && paramteros && Array.isArray(paramteros) && paramteros.length === 2) {
-        const [startDate, endDate] = paramteros;
-        // Format the dates before passing them to the query
+      // Apply multiple filters dynamically
+      if (clientId) {
+        query = query.eq("Clientes.id", clientId);
+      }
+      if (tipoServicio !== "") {
+        query = query.eq("tipo_servicio", tipoServicio);
+      }
+      const selectedStatuses: boolean[] = [];
+      if (estatusRefRealizado.current?.checked) selectedStatuses.push(true);
+      if (estatusRefNorealizado.current?.checked) selectedStatuses.push(false);
+
+      if (selectedStatuses.length > 0) {
+
+        query = query.in("realizado", selectedStatuses); // Allow multiple values
+      }
+      if (startDate && endDate) {
         const formattedStartDate = formatDate(startDate);
         const formattedEndDate = formatDate(endDate);
-
         query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
       }
-
-      // Apply other filters
-      if (filtroQuery && paramteros !== null && filtroQuery !== "fecha_servicio") {
-        query = query.eq(filtroQuery, paramteros);
-      }
-
       const { error, data: servicios, count } = await query;
 
-      const totalPages = count && Math.ceil(count / itemsPerPage);
-      setTotalPages(totalPages || 0);
+      const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+      setTotalPages(totalPages);
 
       if (error) {
         setFetchError("No se pudieron conseguir los datos de servicio");
         setServicios([]);
         console.error("Error fetching data:", error);
-      }
-
-      if (servicios) {
+      } else {
+        console.log(servicios)
         setServicios(servicios);
         setFetchError("");
       }
+
       setModalVisible(false);
     } catch (error) {
       console.error("An unexpected error occurred:", error);
     }
-  }
+  };
+
 
 
   useEffect(() => {
-    filterServicios(text)
+
+    filterServicios()
+
   }, [currentPage])
 
   const deleteServicio = async (servicioId: number) => {
@@ -961,7 +1035,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     if (textModal) {
       if (text) {
         setText(text)
-        filterServicios(text)
+        filterServicios()
       }
     }
 
@@ -1097,8 +1171,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       <EstatusForma>
                         {servicioOptions.map((tipo) =>
                           <div key={tipo.id} className="optionsContainer" id="realizadoContainer">
-                            <input type="radio" className="checked" id={tipo.id.toLocaleString()} name="choice" value={tipo.value} onChange={handleModalCheck}
-                              checked={selectedOptions === tipo.value}
+                            <input type="radio" className="checked" id={tipo.id.toLocaleString()} name="choice" value={tipo.value} onChange={handleTipoServicio}
+                              checked={tipoServicio === tipo.value}
                             />
                             <label id="realizado2" htmlFor={tipo.id.toLocaleString()}>{tipo.label}</label>
                           </div>
@@ -1177,13 +1251,13 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     >
                       <EstatusForma>
                         <div className="optionsContainer" id="realizadoContainer">
-                          <input type="radio" className="checked" id="realizado" name="choice" value="Realizado" onChange={handleModalCheck}
+                          <input ref={estatusRefRealizado} type="radio" className="checked" id="realizado" name="choice" value="Realizado" onChange={handleModalCheck}
                             checked={estatus as any}
                           />
                           <label id="realizado2" htmlFor="realizado">Realizado</label>
                         </div>
                         <div className="optionsContainer" id="noRealizadoContainer">
-                          <input type="radio" className="checked" id="no-realizado" name="choice" value="Norealizado" onChange={handleModalCheck}
+                          <input ref={estatusRefNorealizado} type="radio" className="checked" id="no-realizado" name="choice" value="Norealizado" onChange={handleModalCheck}
                             checked={!estatus && estatus !== null as any}
                           />
                           <label id="noRealizado2" htmlFor="no-realizado">No realizado </label>
@@ -1218,12 +1292,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
             <>
 
-              <div style={{display:"flex", alignItems:"center"}}>
-         
-                  <CreateButton
-                    style={{ position: "relative" }}
-                    to="/nuevo-servicio">Nuevo Servicio</CreateButton>
-             
+              <div style={{ display: "flex", alignItems: "center" }}>
+
+                <CreateButton
+                  style={{ position: "relative" }}
+                  to="/nuevo-servicio">Nuevo Servicio</CreateButton>
+
                 <PaginationComponent
                   currentPage={currentPage}
                   totalPages={totalPages}
