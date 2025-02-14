@@ -735,82 +735,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const formatDate = (date: Date) => date.toISOString().split('T')[0];  // For date only (YYYY-MM-DD)
 
 
-  // const filterServicios = async (text: string) => {
-  //   let filtroQuery = "";
-  //   let paramteros = null;
-  //   let filterConditions: any[] = []; // Array to hold filter conditions
-
-  //   switch (text) {
-  //     case "Cliente":
-  //       filtroQuery = "Clientes.id";
-  //       paramteros = clientId;
-  //       break;
-  //     case "Tipo":
-  //       filtroQuery = "tipo_servicio";
-  //       paramteros = selectedOptions;
-  //       break;
-  //     case "fecha":
-  //       if (startDate && endDate) {
-  //         filtroQuery = "fecha_servicio"; // Assuming your column name in the database is 'fecha' for the service date
-  //         paramteros = [startDate, endDate]; // Use an array for start and end date
-  //       } else {
-  //         filtroQuery = ""; // If no dates are provided, clear the filter
-  //         paramteros = null;
-  //       }
-  //       break;
-  //     case "estatus":
-  //       filtroQuery = "realizado";
-  //       paramteros = estatus;
-  //       break;
-  //     default:
-  //       filtroQuery = "";
-  //       paramteros = null;
-  //       break;
-  //   }
-
-  //   try {
-  //     let query = supabase
-  //       .from("Servicios")
-  //       .select(`*, Clientes!inner(*)`, { count: "exact" })
-  //       .order('fecha_servicio', { ascending: false })
-  //       .filter("organizacion", "eq", props.organizacion)
-  //       .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
-
-  //     // Apply the date range filter if it's set
-  //     if (filtroQuery === "fecha_servicio" && paramteros && Array.isArray(paramteros) && paramteros.length === 2) {
-  //       const [startDate, endDate] = paramteros;
-  //       // Format the dates before passing them to the query
-  //       const formattedStartDate = formatDate(startDate);
-  //       const formattedEndDate = formatDate(endDate);
-
-  //       query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
-  //     }
-
-  //     // Apply other filters
-  //     if (filtroQuery && paramteros !== null && filtroQuery !== "fecha_servicio") {
-  //       query = query.eq(filtroQuery, paramteros);
-  //     }
-
-  //     const { error, data: servicios, count } = await query;
-
-  //     const totalPages = count && Math.ceil(count / itemsPerPage);
-  //     setTotalPages(totalPages || 0);
-
-  //     if (error) {
-  //       setFetchError("No se pudieron conseguir los datos de servicio");
-  //       setServicios([]);
-  //       console.error("Error fetching data:", error);
-  //     }
-
-  //     if (servicios) {
-  //       setServicios(servicios);
-  //       setFetchError("");
-  //     }
-  //     setModalVisible(false);
-  //   } catch (error) {
-  //     console.error("An unexpected error occurred:", error);
-  //   }
-  // }
+  
 
   const filterServicios = async () => {
     try {
@@ -961,6 +886,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   };
 
   const returnRotation = () => {
+    console.log(textModal)
     if (textModal !== "Cliente") {
       setIsRotated(false)
     }
@@ -986,7 +912,15 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       setIsRotated3(false)
       setIsRotated4(false)
     }
+    else{
+      return
+    }
+   
   }, [modalVisible])
+
+  useEffect(() => {
+    returnRotation(); 
+  }, [textModal])
 
 
 
