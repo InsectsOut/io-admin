@@ -480,7 +480,6 @@ export type Database = {
       }
       Servicios: {
         Row: {
-          aplicador_Responsable: number | null
           cancelado: boolean | null
           cliente_id: number
           created_at: string | null
@@ -500,6 +499,7 @@ export type Database = {
           organizacion: string | null
           realizado: boolean | null
           responsable_id: number | null
+          tecnico_id: number | null
           tipo_folio: string | null
           tipo_plaga_array_id: number[] | null
           tipo_plaga_id: number | null
@@ -508,7 +508,6 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          aplicador_Responsable?: number | null
           cancelado?: boolean | null
           cliente_id: number
           created_at?: string | null
@@ -528,6 +527,7 @@ export type Database = {
           organizacion?: string | null
           realizado?: boolean | null
           responsable_id?: number | null
+          tecnico_id?: number | null
           tipo_folio?: string | null
           tipo_plaga_array_id?: number[] | null
           tipo_plaga_id?: number | null
@@ -536,7 +536,6 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          aplicador_Responsable?: number | null
           cancelado?: boolean | null
           cliente_id?: number
           created_at?: string | null
@@ -556,6 +555,7 @@ export type Database = {
           organizacion?: string | null
           realizado?: boolean | null
           responsable_id?: number | null
+          tecnico_id?: number | null
           tipo_folio?: string | null
           tipo_plaga_array_id?: number[] | null
           tipo_plaga_id?: number | null
@@ -564,13 +564,6 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
-          {
-            foreignKeyName: "Servicios_aplicador_Responsable_fkey"
-            columns: ["aplicador_Responsable"]
-            isOneToOne: false
-            referencedRelation: "Empleados"
-            referencedColumns: ["id"]
-          },
           {
             foreignKeyName: "Servicios_cliente_id_fkey"
             columns: ["cliente_id"]
@@ -590,6 +583,13 @@ export type Database = {
             columns: ["responsable_id"]
             isOneToOne: false
             referencedRelation: "Responsables"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Servicios_tecnico_id_fkey"
+            columns: ["tecnico_id"]
+            isOneToOne: false
+            referencedRelation: "Empleados"
             referencedColumns: ["id"]
           },
           {
@@ -613,7 +613,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_temporal_folio: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       dosis_recomendada: "min" | "max"

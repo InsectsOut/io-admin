@@ -308,7 +308,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 // Create the date in LOCAL TIME (without any timezone shift)
                 const initialDate = new Date(year, month - 1, day);
                 setSelectedDate(initialDate)
-                const initialEmpleadoId = servicio[0]?.aplicador_Responsable ?? null;
+                const initialEmpleadoId = servicio[0]?.responsable_id ?? null;
                 console.log(initialEmpleadoId)
                 setEmpleadoID(initialEmpleadoId ?? null)
                 const initialTime = servicio[0]?.horario_servicio ?? '00:00'
@@ -410,7 +410,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                             fecha_servicio: formattedDate,
                             horario_servicio: selectedTime,
                             tipo_servicio: tipoServicio,
-                            aplicador_Responsable: empleadoId ?? null,
+                            tecnico_id: empleadoId,
                             realizado: estatus,
                             tipo_plaga_id: tipoPlaga,
                             direccion_id: direccion_id
@@ -488,6 +488,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
 
     const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true)
+        console.log(+event.target.value)
         setEmpleadoID(+event.target.value)
     }
 
@@ -732,7 +733,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                         <select
                                             value={empleadoId ?? undefined}
                                             style={{ ...mainStyle, width: "100%" }}
-                                            onChange={handleResponsableChange}
+                                            onChange={(e)=>{handleResponsableChange(e)}}
                                         >
                                             {!empleadoId && <option>Elegir al técnico responsable...</option>}
                                             {empleados.map((empleado) => (
@@ -863,7 +864,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             <ReturnButton
                 onClick={() => window.history.back()}
             >Regresar</ReturnButton>
-            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { location.reload() }) }}>
+            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { location.reload();}) }}>
                 Guardar Cambios
             </StyledButton>
         </>

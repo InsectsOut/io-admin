@@ -17,6 +17,7 @@ import Calendar from "./Calendar";
 import EmpleadosCard from "./EmpleadosCard";
 import CreateEmployee from "./CreateEmployee";
 import MyConstanciaMobile from "./ConstanciaMobile";
+import Bitacoras from "./Bitacoras";
 
 
 
@@ -134,6 +135,9 @@ const AppRoutes = () => {
                     />} />
                     <Route path="/empleados/:id" element={<EmpleadosCard />} />
                     <Route path="/nuevo-empleado" element={<CreateEmployee
+                        organizacion={localStorage.getItem("org") ?? ""}
+                    />} />
+                     <Route path="/bitacoras" element={<Bitacoras
                         organizacion={localStorage.getItem("org") ?? ""}
                     />} />
                 </>

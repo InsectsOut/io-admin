@@ -6,6 +6,7 @@ import { useEffect, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from 'react-router-dom'
 import { supabase } from "./utils/ClientSupabase";
+import PeriodicidadModal from "./PeriodicidadMOdal";
 
 type Cliente = Tables<"Clientes">
 type Responsable = Tables<"Responsables">
@@ -118,7 +119,16 @@ padding:0 1.5rem 0 1rem
 }
 `
 
-export const FormatoInputs = styled.div<{ width?: number, screen_width?: number,marginleft?:string }>/*style*/`
+export enum Position {
+    STATIC = "static",
+    RELATIVE = "relative",
+    ABSOLUTE = "absolute",
+    FIXED = "fixed",
+    STICKY = "sticky",
+  }
+
+export const FormatoInputs = styled.div<{ width?: number, screen_width?: number,marginleft?:string,pos:Position }>/*style*/`
+position: ${(props) => props.pos ? props.pos : "relative"};
 @media (max-width: 900px) {
  width: calc(100%);
  margin-left: ${(props) => props.marginleft ? props.marginleft : "3.25rem"};
@@ -343,6 +353,15 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
     const addServicio = async () => {
         try {
+            // const { data:folio_temp, error:error_temp } = await supabase.rpc
+            // ('generate_temporal_folio');
+            // if (folio_temp){
+            // console.log(folio_temp)
+            // }
+            // if (error_temp){
+            // console.log(error_temp)
+            // return
+            // }
             const { data, error } = await supabase
                 .from("Servicios")
                 .insert([
@@ -358,7 +377,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         tipo_folio: estadoFacturacion,
                         responsable_id: responsableId,
                         organizacion: organizacion,
-                        user_id: props.user_id
+                        user_id: props.user_id,
                     },
                 ] as any)
                 .select();
@@ -548,6 +567,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         />
                     </FormatoInputs>
                     <FormatoInputs
+                    pos={Position.RELATIVE}
                        width={90}
                         screen_width={screenWidth}
                         marginleft={"0"}
@@ -572,7 +592,17 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                                 type="text"
                             />
                         } */}
+                         {frecuencia !=="Ninguna" &&
+                    <>
+                    
+                    <PeriodicidadModal
+                    startDateProp={selectedDate ?? null}
+                    onClose={true}
+                    ></PeriodicidadModal>
+                    </>
+                    }
                     </FormatoInputs>
+                   
 
                     <FormatoInputs
                         width={90}
