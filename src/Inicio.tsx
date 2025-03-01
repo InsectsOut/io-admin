@@ -6,6 +6,8 @@ import { FaRegCalendarAlt } from "react-icons/fa";
 import logoGrande from "./assets/logoGrande.png"
 import { Link, useLocation } from 'react-router-dom';
 import { FaSprayCan } from "react-icons/fa";
+import { PiNotebookDuotone } from "react-icons/pi";
+
 
 
 
@@ -36,17 +38,6 @@ const DashboardContainer = styled.div /*style*/`
     align-items:center;
   }
 
-  @media (min-width: 645px) and (max-width: 768px) {
-   
-    
-  }
-
-
-  @media (min-width: 769px) and (max-width: 900px) {
-
-    
-  }
-    
 `;
 
 const Option = styled.div /*style*/`
@@ -95,6 +86,17 @@ align-items:center;
   
   }
   }
+&.bitacoras {
+  background-color:rgba(9,38,87);
+@media (min-width: 300px) and (max-width: 644px) {
+flex-direction:column;
+flex-wrap:nowrap;
+justify-content:unset;
+gap:2rem;
+align-items:center;
+  
+  }
+  }
 
     @media (min-width: 300px) and (max-width: 644px) {
    flex-direction:column;
@@ -134,17 +136,6 @@ align-items:center;
    flex-direction:column;
   }
 
-  @media (min-width: 645px) and (max-width: 768px) {
-   
-    
-  }
-
-
-  @media (min-width: 769px) and (max-width: 900px) {
-
-    
-  }
-    
 
 `;
 
@@ -175,19 +166,6 @@ left:.01rem;
 bottom:.5rem;
   }
 
-  @media (min-width: 645px) and (max-width: 768px) {
-   
-    
-  }
-
-
-  @media (min-width: 769px) and (max-width: 900px) {
-
-    
-  }
-
-
-
 `
 
 const InsectImage = styled.img /*style*/ `
@@ -214,18 +192,6 @@ box-shadow: 0px 0px 11px 2px rgba(0,0,0,0.75);
 
    
 }
-  }
-
-  @media (min-width: 645px) and (max-width: 768px) {
-  
-    
-  }
-
-
-  @media (min-width: 769px) and (max-width: 900px) {
-
-    
-  }
 `
 
 const InfoText = styled.div /*style*/ `
@@ -253,8 +219,7 @@ bottom: 1rem;
 }
 
 }
-  }
-
+  
   @media (min-width: 645px) and (max-width: 768px) {
     & p{
   font-size:3vw !important;
@@ -263,11 +228,6 @@ bottom: 1rem;
     
   }
 
-
-  @media (min-width: 769px) and (max-width: 900px) {
-    
-    
-  }
 
 `
 
@@ -328,6 +288,12 @@ const Dashboard = () => {
           <OptionContainer className='calendario'>
             <FaRegCalendarAlt size={70}></FaRegCalendarAlt>
             <h2>Calendario</h2>
+          </OptionContainer>
+          </Link>
+          <Link to="/bitacoras ">
+          <OptionContainer className='bitacoras'>
+            <PiNotebookDuotone size={80}></PiNotebookDuotone>
+            <h2>Bitacoras</h2>
           </OptionContainer>
           </Link>
         </OptionsCardsCont>
