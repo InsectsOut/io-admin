@@ -735,7 +735,7 @@ const MyDocument = () => {
                                 {/* Left Column */}
                                 <View style={{ display: 'flex', flexDirection: 'column', maxWidth: '30%', flexGrow: 1 }}>
                                     <View>
-                                        <Text>{rec.problema}</Text>
+                                        <Text>{rec?.problema}</Text>
                                     </View>
                                 </View>
 
@@ -783,7 +783,7 @@ const MyDocument = () => {
                             >
 
                                 <View style={styles.firmasContainer}>
-                                    {firma ? (
+                                    {firmaUrl ? (
                                         <Image src={firmaUrl} style={{ maxWidth: '600px', backgroundColor: "transparent" }} />
                                     ) : (
                                         <Text style={{ color: "black", marginBottom: "10px" }}>Loading firma...</Text>
