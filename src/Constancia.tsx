@@ -272,7 +272,7 @@ const MyDocument = () => {
                     *,
                     Clientes(*),
                     Responsables(*),
-                    Empleados:aplicador_Responsable(*),
+                    Empleados:tecnico_id(*),
                     Recomendaciones(*)
                   `)
                 .filter("folio", "eq", folio)
