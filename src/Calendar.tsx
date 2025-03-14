@@ -240,7 +240,7 @@ const Calendar: React.FC<calendarProps> = (props) => {
     realizado: item.realizado,
     cancelado: item.cancelado,
     aplicadorResponsable: item?.Empleados?.nombre,
-    aplicadorResponsable_id: item?.aplicador_Responsable,
+    aplicadorResponsable_id: item?.tecnico_id,
     tipoPlaga: item.tipo_plaga_id,
     ubicacion: item.direccion_id,
   }));

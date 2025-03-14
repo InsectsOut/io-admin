@@ -308,7 +308,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 // Create the date in LOCAL TIME (without any timezone shift)
                 const initialDate = new Date(year, month - 1, day);
                 setSelectedDate(initialDate)
-                const initialEmpleadoId = servicio[0]?.responsable_id ?? null;
+                const initialEmpleadoId = servicio[0]?.tecnico_id ?? null;
                 console.log(initialEmpleadoId)
                 setEmpleadoID(initialEmpleadoId ?? null)
                 const initialTime = servicio[0]?.horario_servicio ?? '00:00'
