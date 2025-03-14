@@ -424,13 +424,16 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
             } else {
                 console.log("Data inserted successfully:", data);
                 let folio = data[0]?.folio
-                if (folio) {
+               
+                console.log("hola")
+                
 
+                 if (folio) {
+                    SetServicioFolio(folio)
+                    return folio
                     // navigate(`/Servicios/${folio}`)
 
                 }
-                console.log("hola")
-                SetServicioFolio(folio)
             }
         } catch (err) {
             console.error("Error adding servicio:", err);
@@ -648,6 +651,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
         };
 
         if (frecuencia !== "Ninguna") {
+            let folioGuardados = []; // Declare an empty array to store the folios
 
             const frequency_number = frecuencia === "Anual" ? 365 : frecuencia === "Bimestral" ? 60 : frecuencia === "Mensual" ? 30 : frecuencia === "Quincenal" ? 15 : frecuencia === "Semanal" ? 7 : frecuencia === "Semestral" ? 180 : frecuencia === "Trimestral" ? 90 : 0
 
@@ -658,14 +662,21 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 if (i === 0 ) {
                     newDate = addDays(date ?? new Date, 0, selectedDays ?? 0, i);
                 }
-                await addServicio(newDate)
+                const folioGuardado = await addServicio(newDate);  // Store the result in folioGuardado
+                await folioGuardados.push(folioGuardado);  // Add folioGuardado to the array
                 date = newDate
                 console.log("pasada num:", i)
+
+                if (i === cantidadServicios - 1){
+                    console.log(folioGuardados)
+                     navigate(`/Servicios/${folioGuardados[0]}`)
+                }
 
             }
         }
         else if (frecuencia === "Ninguna") {
-            addServicio(date)
+            const folioGuardado = await addServicio(date)
+            navigate(`/Servicios/${folioGuardado}`)
         }
 
 
