@@ -2,7 +2,7 @@ import styled from "styled-components";
 import { ServiciosContainer } from "./Servicios";
 import { Titulo } from "./Servicios";
 import { Enums, Tables } from "../src/supabase/Database";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from 'react-router-dom'
 import { supabase } from "./utils/ClientSupabase";
@@ -27,6 +27,26 @@ const frecuencias: Enums<"FrecuenciaServicio">[] = [
 const isFrecuencia = (value: any): value is Enums<"FrecuenciaServicio"> => {
     return frecuencias.includes(value);
 };
+
+const PeriodicidadTag = styled.div`
+margin-top: .5rem;
+ background: #0D4E80;
+  width: 6rem;
+  height: 2rem;
+  border-radius: 999px; /* Fully rounded edges */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white; /* Ensures text is visible */
+  font-weight: bold;
+  font-size: 0.9rem;
+  padding: 0 1rem; /* Adds spacing */
+  &.periodTag{
+    &:hover{
+        cursor: pointer;
+    }
+  }
+`
 
 const SearchButtonLink = styled.button /*style*/`
 width: 8.5rem;
@@ -125,11 +145,16 @@ export enum Position {
     ABSOLUTE = "absolute",
     FIXED = "fixed",
     STICKY = "sticky",
-  }
+}
 
-export const FormatoInputs = styled.div<{ width?: number, screen_width?: number,marginleft?:string,pos:Position }>/*style*/`
+export const FormatoInputs = styled.div<{ width?: number, screen_width?: number, marginleft?: string, pos: Position }>/*style*/`
 position: ${(props) => props.pos ? props.pos : "relative"};
+.tagsContainer{
+display:flex;
+gap:.5rem;
+}
 @media (max-width: 900px) {
+
  width: calc(100%);
  margin-left: ${(props) => props.marginleft ? props.marginleft : "3.25rem"};
 }
@@ -227,7 +252,7 @@ align-items:center;
 justify-content:left;
 }
 `
-export const TimeInput = styled.div<{marginTop?:string, marginTopTablet?:string}> /*style*/`
+export const TimeInput = styled.div<{ marginTop?: string, marginTopTablet?: string }> /*style*/`
 display:flex;
 flex-direction:column;
 margin-top: ${(props) => props.marginTop ? props.marginTop : "0"};
@@ -238,7 +263,7 @@ margin-top: ${(props) => props.marginTop ? props.marginTop : "0"};
 } 
 
 `
-export const FechaInput = styled.div<{flexDir:string}> /*style*/ `
+export const FechaInput = styled.div<{ flexDir: string }> /*style*/ `
 display:flex;
 flex-direction:column;
 
@@ -298,7 +323,14 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const [direccion_id, setDireccion_id] = useState<number | null>(null)
     const [dirección, setDireccion] = useState<Direcciones[]>([])
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [startDate, setStartDate] = useState<Date | null>(selectedDate);
+    const [selectedDays, setSelectedDays] = useState<number | null >();
+    const dayLetters = ["D", "L", "M", "X", "J", "V", "S"];
+    const [numDeServicios, setNumDeServicios] = useState<number | null>(1)
+    const [periodModalOpen, setPeriodModalOpen] = useState<boolean>(false)
     const navigate = useNavigate()
+    const frecuenciaInputRef = useRef<HTMLSelectElement | null>(null);
+    const tagRef = useRef<HTMLDivElement | null>(null);
 
     const fetchResponsables = async () => {
         if (clienteId !== undefined) {
@@ -351,7 +383,8 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
         }
     }
 
-    const addServicio = async () => {
+
+    const addServicio = async (fecha_servicio: Date | null) => {
         try {
             // const { data:folio_temp, error:error_temp } = await supabase.rpc
             // ('generate_temporal_folio');
@@ -367,7 +400,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 .insert([
                     {
                         cliente_id: clienteId,
-                        fecha_servicio: selectedDate,
+                        fecha_servicio: fecha_servicio,
                         horario_servicio: selectedTime,
                         observaciones: observaciones2,
                         frecuencia_recomendada: frecuencia,
@@ -378,6 +411,10 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         responsable_id: responsableId,
                         organizacion: organizacion,
                         user_id: props.user_id,
+                        // if (frecuencia ){
+
+                        // }
+                        // //  folio:folio_temp
                     },
                 ] as any)
                 .select();
@@ -389,7 +426,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 let folio = data[0]?.folio
                 if (folio) {
 
-                    navigate(`/Servicios/${folio}`)
+                    // navigate(`/Servicios/${folio}`)
 
                 }
                 console.log("hola")
@@ -437,6 +474,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     useEffect(() => {
         fetchClientes()
         fetchOrganización(props.user_id ?? "")
+        console.log("el dia", new Date().getDay())
     }, [])
 
     useEffect(() => {
@@ -497,6 +535,27 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
     }
 
+    const handleStartDateFromChild = (date: Date) => {
+        setStartDate(date);
+    }
+
+    const handleNumDeServiciosFromChild = (num: number) => {
+        setNumDeServicios(num);
+
+    }
+
+
+    const handleSelectedDayFromChild = (day: any) => {
+        setSelectedDays(day
+        );
+         console.log(day)
+    };
+
+    const handleCloseFromChild = (trigger: boolean) => {
+        console.log(trigger)
+        setPeriodModalOpen(trigger)
+    }
+
     useEffect(() => {
         setFrecuencia("Ninguna")
         const otroAlternativeElement = document.getElementById("otroAlternative");
@@ -504,77 +563,192 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
             otroAlternativeElement.focus();
         }
     }, [otroSelected])
+    useEffect(() => {
+        setFrecuencia(frecuencia);
+        console.log(frecuencia)
+    }, [frecuencia])
+
+    useEffect(() => {
+        setPeriodModalOpen(periodModalOpen)
+    }, [periodModalOpen])
+
+    useEffect(() => {
+        if (frecuencia !== "Ninguna") {
+            setPeriodModalOpen(true)
+        }
+        else {
+            setPeriodModalOpen(false)
+        }
+    }, [frecuencia])
+
+    useEffect(() => {
+        setStartDate(selectedDate)
+    }, [selectedDate])
+
+    const handleSeletedDateChange = (date: Date | null, frecuencia?: Enums<"FrecuenciaServicio">) => {
+
+        setSelectedDate(date);
 
 
+
+    }
+
+    const addServicioPeriodically = async (cantidadServicios: number | null, date: Date | null, frecuencia: Enums<"FrecuenciaServicio">) => {
+
+        if (!cantidadServicios) {
+            window.alert("Por favor defina la cantidad de servicios a crear")
+            return;
+        }
+        if (!date) {
+            window.alert("Por favor defina la fecha de inicio de creación de servicios")
+            return;
+        }
+        if (cantidadServicios <= 0) {
+            window.alert("Por favor defina la cantidad de servicios a crear")
+        }
+        if (!date) return;
+
+        const addDays = (date: Date, days: number, day_of_the_week: number, cycles: number) => {
+            let result = new Date(date.getTime()); // Ensure a proper copy
+
+            result.setDate(result.getDate() + days);
+            if (cycles === 0) {
+                return result;
+            }
+            const prevDay = new Date(result);
+            prevDay.setDate(result.getDate() - ((result.getDay() - day_of_the_week + 7) % 7 || 7)); // Ensure we don't get the same day
+            
+            const nextDay = new Date(result);
+            nextDay.setDate(result.getDate() + ((day_of_the_week - result.getDay() + 7) % 7 || 7));
+
+          
+            if (prevDay && (cycles === 0 || cycles % 2 === 0)) {
+                console.log("Even cycles (or 0), choosing prevDay:", prevDay);
+                console.log("Nex day wouldve been", nextDay);
+            } else if (nextDay && (cycles % 2 !== 0)) {
+                console.log("Odd cycles, choosing nextDay:", nextDay);
+                console.log("Prev day wouldve been", prevDay);
+            } else {
+                console.log("Neither condition met, returning null");
+            }
+
+            // return Math.abs(result.getTime() - prevDay.getTime()) <= Math.abs(nextDay.getTime() - result.getTime()) 
+            // ? prevDay 
+            // : nextDay;
+
+
+        
+
+                return prevDay && (cycles === 0 || cycles % 2 === 0)
+                    ? prevDay
+                    :  nextDay && (cycles % 2 !== 0) 
+                        ? nextDay
+                        : null;
+
+        };
+
+        if (frecuencia !== "Ninguna") {
+
+            const frequency_number = frecuencia === "Anual" ? 365 : frecuencia === "Bimestral" ? 60 : frecuencia === "Mensual" ? 30 : frecuencia === "Quincenal" ? 15 : frecuencia === "Semanal" ? 7 : frecuencia === "Semestral" ? 180 : frecuencia === "Trimestral" ? 90 : 0
+
+
+            for (let i = 0; i < cantidadServicios; i++) {
+                let newDate = addDays(date ?? new Date , frequency_number, selectedDays ?? 0 , i);
+
+                if (i === 0 ) {
+                    newDate = addDays(date ?? new Date, 0, selectedDays ?? 0, i);
+                }
+                await addServicio(newDate)
+                date = newDate
+                console.log("pasada num:", i)
+
+            }
+        }
+        else if (frecuencia === "Ninguna") {
+            addServicio(date)
+        }
+
+
+    }
+
+    const handleTagClicks = (event: React.MouseEvent<HTMLDivElement>) => {
+        event.stopPropagation();
+        const target = event.target;
+
+        if (tagRef.current && target instanceof Node && tagRef.current.contains(target)) {
+            setPeriodModalOpen(prev => !prev);
+
+        }
+    };
 
     return (
         <CreateContainer>
             <Titulo>Servicios</Titulo>
             <CreateFormContainer className="createForm"><FormHeader>Para registrar un nuevo servicio, complete el siguiente formulario.</FormHeader>
-            <div className="detailsContainer createService">
-                <CreateServicioForm className="oli">
-                    <FormatoInputs
-                        width={90}
-                        marginleft={"0"}
-                    >
-                        <FormLabels >Nombre del Cliente</FormLabels>
-                        <StyledSelect value={clienteId} onChange={handleClientClick}>
-                            <option >Elegir al cliente...</option>
-                            {clientes.slice()
-                            .sort((a, b) => {
-                              const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
-                              const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
-                              return nameA.localeCompare(nameB);
-                            }).map((cliente) => (
-                                <option value={cliente.id} key={cliente.id} >{cliente.nombre} {cliente.apellidos}</option>
-                            ))}
-                        </StyledSelect>
-                    </FormatoInputs>
-                    <FormatoInputs className="dateInput"
-                    marginleft={"0"}
-                    width={90}
-                    >
-                        <FechaInput>
-                            <FormLabels >Fecha</FormLabels>
-                            <div className="dateInputContainer">
-                                <DateInput placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => setSelectedDate(date)} dateFormat="YYY/MM/dd" />
-                            </div>
-                        </FechaInput>
-                        <TimeInput
-                        marginTopTablet="0"
+                <div className="detailsContainer createService">
+                    <CreateServicioForm className="oli">
+                        <FormatoInputs
+                            width={90}
+                            marginleft={"0"}
                         >
-                            <FormLabels >Horario</FormLabels>
-                            <Horario
-                            style={{width:"10rem", margin:0}}
-                                type="time"
-                                value={selectedTime}
-                                onChange={handleTimeChange}
-                                step="9000" // Optional: Use a step of 15 minutes (900 seconds)
-                            />
-                        </TimeInput>
-                    </FormatoInputs>
+                            <FormLabels >Nombre del Cliente</FormLabels>
+                            <StyledSelect value={clienteId} onChange={handleClientClick}>
+                                <option >Elegir al cliente...</option>
+                                {clientes.slice()
+                                    .sort((a, b) => {
+                                        const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
+                                        const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
+                                        return nameA.localeCompare(nameB);
+                                    }).map((cliente) => (
+                                        <option value={cliente.id} key={cliente.id} >{cliente.nombre} {cliente.apellidos}</option>
+                                    ))}
+                            </StyledSelect>
+                        </FormatoInputs>
+                        <FormatoInputs className="dateInput"
+                            marginleft={"0"}
+                            width={90}
+                        >
+                            <FechaInput>
+                                <FormLabels >Fecha</FormLabels>
+                                <div className="dateInputContainer">
+                                    <DateInput placeholderText="aa-mm-dd" selected={selectedDate} onChange={date => handleSeletedDateChange(date, frecuencia)} dateFormat="YYY/MM/dd" />
+                                </div>
+                            </FechaInput>
+                            <TimeInput
+                                marginTopTablet="0"
+                            >
+                                <FormLabels >Horario</FormLabels>
+                                <Horario
+                                    style={{ width: "10rem", margin: 0 }}
+                                    type="time"
+                                    value={selectedTime}
+                                    onChange={handleTimeChange}
+                                    step="9000" // Optional: Use a step of 15 minutes (900 seconds)
+                                />
+                            </TimeInput>
+                        </FormatoInputs>
 
-                    <FormatoInputs
-                        width={90}
-                        screen_width={screenWidth}
-                        marginleft={"0"}
-                    >
-                        <FormLabels >Observaciones del Servicio</FormLabels>
-                        <input className="textInputs"
-                            onChange={handleObservacionesChange}
-                            value={observaciones2}
-                            type="text"
-                        />
-                    </FormatoInputs>
-                    <FormatoInputs
-                    pos={Position.RELATIVE}
-                       width={90}
-                        screen_width={screenWidth}
-                        marginleft={"0"}
+                        <FormatoInputs
+                            width={90}
+                            screen_width={screenWidth}
+                            marginleft={"0"}
                         >
-                        <FormLabels >Frecuencia recomendada:</FormLabels>
-                      
-                            <select value={frecuencia} onChange={handleFrecuenciaChange} className="textInputs arrowChange">
+                            <FormLabels >Observaciones del Servicio</FormLabels>
+                            <input className="textInputs"
+                                onChange={handleObservacionesChange}
+                                value={observaciones2}
+                                type="text"
+                            />
+                        </FormatoInputs>
+                        <FormatoInputs
+                            pos={Position.RELATIVE}
+                            width={90}
+                            screen_width={screenWidth}
+                            marginleft={"0"}
+                        >
+                            <FormLabels >Frecuencia recomendada:</FormLabels>
+
+                            <select ref={frecuenciaInputRef} value={frecuencia} onChange={handleFrecuenciaChange} className="textInputs arrowChange">
                                 <option >Elegir la frecuencia del servicio...</option>
                                 {frecuencias.map((frecuencia) => (
                                     <option key={frecuencia} value={frecuencia} >
@@ -582,8 +756,8 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                                     </option>
                                 ))}
                             </select>
-                        
-                        {/* {!otroSelected &&
+
+                            {/* {!otroSelected &&
                             <input id="otroAlternative" className="textInputs"
                                 onBlur={() => setOtroSelected(frecuencia === "Ninguna")}
                                 onChange={handleFrecuenciaChange as any}
@@ -592,85 +766,122 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                                 type="text"
                             />
                         } */}
-                         {frecuencia !=="Ninguna" &&
-                    <>
-                    
-                    <PeriodicidadModal
-                    startDateProp={selectedDate ?? null}
-                    onClose={true}
-                    ></PeriodicidadModal>
-                    </>
-                    }
-                    </FormatoInputs>
-                   
 
-                    <FormatoInputs
-                        width={90}
-                        marginleft={"0"}
-                    >
-                        <FormLabels >Dirección:</FormLabels>
-                        <select value={direccion_id ?? undefined} onChange={handleDireccionChange} className="textInputs arrowChange">
-                            <option>Elige la dirección</option>
-                            {dirección.map((direccion) =>
-                                <option key={direccion.id} value={direccion.id}>{direccion.calle} {direccion.ciudad} {direccion.colonia} {direccion.numero_ext} {direccion.codigo_postal}</option>
-                            )}
-                        </select>
-                    </FormatoInputs>
+                            {frecuencia !== "Ninguna" &&
+                                <div
+                                    ref={tagRef}
+                                    onClick={handleTagClicks}
+                                    className="tagsContainer">
+                                    {startDate &&
+                                        <PeriodicidadTag
+                                            className="periodTag"
+                                        >
+                                            <p>{startDate?.toISOString().split("T")[0]}</p>
+                                        </PeriodicidadTag>
+                                    }
 
-                    <FormatoInputs style={{ width: "19.815rem" }}
-                    marginleft={"0"}
-                    >
-                        <FormLabels >Tipo de Folio:</FormLabels>
-                        <div style={{ display: "flex", gap: "1rem" }}>
-                            <input onChange={handleFacturacionChange} type="radio" className="checked" id="facturado" name="choice" value="Facturado" /> Facturado
-                            <input onChange={handleFacturacionChange} type="radio" className="checked" id="noFacturado" name="choice" value="No facturado" /> No Facturado
-                        </div>
-                    </FormatoInputs>
-                    <FormatoInputs
-                        width={90}
-                        marginleft={"0"}
-                        >
-                        <FormLabels >Tipo de Servicio:</FormLabels>
-                        <select value={tipoServicio} onChange={handleTipoServicio} className="textInputs arrowChange"
-                        >
-                            <option value="" >Elegir el tipo de servicio...</option>
-                            <option value="Residencial" >Residencial</option>
-                            <option value="Industrial" >Industrial</option>
-                            <option value="Comercial" >Comercial</option>
-                            <option value="Gubernamental" >Gubernamental</option>
-                            <option value="Hotelería" >Hotelería</option>
-                            <option value="Escolar" >Escolar</option>
-                        </select>
-                    </FormatoInputs>
-                    {tipoServicio !== "Residencial" &&
+                                    {(selectedDays || selectedDays === 0) &&
+                                        <PeriodicidadTag
+                                            className="periodTag"
+                                        >
+                                            <p>{dayLetters[selectedDays as number]}</p>
+                                        </PeriodicidadTag>
+                                    }
+                                    {numDeServicios &&
+                                        <PeriodicidadTag
+                                            className="periodTag"
+                                        >
+                                            <p>{numDeServicios}</p>
+                                        </PeriodicidadTag>
+                                    }
+                                </div>
+                            }
+
+
+                            {periodModalOpen &&
+                                <>
+
+
+                                    <PeriodicidadModal
+                                        ModalCloser={handleCloseFromChild}
+                                        selectedDaySend={handleSelectedDayFromChild}
+                                        startDateSend={handleStartDateFromChild}
+                                        numDeServiciosSend={handleNumDeServiciosFromChild}
+                                        startDateProp={selectedDate ?? null}
+                                        onClose={periodModalOpen}
+                                    ></PeriodicidadModal>
+                                </>
+                            }
+                        </FormatoInputs>
+
+
                         <FormatoInputs
-                        width={90}
-                        marginleft={"0"}
+                            width={90}
+                            marginleft={"0"}
                         >
-                            <FormLabels >Responsable:</FormLabels>
-                            <select value={responsableId ?? undefined} onChange={handleResponsableChange} className="textInputs arrowChange">
-                                <option >Elige al Responsable...</option>
-                                {responsables.map((responsable) =>
-                                    <option key={responsable.id} value={responsable.id}>{responsable.nombre}</option>
+                            <FormLabels >Dirección:</FormLabels>
+                            <select value={direccion_id ?? undefined} onChange={handleDireccionChange} className="textInputs arrowChange">
+                                <option>Elige la dirección</option>
+                                {dirección.map((direccion) =>
+                                    <option key={direccion.id} value={direccion.id}>{direccion.calle} {direccion.ciudad} {direccion.colonia} {direccion.numero_ext} {direccion.codigo_postal}</option>
                                 )}
                             </select>
                         </FormatoInputs>
-                    }
-                    <FormatoInputs
-                        width={90}
-                        marginleft={"0"}
-                    >
-                        <FormLabels >Orden de compra</FormLabels>
-                        <input className="textInputs"
-                            onChange={handleOrdenCompra}
-                            value={ordenDeCommpra}
-                            type="text"
-                        />
-                    </FormatoInputs>
-                    <div className="buttonRegistrar" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                        <SearchButtonLink type="button" onClick={addServicio}>Registrar</SearchButtonLink>
-                    </div>
-                </CreateServicioForm>
+
+                        <FormatoInputs style={{ width: "19.815rem" }}
+                            marginleft={"0"}
+                        >
+                            <FormLabels >Tipo de Folio:</FormLabels>
+                            <div style={{ display: "flex", gap: "1rem" }}>
+                                <input onChange={handleFacturacionChange} type="radio" className="checked" id="facturado" name="choice" value="Facturado" /> Facturado
+                                <input onChange={handleFacturacionChange} type="radio" className="checked" id="noFacturado" name="choice" value="No facturado" /> No Facturado
+                            </div>
+                        </FormatoInputs>
+                        <FormatoInputs
+                            width={90}
+                            marginleft={"0"}
+                        >
+                            <FormLabels >Tipo de Servicio:</FormLabels>
+                            <select value={tipoServicio} onChange={handleTipoServicio} className="textInputs arrowChange"
+                            >
+                                <option value="" >Elegir el tipo de servicio...</option>
+                                <option value="Residencial" >Residencial</option>
+                                <option value="Industrial" >Industrial</option>
+                                <option value="Comercial" >Comercial</option>
+                                <option value="Gubernamental" >Gubernamental</option>
+                                <option value="Hotelería" >Hotelería</option>
+                                <option value="Escolar" >Escolar</option>
+                            </select>
+                        </FormatoInputs>
+                        {tipoServicio !== "Residencial" &&
+                            <FormatoInputs
+                                width={90}
+                                marginleft={"0"}
+                            >
+                                <FormLabels >Responsable:</FormLabels>
+                                <select value={responsableId ?? undefined} onChange={handleResponsableChange} className="textInputs arrowChange">
+                                    <option >Elige al Responsable...</option>
+                                    {responsables.map((responsable) =>
+                                        <option key={responsable.id} value={responsable.id}>{responsable.nombre}</option>
+                                    )}
+                                </select>
+                            </FormatoInputs>
+                        }
+                        <FormatoInputs
+                            width={90}
+                            marginleft={"0"}
+                        >
+                            <FormLabels >Orden de compra</FormLabels>
+                            <input className="textInputs"
+                                onChange={handleOrdenCompra}
+                                value={ordenDeCommpra}
+                                type="text"
+                            />
+                        </FormatoInputs>
+                        <div className="buttonRegistrar" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
+                            <SearchButtonLink type="button" onClick={() => { addServicioPeriodically(numDeServicios, startDate, frecuencia) }}>Registrar</SearchButtonLink>
+                        </div>
+                    </CreateServicioForm>
                 </div>
             </CreateFormContainer>
         </CreateContainer >
