@@ -657,6 +657,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
   const fetchServicios = async () => {
     setText("");
+    setTextModal("")
     clearAllFilters();
 
 
@@ -791,7 +792,14 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
   useEffect(() => {
 
-    filterServicios()
+
+    if (textModal !=""){
+      filterServicios()
+    }
+
+    if (textModal ===""){
+      fetchServicios()
+    }
 
   }, [currentPage])
 
