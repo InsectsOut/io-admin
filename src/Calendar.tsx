@@ -120,7 +120,7 @@ const Calendar: React.FC<calendarProps> = (props) => {
       .select(`
         *,
         Clientes(*),
-        Empleados:aplicador_Responsable(*)
+        Empleados:tecnico_id(*)
       `)
       .filter("organizacion","eq",props.organizacion)
       const { data, error } = query;
