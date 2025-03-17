@@ -320,6 +320,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 setClienteId(servicio[0]?.Clientes?.id as number)
                 console.log(servicio[0]?.tipo_servicio as string)
                 setTipoServicio(servicio[0]?.tipo_servicio as string)
+                setDireccion_id(servicio?.[0]?.direccion_id?.toString() ?? "")
                 if (servicio?.[0]?.tipo_plaga_array_id !== null) {
                     setPlagaSelected(() => [...(servicio?.[0]?.tipo_plaga_array_id ?? [])]);
                 }
@@ -507,6 +508,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const cambio = event.target.value
         setDireccion_id(cambio)
+        setClicked(true)
 
     }
 
@@ -518,7 +520,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 .filter("cliente_id", "eq", cliente_id)
             if (data) {
                 setDireccion(data)
-                setDireccion_id(data[0]?.id.toString())
+                //setDireccion_id(data[0]?.id.toString())
 
             }
             if (error) {
@@ -686,9 +688,11 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                             <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
                                             <select
                                                 style={{ ...mainStyle, width: "100%" }}
-                                                value={direccion_id}
+                                                value={direccion_id || ""}
                                                 onChange={handleDireccionChange}
                                             >
+                                                <option  value ="">Elige una dirección</option>
+
                                                 {dirección.map((options) => (
                                                     <option value={options.id} key={options.id}>
                                                         {options.calle} {options.numero_ext} {options.colonia}{options.ciudad} {options.estado} {" "}
