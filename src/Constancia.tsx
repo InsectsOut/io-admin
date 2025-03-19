@@ -454,6 +454,7 @@ const MyDocument = () => {
         fetchServicio()
     }, [])
     useEffect(() => {
+      setImagenUrl(imagenUrl)
     }, [imagenUrl])
 
     useEffect(() => {
@@ -753,21 +754,25 @@ const MyDocument = () => {
                                 {/* Right Column */}
                                 <View style={{ display: 'flex', flexDirection: 'row', maxWidth: '30%', flexGrow: 2 }}>
                                     <View style={{ display: 'flex', flexDirection: 'row', justifyContent: 'flex-start' }}>
-                                        {imagenUrl[index] !=="" ? (
-                                            <Image
+                                        {imagenUrl?.[index] !=="" && 
+                                            <><Image
 
-                                            src={imagenUrl[index]} style={{ ...styles.rotateImage, width:"75px"}} />
-                                        ) : (
-                                            <Text style={{color: 'black', marginBottom: "10px" }}>Sin imagen disponible...</Text>
-                                        )}
+                                                src={imagenUrl?.[index]} style={{ ...styles.rotateImage, width: "75px" }} />
+                                                
+                                                </>
+                                        }        
+
+                                         {!imagenUrl?.[index] &&                    
+                                            <Text style={{color: 'black', marginBottom: "10px" }}>{index} Sin imagen disponible...</Text>
+                                         }
+                                        
                                     </View>
                                 </View>
+                                
                             </View>
                         ))}
                     </View>
-
-
-                </Page>
+    </Page>
                 <Page size={"LETTER"} style={styles.body}>
                     <View>
                         <View style={{ ...styles.reporteFotográficoContainer, height: "50%" }} >
