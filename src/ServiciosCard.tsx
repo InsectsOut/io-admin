@@ -18,6 +18,7 @@ import { useNavigate } from "react-router-dom";
 import { ButtonComponents } from "./EmpleadosCard";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { CardInputs } from "./rehusableComponents/CardInputs";
+import GrupoServiciosCard from "./GrupoServiciosCards";
 
 
 type Servicio = Tables<"Servicios">
@@ -260,18 +261,17 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const [empleados, setEmpleados] = useState<any[]>([])
     const [empleadoId, setEmpleadoID] = useState<number | null>(null)
     const [modalOpen, setModalOpen] = useState<boolean | null>(false)
-    const [modalVisible, setModalVisible] = useState(false);
-    const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
     const [plagaSelected, setPlagaSelected] = useState<number[]>([])
     const [dataFromRegistros, setDataFromRegistros] = useState<number | null>(null)
     const navigate = useNavigate()
     const [addButtonClicked, setAddButtonClicked] = useState(false)
-    const [direccion_id, setDireccion_id] = useState<string>("")
+    const [direccion_id, setDireccion_id] = useState<number | null>()
     const [dirección, setDireccion] = useState<Direcciones[]>([])
     const [infoTab, setInfoTab] = useState<string>("general")
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [blobUrl, setBolbUrl] = useState<string>("")
-
+    const [statusFlag,setStatusFlag] = useState<boolean>(false)
+    const [confirmation,setConfirmation] = useState<boolean>(false)
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
     };
@@ -320,7 +320,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 setClienteId(servicio[0]?.Clientes?.id as number)
                 console.log(servicio[0]?.tipo_servicio as string)
                 setTipoServicio(servicio[0]?.tipo_servicio as string)
-                setDireccion_id(servicio?.[0]?.direccion_id?.toString() ?? "")
+                setDireccion_id(servicio?.[0]?.direccion_id)
                 if (servicio?.[0]?.tipo_plaga_array_id !== null) {
                     setPlagaSelected(() => [...(servicio?.[0]?.tipo_plaga_array_id ?? [])]);
                 }
@@ -388,49 +388,121 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
         }
     }
 
-    const updateServicios = async () => {
+    const folioPermanenteAlert = async () =>{
+       let confirmation =  window.confirm("El estado del servicio ha cambiado a Realizado. Al guardar los cambios, se generará un folio permanente para este servicio. Esta acción es irreversible.");
 
+        return confirmation
+    }
 
-        try {
-            let utcDate = null;
-            if (selectedDate) {
-                utcDate = new Date(Date.UTC(
-                    selectedDate.getFullYear(),
-                    selectedDate.getMonth(),
-                    selectedDate.getDate()
-                ));
+    const updateServicios = async (confirmation:boolean,flag:boolean,organizacion:string,estatus:boolean) => {
+        console.log(confirmation,flag,estatus)
+
+        if (confirmation && flag && estatus ){
+            const { data: folio_perm, error: error_temp } = await supabase.rpc(
+                'generate_folio', 
+                { org_name: organizacion } as any// Pass the organization name here
+            );
+        
+            if (folio_perm) {
+                console.log('Generated Folio:', folio_perm);
             }
-
-            const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
-            const { data, error } = await supabase
-                .from("Servicios")
-                .update(
-                    [
-                        {
-                            cliente_id: clienteId,
-                            fecha_servicio: formattedDate,
-                            horario_servicio: selectedTime,
-                            tipo_servicio: tipoServicio,
-                            tecnico_id: empleadoId,
-                            realizado: estatus,
-                            tipo_plaga_id: tipoPlaga,
-                            direccion_id: direccion_id
-
-
-                        },
-                    ] as any
-                )
-                .filter("id", "eq", `${servicios[0].id}`)
-            if (error) {
-                console.error("Error updating data:", error.message);
-            } else {
-                console.log("Data updated successfully:", data);
+        
+            if (error_temp) {
+                console.error('Error:', error_temp);
+                return;
             }
+            try {
+                let utcDate = null;
+                if (selectedDate) {
+                    utcDate = new Date(Date.UTC(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                    ));
+                }
+    
+                const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
+                const { data, error } = await supabase
+                    .from("Servicios")
+                    .update(
+                        [
+                            {
+                                cliente_id: clienteId,
+                                fecha_servicio: formattedDate,
+                                horario_servicio: selectedTime,
+                                tipo_servicio: tipoServicio,
+                                tecnico_id: empleadoId,
+                                realizado: estatus,
+                                tipo_plaga_id: tipoPlaga,
+                               direccion_id: direccion_id,
+                                folio:folio_perm as number
+    
+    
+                            },
+                        ] as any
+                    )
+                    .filter("id", "eq", `${servicios[0].id}`)
+                if (error) {
+                    console.log("error con estatus realizado")
+                    console.error("Error updating data:", error.message);
+                } else {
+                    console.log("Data updated successfully:", data);
+                    navigate(`/Servicios/${folio_perm}`)
+                    location.reload()
 
+                }
+    
+            }
+            catch (err) {
+                console.log("Error making the update request")
+            } 
         }
-        catch (err) {
-            console.log("Error making the update request")
+
+        else {
+            try {
+                let utcDate = null;
+                if (selectedDate) {
+                    utcDate = new Date(Date.UTC(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                    ));
+                }
+    
+                const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
+                const { data, error } = await supabase
+                    .from("Servicios")
+                    .update(
+                        [
+                            {
+                                cliente_id: clienteId,
+                                fecha_servicio: formattedDate,
+                                horario_servicio: selectedTime,
+                                tipo_servicio: tipoServicio,
+                                tecnico_id: empleadoId,
+                                realizado: estatus,
+                                tipo_plaga_id: tipoPlaga,
+                                direccion_id: direccion_id,
+    
+                            },
+                        ] as any
+                    )
+                    .filter("id", "eq", `${servicios[0].id}`)
+                if (error) {
+                    console.log("error con estatus no realizado")
+                    console.error("Error updating data:", error.message);
+                } else {
+                    console.log("Data updated successfully:", data);
+                    location.reload()
+                }
+    
+            }
+            catch (err) {
+                console.log("Error making the update request")
+            } 
         }
+
+        
     }
 
 
@@ -458,20 +530,29 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
         const idSacado = +event.target.value
         setClienteId(idSacado)
     }
-    const handleEstatusChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleEstatusChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true);
         const cambio = event.target.value
         setEstatusString(cambio)
+       
 
         if (cambio === "Realizado") {
             console.log("realizado")
+            let confirmation =  (await folioPermanenteAlert()).valueOf()
+            console.log("la confi: " ,(await confirmation).valueOf())
+            setStatusFlag((await confirmation).valueOf())
+            setConfirmation(confirmation)
+            if (!confirmation){
+                setSelectedEstatus(false)
+                setStatusFlag(false)
+                setConfirmation(confirmation)
+            }
             setSelectedEstatus(true)
-
         }
         else if (cambio === "No realizado") {
             console.log("norealizado")
             setSelectedEstatus(false)
-
+            setStatusFlag(false)
         }
 
     }
@@ -506,7 +587,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     };
 
     const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const cambio = event.target.value
+        const cambio = +event.target.value
         setDireccion_id(cambio)
         setClicked(true)
 
@@ -591,7 +672,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                         largo="calc(100%-2px)"
                                         readOnly
                                         type="text"
-                                        placeholder={servicios.length > 0 ? servicios[0]?.folio : ""}
+                                        placeholder={servicios[0]?.folio < 0 ? `FT-${servicios[0]?.folio * -1}` : servicios[0]?.folio}
                                     />
                                 </InputsContainer>
 
@@ -833,6 +914,19 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                             openModal={() => { setModalOpen(true) }}
                             servicioId={servicios[0]?.id}
                         ></RegistrosCard>
+
+                        
+                    {servicios?.[0]?.grupo_de_servicios && 
+                        <>
+
+                            <GrupoServiciosCard
+                            openModal={() => { setModalOpen(true); } }
+                            servicioId={servicios[0]?.id}
+                            title={"Grupo de servicios"}
+                            >
+
+                                </GrupoServiciosCard></>
+                    }
                     </div>
 
                     <PdfMailButton
@@ -868,7 +962,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             <ReturnButton
                 onClick={() => window.history.back()}
             >Regresar</ReturnButton>
-            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios().then(() => { location.reload();}) }}>
+            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios(confirmation,statusFlag,props.organizacion ?? "",estatus ?? false).then(() => { }) }}>
                 Guardar Cambios
             </StyledButton>
         </>

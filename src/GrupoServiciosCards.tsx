@@ -4,8 +4,10 @@ import styled from "styled-components"
 import { Database, Tables } from "../src/supabase/Database"
 import { supabase } from "./utils/ClientSupabase"
 import Modal from "./ModalComponents"
+import { useNavigate } from "react-router-dom"
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">
+type Servicios = Tables<"Servicios">
 
 const RegistroContainer = styled.div<{ clicado?: boolean, alturaregitro: number }> /*style*/ `
 width:53%;
@@ -34,7 +36,7 @@ margin:0;
 }
 .bottomContent{
 :hover{
-transform:scale(1.05);
+color:#2395FF
 }
 transition: all 0.3s ease-in-out;
 overflow-y:scroll;
@@ -67,7 +69,6 @@ box-shadow: ${props => (props.clicado ? "0px 0.1rem 0.1rem rgba(0, 0, 0, 0.25)" 
 width:100%;
 :hover{
 cursor: pointer;
-
 }
 }
 p{
@@ -93,16 +94,17 @@ height:53vh;
 interface registrosProps {
     servicioId: number
     openModal: () => void
-    sendDataParent: any
     title?:string | null
 }
   
-const RegistrosCard: React.FC<registrosProps> = (props) => {
+const GrupoServiciosCard: React.FC<registrosProps> = (props) => {
     const [clicked, setClicked] = useState<boolean>(false)
-    const [registros, setRegistros] = useState<RegistroAplicacion[]>([])
+    const [servicios_del_grupo, set_servicios_del_grupo] = useState<number[] | null>([])
     const [modalOpen, setOpen] = useState<boolean>(false)
     const [registroId, setRegistroId] = useState<number>()
     const [servicio_Id, setServicioId] = useState<number>(props?.servicioId ?? -1)
+    const [servicios,setServicios] = useState<Servicios[]>([])
+    const navigate = useNavigate()
 
     const fetchRegistros = async () => {
         if (servicio_Id == undefined) {
@@ -110,12 +112,14 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
         }
         try {
             const { data, error } = await supabase
-                .from("RegistroAplicacion")
-                .select("*")
-                // .eq("servicio_id",servicioId)
-                .filter("servicio_id", "eq", servicio_Id)
+                .from("Servicios")
+                .select(`grupo_de_servicios,GruposDeServicios!inner("servicios_id")`)
+                .filter("id", "eq", servicio_Id)
             if (data) {
-                setRegistros(data)
+               console.log(data[0]?.GruposDeServicios?.servicios_id)
+                let servicios = data[0]?.GruposDeServicios?.servicios_id
+                set_servicios_del_grupo(servicios ?? [])
+                return servicios
             }
 
             if (error) {
@@ -128,6 +132,29 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
             console.log(err)
         }
     }
+
+    const fetchServiciosInfo = async (servicios_grupo:number[]) => {
+        try {
+            const {data,error} = await supabase
+            .from("Servicios")
+            .select("*")
+            .in("id", servicios_grupo as number[]);
+
+            if (data){
+            console.log(data)
+            setServicios(data)
+            }
+            if (error){
+                console.log(error)
+            }
+        }
+
+       
+
+        catch(err){
+            console.error(err)
+        }
+    }
  
 
     const handleSetRegistro = (number: number) => {
@@ -136,20 +163,20 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
 
     useEffect(() => {
         if (props?.servicioId !== null) {
-            fetchRegistros()
+            
+            fetchRegistros().then((registros)=>{fetchServiciosInfo(registros ?? [])})
         }
         setServicioId(props?.servicioId)
     }, [props])
 
-    useEffect(() => {
-        if (registros.length > 0) {
-            setClicked(true)
-        }
-    }, [registros])
+    // useEffect(() => {
+    //     fetchServiciosInfo()
+    // }, [])
 
-    const handleClick = (number: number) => {
-        props.sendDataParent(number);
-    }
+    useEffect(()=>{
+        set_servicios_del_grupo(servicios_del_grupo)
+    },[servicios_del_grupo])
+
 
     return (
         <>
@@ -157,7 +184,7 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
 
             <RegistroContainer
                 clicado={clicked}
-                alturaregitro={registros.length}
+               // alturaregitro={registros.length}
                 className="registrosContainer"
             >
                 <div className="topContent"
@@ -168,25 +195,23 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
                 <div className="bottomContent">
 
 
-                    {registros
-                        ?.sort((a, b) => a.id - b.id)
-                        .map((data, index) => (
+                    {servicios
+                    ?.sort((a, b) => a.id - b.id)
+                    ?.map((data, index) => (
                             <div
                                 style={{ width: "100%" }}
                                 key={index}
                                 className="listElement"
                                 onClick={() => {
-                                    setRegistroId(data?.id);
-                    
-                                    // Pass both `data.id` and a specific `upsertFlag` value (e.g., actualizar or añadir)
-                                    handleClick(data?.id);
-                    
-                                    props.openModal();
+                                    navigate(`/Servicios/${data?.folio}`)
+                                    location.reload()
                                 }}
                             >
-                                <p style={{ marginLeft: "1rem", width: "20%" }}>{index + 1}</p>
-                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.area_aplicacion}</p>
-                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.tipo_aplicacion}</p>
+                                <p style={{ marginLeft: "1rem", width: "20%" }}>Folio:</p>
+                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.folio < 0 ? `FT-${data?.folio * -1}` : data?.folio}</p>
+                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.fecha_servicio}</p>
+                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.realizado ? "Realizado" : "No realizado"}</p>
+                                
                             </div>
                         ))}
 
@@ -197,4 +222,4 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
     )
 }
 
-export default RegistrosCard
+export default GrupoServiciosCard

@@ -1276,7 +1276,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     <FolioLink className="primerSector" style={{ maxHeight: "3.351rem", textAlign: "left" }}
                       setWidth={"85%"}
                       to={`${location.pathname}/${servicio.folio}`}>
-                      {screenWidth > 900 ? "#Folio:" : <strong>#</strong>} {servicio.folio}
+                      {screenWidth > 900 ? "#Folio:" : <strong>#</strong>} {servicio.folio < 0 ? `FT-${servicio.folio * -1}` : servicio.folio}
                     </FolioLink>
                   </div>
                   <div

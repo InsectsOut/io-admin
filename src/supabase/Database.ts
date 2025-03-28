@@ -275,6 +275,21 @@ export type Database = {
           },
         ]
       }
+      GruposDeServicios: {
+        Row: {
+          id: number
+          servicios_id: number[] | null
+        }
+        Insert: {
+          id?: number
+          servicios_id?: number[] | null
+        }
+        Update: {
+          id?: number
+          servicios_id?: number[] | null
+        }
+        Relationships: []
+      }
       Plagas: {
         Row: {
           created_at: string
@@ -490,6 +505,7 @@ export type Database = {
           frecuencia_recomendada:
             | Database["public"]["Enums"]["FrecuenciaServicio"]
             | null
+          grupo_de_servicios: number | null
           horario_entrada: string | null
           horario_salida: string | null
           horario_servicio: string
@@ -518,6 +534,7 @@ export type Database = {
           frecuencia_recomendada?:
             | Database["public"]["Enums"]["FrecuenciaServicio"]
             | null
+          grupo_de_servicios?: number | null
           horario_entrada?: string | null
           horario_salida?: string | null
           horario_servicio: string
@@ -546,6 +563,7 @@ export type Database = {
           frecuencia_recomendada?:
             | Database["public"]["Enums"]["FrecuenciaServicio"]
             | null
+          grupo_de_servicios?: number | null
           horario_entrada?: string | null
           horario_salida?: string | null
           horario_servicio?: string
@@ -576,6 +594,13 @@ export type Database = {
             columns: ["direccion_id"]
             isOneToOne: false
             referencedRelation: "Direcciones"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Servicios_grupo_de_servicios_fkey"
+            columns: ["grupo_de_servicios"]
+            isOneToOne: false
+            referencedRelation: "GruposDeServicios"
             referencedColumns: ["id"]
           },
           {
@@ -613,10 +638,23 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_temporal_folio: {
-        Args: Record<PropertyKey, never>
+      generate_folio: {
+        Args: {
+          org_name: string
+        }
         Returns: number
       }
+      generate_temporal_folio:
+        | {
+            Args: Record<PropertyKey, never>
+            Returns: number
+          }
+        | {
+            Args: {
+              org_name: string
+            }
+            Returns: number
+          }
     }
     Enums: {
       dosis_recomendada: "min" | "max"
