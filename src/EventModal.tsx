@@ -51,7 +51,8 @@ const ModalContent = styled.div`
   }
   .folioCont{
     display: flex;
-    gap:.15rem;
+    gap:.5rem;
+  
   }
 `;
 
@@ -79,6 +80,7 @@ const CloseButton = styled.button`
 
 const P = styled.p`
 color:#3788d8 !important;
+width:100%;
 &:hover{
   cursor:pointer;
   text-decoration: underline;
@@ -177,11 +179,13 @@ const EventModal: React.FC<EventModalProps> = ({
             {eventEndTime && <p><strong>End Time:</strong> {eventEndTime}</p>}
             {eventDescription && <p><strong>Observaciones:</strong> {eventDescription}</p>}
             {eventFolio && (
-              <div className='folioCont'>
-                <p >
+              <div style={{width:"100%"}} className='folioCont'>
+                <p 
+                style={{maxWidth:"fit-content"}}
+                >
                   <strong>Folio: </strong>
                 </p>
-                <P onClick={() => navigate(`/Servicios/${eventFolio}`)}> {eventFolio}</P>
+                <P onClick={() => navigate(`/Servicios/${eventFolio}`)}> {eventFolio < 0 ? `FT-${eventFolio * -1}`: eventFolio}</P>
               </div>
             )}
             {eventFrecuencia && <p><strong>Frecuencia Recomendada:</strong> {eventFrecuencia}</p>}

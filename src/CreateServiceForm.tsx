@@ -11,6 +11,8 @@ import PeriodicidadModal from "./PeriodicidadMOdal";
 type Cliente = Tables<"Clientes">
 type Responsable = Tables<"Responsables">
 type Direcciones = Tables<"Direcciones">
+type GruposDeServicios = Tables<"GruposDeServicios">
+
 
 /** Frecuencias validas para un servicio */
 const frecuencias: Enums<"FrecuenciaServicio">[] = [
@@ -362,11 +364,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     }
 
 
-    const fetchClientes = async () => {
+    const fetchClientes = async (organizacion:string) => {
         try {
             const { error, data: clientes } = await supabase
                 .from("Clientes")
-                .select(`*`);
+                .select(`*`)
+                .filter("organizacion","eq",organizacion)
 
             if (error) {
                 setFetchError("No se pudieron conseguir los datos de servicio");
@@ -383,18 +386,46 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
         }
     }
 
-
-    const addServicio = async (fecha_servicio: Date | null) => {
+    const createGrupoDeServicios = async (servicioId?: number[] | null[], grupoId?: number | null) => {
         try {
-            // const { data:folio_temp, error:error_temp } = await supabase.rpc
-            // ('generate_temporal_folio');
-            // if (folio_temp){
-            // console.log(folio_temp)
-            // }
-            // if (error_temp){
-            // console.log(error_temp)
-            // return
-            // }
+            const { data, error } = await supabase
+                .from("GruposDeServicios")
+                .upsert([
+                    {
+                        ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
+                        ...(servicioId !== undefined && servicioId !== null && { servicios_id: servicioId })
+                    }
+                ] as any)
+                .select("id"); // Select only "id" field
+    
+            if (error) {
+                console.error("Error in upsert:", error);
+                return null;
+            }
+    
+            return data?.[0]?.id ?? null; // Return the first id or null if not found
+        } catch (err) {
+            console.error("Exception:", err);
+            return null;
+        }
+    };
+
+
+    const addServicio = async (fecha_servicio: Date | null, grupo_de_servicios?:number | null) => {
+        try {
+            const { data: folio_temp, error: error_temp } = await supabase.rpc(
+                'generate_temporal_folio', 
+                { org_name: organizacion } as any// Pass the organization name here
+            );
+        
+            if (folio_temp) {
+                console.log('Generated Folio:', folio_temp);
+            }
+        
+            if (error_temp) {
+                console.error('Error:', error_temp);
+                return;
+            }
             const { data, error } = await supabase
                 .from("Servicios")
                 .insert([
@@ -411,10 +442,9 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         responsable_id: responsableId,
                         organizacion: organizacion,
                         user_id: props.user_id,
-                        // if (frecuencia ){
+                        grupo_de_servicios:grupo_de_servicios ?? null,
+                        folio:folio_temp
 
-                        // }
-                        // //  folio:folio_temp
                     },
                 ] as any)
                 .select();
@@ -431,14 +461,30 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                  if (folio) {
                     SetServicioFolio(folio)
                     return folio
-                    // navigate(`/Servicios/${folio}`)
-
                 }
             }
         } catch (err) {
             console.error("Error adding servicio:", err);
         }
     };
+
+    const getServicioId = async (folio:number) => {
+        try{
+            const { data, error } = await supabase
+            .from("Servicios")
+            .select("id")
+            .eq("folio",folio)
+
+            if (data){
+               return data[0]?.id
+            }
+        }
+        catch(err){
+            if(err){
+                console.log(err)
+            }
+        }
+    } 
 
     const fetchOrganización = async (user_id: string | null) => {
         try {
@@ -447,8 +493,8 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 .select("organizacion")
                 .filter("user_id", "eq", user_id)
 
-            //@ts-ignore
             setOrganizacion(data?.[0]?.organizacion ?? "")
+            return data?.[0]?.organizacion
         }
         catch (err) {
             console.log(err)
@@ -475,10 +521,16 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     }
 
     useEffect(() => {
-        fetchClientes()
-        fetchOrganización(props.user_id ?? "")
-        console.log("el dia", new Date().getDay())
+        fetchOrganización(props.user_id ?? "").then((org)=>{ fetchClientes(org ?? "")})
+       
+       
     }, [])
+    // useEffect(() => {
+       
+    //    // fetchOrganización(props.user_id ?? "")
+    //     setOrganizacion(organizacion)
+     
+    // }, [organizacion])
 
     useEffect(() => {
         fetchResponsables()
@@ -652,8 +704,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
         if (frecuencia !== "Ninguna") {
             let folioGuardados = []; // Declare an empty array to store the folios
+            let idsDelServicio = []
 
-            const frequency_number = frecuencia === "Anual" ? 365 : frecuencia === "Bimestral" ? 60 : frecuencia === "Mensual" ? 30 : frecuencia === "Quincenal" ? 15 : frecuencia === "Semanal" ? 7 : frecuencia === "Semestral" ? 180 : frecuencia === "Trimestral" ? 90 : 0
+            
+
+            const frequency_number = frecuencia === "Anual" ? 365 : frecuencia === "Bimestral" ? 56 : frecuencia === "Mensual" ? 28 : frecuencia === "Quincenal" ? 15 : frecuencia === "Semanal" ? 7 : frecuencia === "Semestral" ? 168 : frecuencia === "Trimestral" ? 84 : 0
+            let grupoId = await  createGrupoDeServicios();
 
 
             for (let i = 0; i < cantidadServicios; i++) {
@@ -662,12 +718,20 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 if (i === 0 ) {
                     newDate = addDays(date ?? new Date, 0, selectedDays ?? 0, i);
                 }
-                const folioGuardado = await addServicio(newDate);  // Store the result in folioGuardado
+                const folioGuardado = await addServicio(newDate,grupoId ?? null);  // Store the result in folioGuardado
                 await folioGuardados.push(folioGuardado);  // Add folioGuardado to the array
+                if (folioGuardado){
+                let idDelServicio = await getServicioId(folioGuardado)
+                await idsDelServicio.push(idDelServicio)
+                await createGrupoDeServicios(idsDelServicio as any[],grupoId)
+                
+            }
+               
                 date = newDate
                 console.log("pasada num:", i)
 
                 if (i === cantidadServicios - 1){
+
                     console.log(folioGuardados)
                      navigate(`/Servicios/${folioGuardados[0]}`)
                 }
