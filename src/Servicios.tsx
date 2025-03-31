@@ -842,7 +842,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
         const { data, error } = await supabase
           .from("Clientes")
-          .select("*");
+          .select("*")
+          .eq("organizacion",props.organizacion ?? "")
 
         if (error) {
           setClientes([])
