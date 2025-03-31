@@ -397,7 +397,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const updateServicios = async (confirmation:boolean,flag:boolean,organizacion:string,estatus:boolean) => {
         console.log(confirmation,flag,estatus)
 
-        if (confirmation && flag && estatus ){
+        if (confirmation && flag && estatus &&  servicios[0]?.folio < 0 ){
             const { data: folio_perm, error: error_temp } = await supabase.rpc(
                 'generate_folio', 
                 { org_name: organizacion } as any// Pass the organization name here
@@ -435,7 +435,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                 realizado: estatus,
                                 tipo_plaga_id: tipoPlaga,
                                direccion_id: direccion_id,
-                                folio:folio_perm as number
+                                folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm 
     
     
                             },
@@ -446,6 +446,10 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     console.log("error con estatus realizado")
                     console.error("Error updating data:", error.message);
                 } else {
+                    if (servicios[0]?.folio > 0){
+                        location.reload()
+                        return
+                    }
                     console.log("Data updated successfully:", data);
                     navigate(`/Servicios/${folio_perm}`)
                     location.reload()
@@ -836,6 +840,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                     <DetailsTitle>Estatus</DetailsTitle>
                                     <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
                                         <select
+                                        disabled={ servicios[0]?.folio> 0 ? true : false}
                                             value={estatusString}
                                             style={{ ...mainStyle, width: "100%" }}
                                             onChange={handleEstatusChange}
