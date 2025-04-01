@@ -118,6 +118,7 @@ interface cardProps {
     plagas?: any[];
     registroApId?: number | null
     addBtnClicked: boolean
+    organizacion: string
 }
 
 enum dosis_recomendada {
@@ -137,7 +138,7 @@ enum TipoProductoEnum {
 
   
 
-const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnClicked }) => {
+const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnClicked,organizacion }) => {
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null)
     const [producto, setProducto] = useState<Productos[]>()
     const [productoId, setProductoId] = useState<number>(0)
@@ -190,6 +191,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     useEffect(() => {
         fetchProducto()
         fetchServicioId()
+        console.log("la orga" , organizacion)
     }, [])
 
     const handleAreaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -231,6 +233,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 .from("Servicios")
                 .select("id")
                 .filter("folio", "eq", folio)
+                .filter("organizacion","eq",organizacion)
 
             if (data) {
                 const [id] = data
@@ -301,7 +304,9 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                             dosis_recomendada:dosisRecomendada ?? null
                         }] as any
                     )
+                    
                     .filter("id", "eq", registroId)
+                    .select("*")
                 if (error) {
                     console.error("Error updating data:", error.message);
                 } else {
@@ -326,6 +331,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                         }] as any
 
                     )
+                    .select("*")
                 if (error) {
                     console.error("Error inserting data:", error.message);
                 } else {
