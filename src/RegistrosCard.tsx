@@ -109,12 +109,14 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
             return
         }
         try {
+            console.log(servicio_Id)
             const { data, error } = await supabase
                 .from("RegistroAplicacion")
                 .select("*")
                 // .eq("servicio_id",servicioId)
                 .filter("servicio_id", "eq", servicio_Id)
             if (data) {
+                console.log(data)
                 setRegistros(data)
             }
 

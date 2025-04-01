@@ -43,6 +43,7 @@ display:flex;
 justify-content:left;
 margin-left:unset;
 gap:.25rem;
+
 &.invisible {
     div {
         display: none !important;
@@ -150,6 +151,39 @@ display:flex;
 flex-direction:column;
 position: relative;
 overflow:visible;
+
+.folioInputsCont{
+   display: flex;
+   width:100%;
+   gap:.5rem;
+   
+   p{
+  margin: 0;
+  font-size: 85%;
+  text-align: center;
+   }
+
+   :hover{
+        background: white;
+        color:#0D4E80;
+        cursor: pointer;
+        border-radius: 0.215rem;
+}
+   
+   
+   
+}
+
+.genFolioButt{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: #0D4E80;
+    border-radius: 0.215rem;
+    border: 0.072rem solid rgb(114, 114, 114);
+
+
+}
 
 .responsableCard{
 display:flex;
@@ -270,8 +304,8 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const [infoTab, setInfoTab] = useState<string>("general")
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [blobUrl, setBolbUrl] = useState<string>("")
-    const [statusFlag,setStatusFlag] = useState<boolean>(false)
-    const [confirmation,setConfirmation] = useState<boolean>(false)
+    const [statusFlag, setStatusFlag] = useState<boolean>(false)
+    const [confirmation, setConfirmation] = useState<boolean>(false)
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
     };
@@ -388,25 +422,25 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
         }
     }
 
-    const folioPermanenteAlert = async () =>{
-       let confirmation =  window.confirm("El estado del servicio ha cambiado a Realizado. Al guardar los cambios, se generará un folio permanente para este servicio. Esta acción es irreversible.");
+    const folioPermanenteAlert = async () => {
+        let confirmation = window.confirm("El estado del servicio ha cambiado a Realizado. Al guardar los cambios, se generará un folio permanente para este servicio. Esta acción es irreversible.");
 
         return confirmation
     }
 
-    const updateServicios = async (confirmation:boolean,flag:boolean,organizacion:string,estatus:boolean) => {
-        console.log(confirmation,flag,estatus)
+    const updateServicios = async (confirmation: boolean, flag: boolean, organizacion: string, estatus: boolean) => {
+        console.log(confirmation, flag, estatus)
 
-        if (confirmation && flag && estatus &&  servicios[0]?.folio < 0 ){
+        if (confirmation && flag && estatus && servicios[0]?.folio < 0) {
             const { data: folio_perm, error: error_temp } = await supabase.rpc(
-                'generate_folio', 
+                'generate_folio',
                 { org_name: organizacion } as any// Pass the organization name here
             );
-        
+
             if (folio_perm) {
                 console.log('Generated Folio:', folio_perm);
             }
-        
+
             if (error_temp) {
                 console.error('Error:', error_temp);
                 return;
@@ -420,59 +454,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                         selectedDate.getDate()
                     ));
                 }
-    
-                const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
-                const { data, error } = await supabase
-                    .from("Servicios")
-                    .update(
-                        [
-                            {
-                                cliente_id: clienteId,
-                                fecha_servicio: formattedDate,
-                                horario_servicio: selectedTime,
-                                tipo_servicio: tipoServicio,
-                                tecnico_id: empleadoId,
-                                realizado: estatus,
-                                tipo_plaga_id: tipoPlaga,
-                               direccion_id: direccion_id,
-                                folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm 
-    
-    
-                            },
-                        ] as any
-                    )
-                    .filter("id", "eq", `${servicios[0].id}`)
-                if (error) {
-                    console.log("error con estatus realizado")
-                    console.error("Error updating data:", error.message);
-                } else {
-                    if (servicios[0]?.folio > 0){
-                        location.reload()
-                        return
-                    }
-                    console.log("Data updated successfully:", data);
-                    navigate(`/Servicios/${folio_perm}`)
-                    location.reload()
 
-                }
-    
-            }
-            catch (err) {
-                console.log("Error making the update request")
-            } 
-        }
-
-        else {
-            try {
-                let utcDate = null;
-                if (selectedDate) {
-                    utcDate = new Date(Date.UTC(
-                        selectedDate.getFullYear(),
-                        selectedDate.getMonth(),
-                        selectedDate.getDate()
-                    ));
-                }
-    
                 const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
                 const { data, error } = await supabase
                     .from("Servicios")
@@ -487,7 +469,59 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                 realizado: estatus,
                                 tipo_plaga_id: tipoPlaga,
                                 direccion_id: direccion_id,
-    
+                                folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm
+
+
+                            },
+                        ] as any
+                    )
+                    .filter("id", "eq", `${servicios[0].id}`)
+                if (error) {
+                    console.log("error con estatus realizado")
+                    console.error("Error updating data:", error.message);
+                } else {
+                    if (servicios[0]?.folio > 0) {
+                        location.reload()
+                        return
+                    }
+                    console.log("Data updated successfully:", data);
+                    navigate(`/Servicios/${folio_perm}`)
+                    location.reload()
+
+                }
+
+            }
+            catch (err) {
+                console.log("Error making the update request")
+            }
+        }
+
+        else {
+            try {
+                let utcDate = null;
+                if (selectedDate) {
+                    utcDate = new Date(Date.UTC(
+                        selectedDate.getFullYear(),
+                        selectedDate.getMonth(),
+                        selectedDate.getDate()
+                    ));
+                }
+
+                const formattedDate = utcDate?.toISOString().split("T")[0]; // "YYYY-MM-DD"
+                const { data, error } = await supabase
+                    .from("Servicios")
+                    .update(
+                        [
+                            {
+                                cliente_id: clienteId,
+                                fecha_servicio: formattedDate,
+                                horario_servicio: selectedTime,
+                                tipo_servicio: tipoServicio,
+                                tecnico_id: empleadoId,
+                                realizado: estatus,
+                                tipo_plaga_id: tipoPlaga,
+                                direccion_id: direccion_id,
+
                             },
                         ] as any
                     )
@@ -499,14 +533,14 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     console.log("Data updated successfully:", data);
                     location.reload()
                 }
-    
+
             }
             catch (err) {
                 console.log("Error making the update request")
-            } 
+            }
         }
 
-        
+
     }
 
 
@@ -538,15 +572,15 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
         setClicked(true);
         const cambio = event.target.value
         setEstatusString(cambio)
-       
+
 
         if (cambio === "Realizado") {
             console.log("realizado")
-            let confirmation =  (await folioPermanenteAlert()).valueOf()
-            console.log("la confi: " ,(await confirmation).valueOf())
+            let confirmation = (await folioPermanenteAlert()).valueOf()
+            console.log("la confi: ", (await confirmation).valueOf())
             setStatusFlag((await confirmation).valueOf())
             setConfirmation(confirmation)
-            if (!confirmation){
+            if (!confirmation) {
                 setSelectedEstatus(false)
                 setStatusFlag(false)
                 setConfirmation(confirmation)
@@ -657,7 +691,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     closeModal={closeModal}
                     plagas={plagas}
                     addBtnClicked={addButtonClicked}
-
+                    organizacion={props.organizacion ?? ""}
                 ></Modal>
             )}
             <ServiciosCardContainer  >
@@ -670,14 +704,26 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     {(infoTab === "general" || screenWidth > 900) && (
                         <>
                             <div className="detailsContainer">
-                                <InputsContainer width={90}>
+                                <InputsContainer 
+                               
+                                width={90}>
                                     <DetailsTitle>Folio</DetailsTitle>
+                                    <div
+                                     className="folioInputsCont"
+                                    >
                                     <CardInputs
-                                        largo="calc(100%-2px)"
+                                        largo={servicios[0]?.folio < 0 ? "65%" : "100%"}
                                         readOnly
                                         type="text"
                                         placeholder={servicios[0]?.folio < 0 ? `FT-${servicios[0]?.folio * -1}` : servicios[0]?.folio}
                                     />
+                                    {servicios?.[0]?.folio < 0 && 
+                                        <div
+                                        className="genFolioButt"
+                                        style={{width:"35%",height:"2.513rem"}}
+                                        ><p>Generar folio</p></div>
+                                    }
+                                    </div>
                                 </InputsContainer>
 
                                 <InputsContainer width={90}
@@ -776,7 +822,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                                 value={direccion_id || ""}
                                                 onChange={handleDireccionChange}
                                             >
-                                                <option  value ="">Elige una dirección</option>
+                                                <option value="">Elige una dirección</option>
 
                                                 {dirección.map((options) => (
                                                     <option value={options.id} key={options.id}>
@@ -822,7 +868,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                         <select
                                             value={empleadoId ?? undefined}
                                             style={{ ...mainStyle, width: "100%" }}
-                                            onChange={(e)=>{handleResponsableChange(e)}}
+                                            onChange={(e) => { handleResponsableChange(e) }}
                                         >
                                             {!empleadoId && <option>Elegir al técnico responsable...</option>}
                                             {empleados.map((empleado) => (
@@ -840,7 +886,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                     <DetailsTitle>Estatus</DetailsTitle>
                                     <div style={{ display: "inline-flex", alignItems: "center", gap: "1rem", width: "100%" }}>
                                         <select
-                                        disabled={ servicios[0]?.folio> 0 ? true : false}
+                                            disabled={servicios[0]?.folio > 0 ? true : false}
                                             value={estatusString}
                                             style={{ ...mainStyle, width: "100%" }}
                                             onChange={handleEstatusChange}
@@ -920,18 +966,18 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                             servicioId={servicios[0]?.id}
                         ></RegistrosCard>
 
-                        
-                    {servicios?.[0]?.grupo_de_servicios && 
-                        <>
 
-                            <GrupoServiciosCard
-                            openModal={() => { setModalOpen(true); } }
-                            servicioId={servicios[0]?.id}
-                            title={"Grupo de servicios"}
-                            >
+                        {servicios?.[0]?.grupo_de_servicios &&
+                            <>
+
+                                <GrupoServiciosCard
+                                    openModal={() => { setModalOpen(true); }}
+                                    servicioId={servicios[0]?.id}
+                                    title={"Grupo de servicios"}
+                                >
 
                                 </GrupoServiciosCard></>
-                    }
+                        }
                     </div>
 
                     <PdfMailButton
@@ -967,7 +1013,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             <ReturnButton
                 onClick={() => window.history.back()}
             >Regresar</ReturnButton>
-            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios(confirmation,statusFlag,props.organizacion ?? "",estatus ?? false).then(() => { }) }}>
+            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { toggleNombreEditable(); updateServicios(confirmation, statusFlag, props.organizacion ?? "", estatus ?? false).then(() => { }) }}>
                 Guardar Cambios
             </StyledButton>
         </>
