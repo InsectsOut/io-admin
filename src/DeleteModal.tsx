@@ -179,6 +179,13 @@ const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apell
                         </div>
                     </ServicioInfo>
                 )}
+                {window.location.pathname === `/Servicios/${folio}` && (
+                    <ServicioInfo>
+                        <div className="folio">
+                            <SubTitles>¿Está seguro de querer generar un folio permanente para este servico? <br/>Esta acción es permanente</SubTitles>
+                        </div>
+                    </ServicioInfo>
+                )}
                 <DeleteButton
                     onClick={() => {
                         del?.();      

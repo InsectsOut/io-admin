@@ -19,6 +19,7 @@ import { ButtonComponents } from "./EmpleadosCard";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import GrupoServiciosCard from "./GrupoServiciosCards";
+import DelModal from "./DeleteModal";
 
 
 type Servicio = Tables<"Servicios">
@@ -306,6 +307,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const [blobUrl, setBolbUrl] = useState<string>("")
     const [statusFlag, setStatusFlag] = useState<boolean>(false)
     const [confirmation, setConfirmation] = useState<boolean>(false)
+    const [folioModalOpen, setFolioModalOpen] = useState<boolean>(false)
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
     };
@@ -428,8 +430,38 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
         return confirmation
     }
 
+    const updateFolio = async (organizacion: string) => {
+        if (folioModalOpen) {
+            const { data: folio_perm, error: error_temp } = await supabase.rpc(
+                'generate_folio',
+                { org_name: organizacion } as any// Pass the organization name here
+            );
+            try {
+                const { data, error } = await supabase
+                    .from("Servicios")
+                    .update([{
+
+                        folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm
+
+                    }] as any
+                )
+                .filter("id", "eq", `${servicios[0].id}`)
+
+                    if (error){
+                        console.log(error)
+                    }
+                    if (!error){
+                        navigate(`/Servicios/${folio_perm}`)
+                        location.reload()
+                    }
+            }
+            catch (err) {
+                console.log(err)
+            }
+        }
+    }
+
     const updateServicios = async (confirmation: boolean, flag: boolean, organizacion: string, estatus: boolean) => {
-        console.log(confirmation, flag, estatus)
 
         if (confirmation && flag && estatus && servicios[0]?.folio < 0) {
             const { data: folio_perm, error: error_temp } = await supabase.rpc(
@@ -694,6 +726,15 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     organizacion={props.organizacion ?? ""}
                 ></Modal>
             )}
+            {folioModalOpen && (
+                <DelModal
+                    titulo="Crear folio permanente para el servicio"
+                    btnText="Generar folio"
+                    closeModal={() => { setFolioModalOpen(false) }}
+                    folio={folio}
+                    del={() => { updateFolio(props?.organizacion ?? "")}}
+                ></DelModal>
+            )}
             <ServiciosCardContainer  >
                 <Titulo>Servicios</Titulo>
                 <CardContainer
@@ -704,25 +745,26 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     {(infoTab === "general" || screenWidth > 900) && (
                         <>
                             <div className="detailsContainer">
-                                <InputsContainer 
-                               
-                                width={90}>
+                                <InputsContainer
+
+                                    width={90}>
                                     <DetailsTitle>Folio</DetailsTitle>
                                     <div
-                                     className="folioInputsCont"
+                                        className="folioInputsCont"
                                     >
-                                    <CardInputs
-                                        largo={servicios[0]?.folio < 0 ? "65%" : "100%"}
-                                        readOnly
-                                        type="text"
-                                        placeholder={servicios[0]?.folio < 0 ? `FT-${servicios[0]?.folio * -1}` : servicios[0]?.folio}
-                                    />
-                                    {servicios?.[0]?.folio < 0 && 
-                                        <div
-                                        className="genFolioButt"
-                                        style={{width:"35%",height:"2.513rem"}}
-                                        ><p>Generar folio</p></div>
-                                    }
+                                        <CardInputs
+                                            largo={servicios[0]?.folio < 0 ? "65%" : "100%"}
+                                            readOnly
+                                            type="text"
+                                            placeholder={servicios[0]?.folio < 0 ? `FT-${servicios[0]?.folio * -1}` : servicios[0]?.folio}
+                                        />
+                                        {servicios?.[0]?.folio < 0 &&
+                                            <div
+                                                onClick={() => { setFolioModalOpen(true) }}
+                                                className="genFolioButt"
+                                                style={{ width: "35%", height: "2.513rem" }}
+                                            ><p>Generar folio</p></div>
+                                        }
                                     </div>
                                 </InputsContainer>
 
