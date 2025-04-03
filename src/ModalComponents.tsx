@@ -152,6 +152,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     const [addButtonState,] = useState<boolean>(addBtnClicked)
     const [dosisRecomendada,setDosisRecomendada] = useState<dosis_recomendada>()
     const [tipo_producto, setTipoProducto] = useState<TipoProducto | null>(null);
+    const [errorMessageElement,setErrorMessageElement] = useState<boolean>(false)
 
 
 
@@ -185,13 +186,14 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     }
     const handleTipoProductoChange = (tipo:TipoProductoEnum) => {
         setTipoProducto(tipo)
-        console.log(tipo);
+        if (tipo){
+            setErrorMessageElement(false)
+        }
     }
 
     useEffect(() => {
         fetchProducto()
         fetchServicioId()
-        console.log("la orga" , organizacion)
     }, [])
 
     const handleAreaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -228,7 +230,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
 
     const fetchServicioId = async () => {
         try {
-            console.log("hola", folio)
             const { data, } = await supabase
                 .from("Servicios")
                 .select("id")
@@ -261,7 +262,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 .filter("id", "eq", registroId)
 
             if (data) {
-                console.log(data)
                 const [registro] = data
 
                 setCantidad(registro.cantidad ?? 0)
@@ -287,6 +287,10 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     }
 
     const upsertRegistros = async () => {
+        if (!productoId){
+            setErrorMessageElement(true)
+            return
+        }
         try {
             if (registroId) {
                 const { data, error } = await supabase
@@ -311,6 +315,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     console.error("Error updating data:", error.message);
                 } else {
                     console.log("Data updated successfully:", data);
+                    window.location.reload()
                 }
             }
 
@@ -336,6 +341,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     console.error("Error inserting data:", error.message);
                 } else {
                     console.log("Data inserted successfully:", data);
+                    window.location.reload()
                 }
             }
 
@@ -348,7 +354,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
 
     useEffect(() => {
         fetchRegistroInfo()
-        console.log(`registro id${registroApId}`)
     }, [])
 
 
@@ -412,7 +417,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                             >
                                 <DetailsTitle>Producto</DetailsTitle>
                                 <select
-                                    style={mainStyle}
+                                    style={{...mainStyle, background:errorMessageElement  ? "rgb(230, 150, 150)" : "white"}}
                                     onChange={(e) => {
                                         const selectedProductId = +e.target.value;
                                         const selectedProduct = producto?.find((p) => p.id === selectedProductId);
@@ -433,7 +438,9 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                     ))}
                                 </select>
                             </div>
-
+                            {errorMessageElement &&
+                                    <p style={{color:"red"}}>Por favor elija un producto</p>
+                                }
                         </div>
                         <ModalInputs style={{ flexDirection: "row", flexGrow: "1" }}>
                             <div
@@ -485,7 +492,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
 
                 <button style={{ fontSize: ".9rem" }}
                     className="sendButton"
-                    onClick={() => { upsertRegistros().then(() => { window.location.reload() }) }}
+                    onClick={() => { upsertRegistros()}}
                 >{registroId ? "Actualizar Registro" : "Añadir Registro"}</button>
 
             </ModalContent>

@@ -253,6 +253,7 @@ const Clientes: React.FC<clientesProps> = (props) => {
                 .from("Clientes")
                 .delete()
                 .eq("id", clienteId)
+                .eq("organizacion",props.organizacion ?? "")
 
             const { error, data: clientes } = await query
 
