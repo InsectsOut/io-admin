@@ -319,6 +319,7 @@ const MyConstanciaMobile = () => {
                     Recomendaciones(*)
                   `)
                 .filter("folio", "eq", folio)
+                .filter("organizacion","eq",localStorage.getItem("org") ?? "")
 
             if (!serv) {
                 console.error("No existe servicio relacionado a ese folio")
