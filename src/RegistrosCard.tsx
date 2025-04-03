@@ -4,10 +4,15 @@ import styled from "styled-components"
 import { Database, Tables } from "../src/supabase/Database"
 import { supabase } from "./utils/ClientSupabase"
 import Modal from "./ModalComponents"
+import DelModal from "./DeleteModal"
+import { useNavigate } from "react-router-dom"
+import { useParams } from 'react-router-dom';
+
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">
 
 const RegistroContainer = styled.div<{ clicado?: boolean, alturaregitro: number }> /*style*/ `
+position:"relative";
 width:53%;
 height: ${props => (props.clicado ? `${(props.alturaregitro * 3.5) + 5}rem` : '5%')};
 max-height:60vh;
@@ -34,7 +39,7 @@ margin:0;
 }
 .bottomContent{
 :hover{
-transform:scale(1.05);
+color:#646cff;
 }
 transition: all 0.3s ease-in-out;
 overflow-y:scroll;
@@ -88,6 +93,25 @@ flex-grow:1;
 width:100%;
 height:53vh;    
 }
+
+.deleteButton{
+    all:unset;
+display:flex;
+font-weight:bolder;
+color:white !important;
+align-items:center;
+justify-content:center;
+  width:2rem;
+  height:2rem;
+  background:#C1716E;
+  border-radius: 10%;
+  height:100%;
+  margin-right:1rem;
+  &:hover{
+  cursor: pointer;
+  transform:scale(1.15);
+  }
+  }
  `
 
 interface registrosProps {
@@ -103,6 +127,31 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
     const [modalOpen, setOpen] = useState<boolean>(false)
     const [registroId, setRegistroId] = useState<number>()
     const [servicio_Id, setServicioId] = useState<number>(props?.servicioId ?? -1)
+    const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false)
+    const navigate = useNavigate()
+    const { folio } = useParams()
+
+    const getRegistroFromQuery = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const registro = urlParams.get('registro');
+        if (registro){
+        return registro;
+        }
+    };
+
+    const openModal = (e: React.MouseEvent, registroId: number) => {
+        e.stopPropagation();
+    
+        // Get the current URL and update the params
+        const url = new URL(window.location.href);
+        url.searchParams.set("registro", registroId.toString());
+        
+        // Update the URL without navigation
+        window.history.replaceState({}, "", url);
+    
+        // Open the modal
+        setOpenDeleteModal(true);
+    };
 
     const fetchRegistros = async () => {
         if (servicio_Id == undefined) {
@@ -153,15 +202,42 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
         props.sendDataParent(number);
     }
 
+    const deleteRegistros = async (servicioId:string) =>{
+           
+      try {
+        let query = supabase
+          .from("RegistroAplicacion")
+          .delete()
+          .eq("id", servicioId)
+  
+  
+        const { error, data: registros } = await query
+  
+        if (error) {
+          console.log("Error borrando el registro de aplicación ", error)
+        }
+        if (!error){
+            navigate(`/Servicios/${folio}`)
+          window.location.reload()
+            
+        }
+      }
+      catch (err) {
+        console.log(err)
+      }
+    }
+
     return (
         <>
 
-
             <RegistroContainer
+            
                 clicado={clicked}
                 alturaregitro={registros.length}
                 className="registrosContainer"
             >
+
+
                 <div className="topContent"
                     onClick={() => { fetchRegistros(); setClicked(prevState => !prevState); }}
                 >
@@ -174,7 +250,7 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
                         ?.sort((a, b) => a.id - b.id)
                         .map((data, index) => (
                             <div
-                                style={{ width: "100%" }}
+                                style={{ width: "100%", display:"flex", alignItems:"center" }}
                                 key={index}
                                 className="listElement"
                                 onClick={() => {
@@ -186,15 +262,29 @@ const RegistrosCard: React.FC<registrosProps> = (props) => {
                                     props.openModal();
                                 }}
                             >
-                                <p style={{ marginLeft: "1rem", width: "20%" }}>{index + 1}</p>
-                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.area_aplicacion}</p>
-                                <p style={{ width: "39.5%", textAlign: "left" }}>{data?.tipo_aplicacion}</p>
+                                <p style={{ marginLeft: "1rem", width: "1%" }}>{index + 1}</p>
+                                <p style={{ width: "25%", textAlign: "left" }}>{data?.area_aplicacion}</p>
+                                <p style={{ width: "25%", textAlign: "left" }}>{data?.tipo_aplicacion}</p>
+                                <button onClick={(e) => {openModal(e,data?.id)}} className="deleteButton">X</button>
+
+                                
                             </div>
                         ))}
 
 
                 </div>
+                {openDeleteModal &&
+                 
+                 <DelModal
+                 btnText={"Eliminar registro"}
+                 titulo={"¿Seguro quiere eliminar el registro?"}
+                 closeModal={() => {setOpenDeleteModal(false)}}
+                 del={() =>{deleteRegistros(getRegistroFromQuery() ?? "")}}
+                 ></DelModal>
+               
+                     }
             </RegistroContainer>
+           
         </>
     )
 }

@@ -809,6 +809,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .from("Servicios")
         .delete()
         .eq("id", servicioId)
+        .eq("organizacion",props.organizacion ?? "")
 
 
       const { error, data: servicios } = await query

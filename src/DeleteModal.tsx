@@ -1,4 +1,7 @@
 import styled from "styled-components";
+import { useParams } from 'react-router-dom';
+import { useEffect, useState } from "react";
+
 
 
 const DeleteModal = styled.div /*style*/ `
@@ -9,6 +12,7 @@ z-index:999 ;
 background: rgb(0, 0, 0, 0.7);
 
 top:0;
+right:0% ;
 display:flex;
 justify-content:center;
 align-items:center;
@@ -131,13 +135,25 @@ interface cardProps {
     nombre?: string,
     fecha?: string,
     apellido?: string,
-    del: () => void,
+    del?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
     titulo?: string,
     btnText?: string,
     puesto?: string,
     tipo?: string
 }
-const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apellido, del, titulo, btnText, puesto,tipo }) => {
+const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apellido, del, titulo, btnText, puesto, tipo }) => {
+
+    const [registro,setRegistro] = useState<string>("")
+
+    const getRegistroFromQuery = () => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const registro = urlParams.get('registro');
+        return registro;
+    };
+
+    useEffect(()=>{
+      
+    })
 
     return (
         <DeleteModal>
@@ -182,14 +198,23 @@ const DelModal: React.FC<cardProps> = ({ closeModal, folio, nombre, fecha, apell
                 {window.location.pathname === `/Servicios/${folio}` && (
                     <ServicioInfo>
                         <div className="folio">
-                            <SubTitles>¿Está seguro de querer generar un folio permanente para este servico? <br/>Esta acción es irreversible</SubTitles>
+                            <SubTitles>¿Está seguro de querer generar un folio permanente para este servico? <br />Esta acción es irreversible</SubTitles>
+                        </div>
+                    </ServicioInfo>
+                )}
+                {getRegistroFromQuery() && (
+                    <ServicioInfo>
+                        <div className="folio"
+                        style={{display:"flex",flexDirection:"column", alignItems:"center"}}
+                        >
+                            <SubTitles style={{textAlign:"center"}}>¿Está seguro de querer eliminar el registro de aplicación?  <strong>ID:{getRegistroFromQuery()}</strong> </SubTitles>                  <SubTitles style={{textAlign:"center"}}>Esta acción es irreversible</SubTitles> 
                         </div>
                     </ServicioInfo>
                 )}
                 <DeleteButton
                     onClick={() => {
-                        del?.();      
-                        closeModal?.(); 
+                        del?.();
+                        closeModal?.();
                     }}
                 >
                     {btnText}
