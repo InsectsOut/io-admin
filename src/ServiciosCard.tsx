@@ -413,6 +413,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             let query = supabase
                 .from("Clientes")
                 .select("*")
+                .filter("organizacion","eq",props.organizacion ?? "")
             const { data: cliente } = await query;
             if (cliente) {
                 setClientes(cliente)
