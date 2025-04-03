@@ -480,7 +480,7 @@ const MyDocument = () => {
                         </View>
                         <View style={styles.folioSection} >
                             <Text style={{ color: "red", fontSize: "12px" }}>FOLIO</Text>
-                            <View style={styles.folioBox}><Text>{folio}</Text></View>
+                            <View style={styles.folioBox}><Text>{folio as any < 0 ? `FT-${folio as any*-1}` : folio}</Text></View>
                         </View>
                     </View>
                     <View>
