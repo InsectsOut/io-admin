@@ -528,7 +528,7 @@ const MyDocument = () => {
                                 <View style={{ width: "16%" }}>
                                     <Text style={{ color: "rgb(37, 37, 88)" }}>DIRECCION</Text>
                                 </View>
-                                <Text style={{ ...styles.fechaUnderline, width: "84%" }}>{direccion[0]?.calle} {direccion[0]?.ciudad} {direccion[0]?.colonia} {direccion[0]?.numero_ext} {direccion[0]?.codigo_postal}</Text>
+                                <Text style={{ ...styles.fechaUnderline, width: "84%" }}>{direccion[0]?.calle} {direccion[0]?.numero_ext} {direccion[0]?.numero_int ? direccion[0]?.numero_int : null } {direccion[0]?.colonia} {direccion[0]?.ciudad} {direccion[0]?.estado} {direccion[0]?.codigo_postal ? direccion[0]?.codigo_postal : null}</Text>
                             </View>
                             <View style={{ ...styles.fechaElement, width: "100%" }}>
                                 <View style={{ width: "16%" }}>
