@@ -393,7 +393,8 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                 .upsert([
                     {
                         ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
-                        ...(servicioId !== undefined && servicioId !== null && { servicios_id: servicioId })
+                        ...(servicioId !== undefined && servicioId !== null && { servicios_id: servicioId }),
+                        organizacion:organizacion 
                     }
                 ] as any)
                 .select("id"); // Select only "id" field
@@ -474,6 +475,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
             .from("Servicios")
             .select("id")
             .eq("folio",folio)
+            .eq("organizacion",organizacion)
 
             if (data){
                return data[0]?.id
