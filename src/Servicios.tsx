@@ -165,6 +165,10 @@ position: relative;
     transition: 125ms linear all;
     transform: rotate(135deg);
   }
+  &.rotated5::before {
+    transition: 125ms linear all;
+    transform: rotate(135deg);
+  }
 `
 
 export const SearchBar = styled.input /*style*/ `
@@ -505,7 +509,7 @@ width:85%;
 }
 `
 
-type QueryType = "Cliente" | "Tipo" | "fecha" | "estatus" | "";
+type QueryType = "Cliente" | "Tipo" | "fecha" | "estatus" | "" | "tecnico";
 
 interface serviciosProps {
   organizacion?: string;
@@ -523,6 +527,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [isRotated2, setIsRotated2] = useState(false);
   const [isRotated3, setIsRotated3] = useState(false);
   const [isRotated4, setIsRotated4] = useState(false);
+  const [isRotated5, setIsRotated5] = useState(false);
   const [text, setText] = useState<QueryType>("");
   const [selectedDate, setSelectedDate] = useState<null | Date>(null);
   const [startDate, setStartDate] = useState<null | Date>(null)
@@ -535,6 +540,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [selectedOptions, setSelectedOptions] = useState<string>("")
   const [estatus, setEstatus] = useState<boolean | null>(null)
   const [clientId, setClientId] = useState<number | null>(null)
+  const [tecnicoId,setTecnicoId] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage: number = 8;
@@ -552,6 +558,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [swipeData, setSwipeData] = useState<{ [key: number]: { startX: number, startY: number, swipeDirection: string } }>
     ({});
   const [tipoServicio, setTipoServicio] = useState<string>("")
+  const [empleados,setEmpleados] = useState<any[]>([])
   const estatusRefRealizado = useRef<HTMLInputElement>(null);
   const estatusRefNorealizado = useRef<HTMLInputElement>(null);
 
@@ -666,6 +673,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .from("Servicios")
         .select("id", { count: "exact" })
         .filter("organizacion", "eq", props.organizacion)
+        .order("fecha_servicio", { ascending: true });
       // setPaginasNoFilter(count)
 
 
@@ -681,8 +689,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
         .filter("organizacion", "eq", props.organizacion)
-        .order('fecha_servicio', { ascending: false })
+        .order('fecha_servicio', { ascending: true })
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
       if (barraBusqueda !== "") {
         query = isNaN(parseInt(barraBusqueda))
           ? query.ilike("Clientes.nombre", `%${barraBusqueda}%`)
@@ -743,9 +752,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       let query = supabase
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
-        .order("fecha_servicio", { ascending: false })
         .filter("organizacion", "eq", props.organizacion)
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+        .order("fecha_servicio")
 
       // Apply multiple filters dynamically
       if (clientId) {
@@ -753,6 +762,10 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       }
       if (tipoServicio !== "") {
         query = query.eq("tipo_servicio", tipoServicio);
+      }
+
+      if (tecnicoId){
+        query = query.eq("tecnico_id",tecnicoId );
       }
       const selectedStatuses: boolean[] = [];
       if (estatusRefRealizado.current?.checked) selectedStatuses.push(true);
@@ -831,8 +844,17 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     cursor: 'pointer', // Optional: add a pointer cursor for better UX
   });
 
+  const getTecnicoId = (tecniId: number) => ({
+    backgroundColor: tecnicoId === tecniId ? '#d3c7e9' : 'white',
+    cursor: 'pointer', // Optional: add a pointer cursor for better UX
+  });
+
   const handleClientClick = (clienteId: number) => {
     setClientId(clienteId);
+
+  };
+  const handleTecnicoClick = (tecnicoId: number) => {
+    setTecnicoId(tecnicoId);
 
   };
 
@@ -859,7 +881,29 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         console.log("Ocurrió un error al realizar la operacó", err)
       }
     }
+    const fetchTecnicos = async () => {
+      try {
+
+        const { data, error } = await supabase
+          .from("Empleados")
+          .select("*")
+          .eq("organizacion",props.organizacion ?? "")
+
+        if (error) {
+          setClientes([])
+          console.log("Error consiguiendo los datos del cliente", error)
+        }
+        if (data) {
+          setEmpleados(data)
+        }
+
+      }
+      catch (err) {
+        console.log("Ocurrió un error al realizar la operacó", err)
+      }
+    }
     fetchClientes()
+    fetchTecnicos()
   }, [])
 
   const handleFiltrosClick = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -909,6 +953,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     if (textModal !== "estatus") {
       setIsRotated4(false)
     }
+    if (textModal !== "tecnico") {
+      setIsRotated5(false)
+    }
   }
 
 
@@ -954,6 +1001,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     //  setText("estatus")
     setTextModal("estatus")
     setIsRotated4((prev) => !prev);
+  }
+  const handleRotatio5 = () => {
+    //  setText("estatus")
+    setTextModal("tecnico")
+    setIsRotated5((prev) => !prev);
   }
 
   const handlePageSetter = async () => {
@@ -1054,6 +1106,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
               onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio4(); }}
             >Estatus <FlechaAbajo
                 className={isRotated4 ? "rotated4" : ""}
+              /></FiltrosLista>
+            <FiltrosLista
+             // id="estatusFilter"
+              onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio5(); }}
+            >Técnico <FlechaAbajo
+                className={isRotated5 ? "rotated5" : ""}
               /></FiltrosLista>
             {modalVisible && (
               <ModalContainer
@@ -1223,6 +1281,53 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                                 //filterServicios()
                                 handlePageSetter();
                                 setIsRotated4(false);
+                              });
+                          }}>Aplicar</button>
+                      </div>
+                    </ModalContentBottom>
+                  </>
+                )}
+                {textModal === "tecnico" && (
+                  <>
+                   <ModalContentTop
+                      open={modalVisible}
+                    >
+
+                      {empleados && (
+                        <ClientList>
+                          {empleados
+                            .slice()
+                            .sort((a, b) => {
+                              const nameA = `${a.nombre}`.toUpperCase();
+                              const nameB = `${b.nombre} `.toUpperCase();
+                              return nameA.localeCompare(nameB);
+                            })
+                            .map((empleado) => (
+                              <ClientName key={empleado?.id}
+                                onClick={() => { handleTecnicoClick(empleado?.id) }}
+                                style={getTecnicoId(empleado?.id)}
+                              >{empleado?.nombre
+                                }</ClientName>
+                            ))}
+                        </ClientList>
+                      )}
+
+                    </ModalContentTop>
+                    <ModalContentBottom
+                      open={modalVisible}
+                    >
+                      <div className="filtroActionButtons">
+                        <button className="actionButtonsStyles" id="limpiar"
+                          onClick={() => { handleClearSelection() }}
+                        >Limpiar</button>
+                        <button
+                          style={{ color: "white" }}
+                          className="actionButtonsStyles" id="aplicar" onClick={() => {
+                            handleSetText()
+                              .then(() => {
+                                //filterServicios()
+                                handlePageSetter();
+                                setIsRotated5(false);
                               });
                           }}>Aplicar</button>
                       </div>
