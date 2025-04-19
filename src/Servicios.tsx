@@ -1020,6 +1020,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     setSelectedOptions("")
     setEstatus(null)
   }
+  const clearSelectionTecnico = () => {
+    setTecnicoId(null)
+  }
 
   const handleModalClose = () => {
     setDeleteModalVisible(false)
@@ -1318,7 +1321,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     >
                       <div className="filtroActionButtons">
                         <button className="actionButtonsStyles" id="limpiar"
-                          onClick={() => { handleClearSelection() }}
+                          onClick={() => { clearSelectionTecnico() }}
                         >Limpiar</button>
                         <button
                           style={{ color: "white" }}
