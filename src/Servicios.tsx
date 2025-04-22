@@ -540,7 +540,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [selectedOptions, setSelectedOptions] = useState<string>("")
   const [estatus, setEstatus] = useState<boolean | null>(null)
   const [clientId, setClientId] = useState<number | null>(null)
-  const [tecnicoId,setTecnicoId] = useState<number | null>(null)
+  const [tecnicoId, setTecnicoId] = useState<number | null>(null)
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [totalPages, setTotalPages] = useState<number>(1);
   const itemsPerPage: number = 8;
@@ -558,7 +558,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [swipeData, setSwipeData] = useState<{ [key: number]: { startX: number, startY: number, swipeDirection: string } }>
     ({});
   const [tipoServicio, setTipoServicio] = useState<string>("")
-  const [empleados,setEmpleados] = useState<any[]>([])
+  const [empleados, setEmpleados] = useState<any[]>([])
   const estatusRefRealizado = useRef<HTMLInputElement>(null);
   const estatusRefNorealizado = useRef<HTMLInputElement>(null);
 
@@ -657,6 +657,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     setTipoServicio("")
     setStartDate(null)
     setEndDate(null)
+    setTecnicoId(null)
     estatusRefRealizado.current && (estatusRefRealizado.current.checked = false);
     estatusRefNorealizado.current && (estatusRefNorealizado.current.checked = false);
   }
@@ -744,8 +745,15 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   };
   const formatDate = (date: Date) => date.toISOString().split('T')[0];  // For date only (YYYY-MM-DD)
 
+  const normalizeDate = (date: Date | null): Date | null => {
+    if (!date) return null;
+    const normalized = new Date(date);
+    normalized.setHours(0, 0, 0, 0); // Set time to local midnight
+    return normalized;
+  };
 
-  
+
+
 
   const filterServicios = async () => {
     try {
@@ -764,8 +772,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         query = query.eq("tipo_servicio", tipoServicio);
       }
 
-      if (tecnicoId){
-        query = query.eq("tecnico_id",tecnicoId );
+      if (tecnicoId) {
+        query = query.eq("tecnico_id", tecnicoId);
       }
       const selectedStatuses: boolean[] = [];
       if (estatusRefRealizado.current?.checked) selectedStatuses.push(true);
@@ -806,11 +814,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   useEffect(() => {
 
 
-    if (textModal !=""){
+    if (textModal != "") {
       filterServicios()
     }
 
-    if (textModal ===""){
+    if (textModal === "") {
       fetchServicios()
     }
 
@@ -822,7 +830,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .from("Servicios")
         .delete()
         .eq("id", servicioId)
-        .eq("organizacion",props.organizacion ?? "")
+        .eq("organizacion", props.organizacion ?? "")
 
 
       const { error, data: servicios } = await query
@@ -866,7 +874,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         const { data, error } = await supabase
           .from("Clientes")
           .select("*")
-          .eq("organizacion",props.organizacion ?? "")
+          .eq("organizacion", props.organizacion ?? "")
 
         if (error) {
           setClientes([])
@@ -887,7 +895,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         const { data, error } = await supabase
           .from("Empleados")
           .select("*")
-          .eq("organizacion",props.organizacion ?? "")
+          .eq("organizacion", props.organizacion ?? "")
 
         if (error) {
           setClientes([])
@@ -969,14 +977,14 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       setIsRotated3(false)
       setIsRotated4(false)
     }
-    else{
+    else {
       return
     }
-   
+
   }, [modalVisible])
 
   useEffect(() => {
-    returnRotation(); 
+    returnRotation();
   }, [textModal])
 
 
@@ -1111,7 +1119,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                 className={isRotated4 ? "rotated4" : ""}
               /></FiltrosLista>
             <FiltrosLista
-             // id="estatusFilter"
+              // id="estatusFilter"
               onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => { handleFiltrosClick(event); handleRotatio5(); }}
             >Técnico <FlechaAbajo
                 className={isRotated5 ? "rotated5" : ""}
@@ -1212,11 +1220,19 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                         <p style={{ color: "#727272", marginBottom: "0" }}>Selecciona una fecha</p>
                         <div className="dateFilterInputs">
                           <div className="dateTexts">
-                            <StyledDatePicker selected={startDate || today} onChange={date => setStartDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                            <StyledDatePicker
+                              selected={startDate || today}
+                              onChange={(date) => setStartDate(normalizeDate(date))}
+                              dateFormat="yyyy/MM/dd"
+                            />
                             <p>Inicial</p>
-                          </div >
+                          </div>
                           <div className="dateTexts">
-                            <StyledDatePicker selected={endDate || today} onChange={date => setEndDate(date)} dateFormat="YYY/MM/dd" ></StyledDatePicker>
+                            <StyledDatePicker
+                              selected={endDate || today}
+                              onChange={(date) => setEndDate(normalizeDate(date))}
+                              dateFormat="yyyy/MM/dd"
+                            />
                             <p>Final</p>
                           </div>
                         </div>
@@ -1292,7 +1308,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                 )}
                 {textModal === "tecnico" && (
                   <>
-                   <ModalContentTop
+                    <ModalContentTop
                       open={modalVisible}
                     >
 
