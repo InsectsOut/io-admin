@@ -148,6 +148,7 @@ const Clientes: React.FC<clientesProps> = (props) => {
             const { data, error } = await supabase
                 .from("Clientes")
                 .select("*")
+                .filter("organizacion", "eq", props.organizacion)
 
             if (error) {
                 SetClientes([])
