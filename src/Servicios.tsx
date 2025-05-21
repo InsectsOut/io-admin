@@ -1412,6 +1412,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       setWidth={"85%"}
                       to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
                   </div>
+                  <p>{`$${servicio?.precio ? servicio?.precio :0 }`}</p>
                   {screenWidth > 900 &&
                     <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
                   }
