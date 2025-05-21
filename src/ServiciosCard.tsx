@@ -308,6 +308,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
     const [statusFlag, setStatusFlag] = useState<boolean>(false)
     const [confirmation, setConfirmation] = useState<boolean>(false)
     const [folioModalOpen, setFolioModalOpen] = useState<boolean>(false)
+    const [precio, setPrecio] = useState<number | null>(null)
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null
     };
@@ -357,6 +358,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                 console.log(servicio[0]?.tipo_servicio as string)
                 setTipoServicio(servicio[0]?.tipo_servicio as string)
                 setDireccion_id(servicio?.[0]?.direccion_id)
+                setPrecio(servicio[0]?.precio)
                 if (servicio?.[0]?.tipo_plaga_array_id !== null) {
                     setPlagaSelected(() => [...(servicio?.[0]?.tipo_plaga_array_id ?? [])]);
                 }
@@ -413,7 +415,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
             let query = supabase
                 .from("Clientes")
                 .select("*")
-                .filter("organizacion","eq",props.organizacion ?? "")
+                .filter("organizacion", "eq", props.organizacion ?? "")
             const { data: cliente } = await query;
             if (cliente) {
                 setClientes(cliente)
@@ -445,16 +447,16 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                         folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm
 
                     }] as any
-                )
-                .filter("id", "eq", `${servicios[0].id}`)
+                    )
+                    .filter("id", "eq", `${servicios[0].id}`)
 
-                    if (error){
-                        console.log(error)
-                    }
-                    if (!error){
-                        navigate(`/Servicios/${folio_perm}`)
-                        location.reload()
-                    }
+                if (error) {
+                    console.log(error)
+                }
+                if (!error) {
+                    navigate(`/Servicios/${folio_perm}`)
+                    location.reload()
+                }
             }
             catch (err) {
                 console.log(err)
@@ -502,7 +504,8 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                 realizado: estatus,
                                 tipo_plaga_id: tipoPlaga,
                                 direccion_id: direccion_id,
-                                folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm
+                                folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm,
+                                precio:precio
 
 
                             },
@@ -554,6 +557,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                                 realizado: estatus,
                                 tipo_plaga_id: tipoPlaga,
                                 direccion_id: direccion_id,
+                                precio:precio
 
                             },
                         ] as any
@@ -664,6 +668,13 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
 
     }
 
+    const handlePrecioChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const cambio = +event.target.value
+            setPrecio(cambio)
+            setClicked(true)
+    
+    }
+
     const fetchDireccion = async (cliente_id: string) => {
         try {
             const { data, error } = await supabase
@@ -733,7 +744,7 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     btnText="Generar folio"
                     closeModal={() => { setFolioModalOpen(false) }}
                     folio={folio}
-                    del={() => { updateFolio(props?.organizacion ?? "")}}
+                    del={() => { updateFolio(props?.organizacion ?? "") }}
                 ></DelModal>
             )}
             <ServiciosCardContainer  >
@@ -1039,15 +1050,25 @@ const ServiciosCard: React.FC<serviciosProps> = (props) => {
                     </PdfMailButton>
                     <PdfMailButton posy="12.3125">
                         <p
-                        >Registro de aplicación</p>
-                        <div
-                            style={{
-                                width: "100%",
-                                display: "flex",
-                                justifyContent: "center",
-                                gap: ".25rem"
-                            }}
-                        >
+                            style={{ marginBottom: 0 }}
+                        >Precio del Servicio</p>
+                        <div style={{ display: "flex", alignItems: "center", width: "95%" }}>
+                            <span style={{ color: "#2395FF", fontSize: "1.2rem", marginRight: "5px" , marginLeft:".5rem"}}>$</span>
+                            <CardInputs
+                                placeholder="Elija un precio"
+                                type="number"
+                                onChange={handlePrecioChange}
+                                style={{
+                                    width: "100%",
+                                    background: "none",
+                                    border: "none",
+                                    color: "#2395FF",
+                                    fontWeight: "300",
+                                    fontSize: "1.2rem",
+                                    textAlign: "center",
+                                }}
+                                value={precio}
+                            />
                         </div>
                     </PdfMailButton>|
 

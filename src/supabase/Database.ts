@@ -499,7 +499,7 @@ export type Database = {
       Servicios: {
         Row: {
           cancelado: boolean | null
-          cliente_id: number
+          cliente_id: number | null
           created_at: string | null
           direccion_id: number | null
           fecha_servicio: string
@@ -516,6 +516,7 @@ export type Database = {
           observaciones: string | null
           orden_compra: string | null
           organizacion: string | null
+          precio: number | null
           realizado: boolean | null
           responsable_id: number | null
           tecnico_id: number | null
@@ -528,7 +529,7 @@ export type Database = {
         }
         Insert: {
           cancelado?: boolean | null
-          cliente_id: number
+          cliente_id?: number | null
           created_at?: string | null
           direccion_id?: number | null
           fecha_servicio: string
@@ -545,6 +546,7 @@ export type Database = {
           observaciones?: string | null
           orden_compra?: string | null
           organizacion?: string | null
+          precio?: number | null
           realizado?: boolean | null
           responsable_id?: number | null
           tecnico_id?: number | null
@@ -557,7 +559,7 @@ export type Database = {
         }
         Update: {
           cancelado?: boolean | null
-          cliente_id?: number
+          cliente_id?: number | null
           created_at?: string | null
           direccion_id?: number | null
           fecha_servicio?: string
@@ -574,6 +576,7 @@ export type Database = {
           observaciones?: string | null
           orden_compra?: string | null
           organizacion?: string | null
+          precio?: number | null
           realizado?: boolean | null
           responsable_id?: number | null
           tecnico_id?: number | null
@@ -646,7 +649,7 @@ export type Database = {
         Returns: number
       }
       generate_temporal_folio: {
-        Args: { org_name: string } | Record<PropertyKey, never>
+        Args: Record<PropertyKey, never> | { org_name: string }
         Returns: number
       }
     }
