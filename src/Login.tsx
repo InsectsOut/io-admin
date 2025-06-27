@@ -100,11 +100,11 @@ const Login: React.FC<loginProps> = ({ setToken }) => {
   };
 
   const usernameEntered = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setUsername(e.target.value);
+    setUsername(e.target.value.trim());
   };
 
   const passwordEntered = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setPassword(e.target.value);
+    setPassword(e.target.value.trim());
   };
 
   const [username, setUsername] = useState<string>('');
