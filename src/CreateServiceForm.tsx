@@ -739,7 +739,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                     frecuencia === "Trimestral" ? 84 :
                         frecuencia === "Bimestral" ? 56 :
                             frecuencia === "Mensual" ? 28 :
-                                frecuencia === "Quincenal" ? 15 :
+                                frecuencia === "Quincenal" ? 14 :
                                     frecuencia === "Semanal" ? 7 : 0;
 
         let currentDate = getNextWeekday(startDate, selectedDays);
