@@ -326,13 +326,15 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const [dirección, setDireccion] = useState<Direcciones[]>([])
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [startDate, setStartDate] = useState<Date | null>(selectedDate);
-    const [selectedDays, setSelectedDays] = useState<number | null >();
+    const [selectedDays, setSelectedDays] = useState<number | null>();
     const dayLetters = ["D", "L", "M", "X", "J", "V", "S"];
     const [numDeServicios, setNumDeServicios] = useState<number | null>(1)
     const [periodModalOpen, setPeriodModalOpen] = useState<boolean>(false)
     const navigate = useNavigate()
     const frecuenciaInputRef = useRef<HTMLSelectElement | null>(null);
     const tagRef = useRef<HTMLDivElement | null>(null);
+    const [fechas_recomendadas, set_fechas_recomendadas] = useState<Date[]>([])
+    const [dateTag, setDateTag] = useState<boolean>(false)
 
     const fetchResponsables = async () => {
         if (clienteId !== undefined) {
@@ -364,12 +366,12 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     }
 
 
-    const fetchClientes = async (organizacion:string) => {
+    const fetchClientes = async (organizacion: string) => {
         try {
             const { error, data: clientes } = await supabase
                 .from("Clientes")
                 .select(`*`)
-                .filter("organizacion","eq",organizacion)
+                .filter("organizacion", "eq", organizacion)
 
             if (error) {
                 setFetchError("No se pudieron conseguir los datos de servicio");
@@ -394,16 +396,16 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                     {
                         ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
                         ...(servicioId !== undefined && servicioId !== null && { servicios_id: servicioId }),
-                        organizacion:organizacion 
+                        organizacion: organizacion
                     }
                 ] as any)
                 .select("id"); // Select only "id" field
-    
+
             if (error) {
                 console.error("Error in upsert:", error);
                 return null;
             }
-    
+
             return data?.[0]?.id ?? null; // Return the first id or null if not found
         } catch (err) {
             console.error("Exception:", err);
@@ -412,17 +414,17 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     };
 
 
-    const addServicio = async (fecha_servicio: Date | null, grupo_de_servicios?:number | null) => {
+    const addServicio = async (fecha_servicio: Date | null, grupo_de_servicios?: number | null) => {
         try {
             const { data: folio_temp, error: error_temp } = await supabase.rpc(
-                'generate_temporal_folio', 
+                'generate_temporal_folio',
                 { org_name: organizacion } as any// Pass the organization name here
             );
-        
+
             if (folio_temp) {
                 console.log('Generated Folio:', folio_temp);
             }
-        
+
             if (error_temp) {
                 console.error('Error:', error_temp);
                 return;
@@ -443,8 +445,8 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         responsable_id: responsableId,
                         organizacion: organizacion,
                         user_id: props.user_id,
-                        grupo_de_servicios:grupo_de_servicios ?? null,
-                        folio:folio_temp
+                        grupo_de_servicios: grupo_de_servicios ?? null,
+                        folio: folio_temp
 
                     },
                 ] as any)
@@ -455,11 +457,11 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
             } else {
                 console.log("Data inserted successfully:", data);
                 let folio = data[0]?.folio
-               
-                console.log("hola")
-                
 
-                 if (folio) {
+                console.log("hola")
+
+
+                if (folio) {
                     SetServicioFolio(folio)
                     return folio
                 }
@@ -469,24 +471,24 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
         }
     };
 
-    const getServicioId = async (folio:number) => {
-        try{
+    const getServicioId = async (folio: number) => {
+        try {
             const { data, error } = await supabase
-            .from("Servicios")
-            .select("id")
-            .eq("folio",folio)
-            .eq("organizacion",organizacion)
+                .from("Servicios")
+                .select("id")
+                .eq("folio", folio)
+                .eq("organizacion", organizacion)
 
-            if (data){
-               return data[0]?.id
+            if (data) {
+                return data[0]?.id
             }
         }
-        catch(err){
-            if(err){
+        catch (err) {
+            if (err) {
                 console.log(err)
             }
         }
-    } 
+    }
 
     const fetchOrganización = async (user_id: string | null) => {
         try {
@@ -523,15 +525,15 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     }
 
     useEffect(() => {
-        fetchOrganización(props.user_id ?? "").then((org)=>{ fetchClientes(org ?? "")})
-       
-       
+        fetchOrganización(props.user_id ?? "").then((org) => { fetchClientes(org ?? "") })
+
+
     }, [])
     // useEffect(() => {
-       
+
     //    // fetchOrganización(props.user_id ?? "")
     //     setOrganizacion(organizacion)
-     
+
     // }, [organizacion])
 
     useEffect(() => {
@@ -605,7 +607,10 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
     const handleSelectedDayFromChild = (day: any) => {
         setSelectedDays(day
         );
-         console.log(day)
+        console.log(day)
+    };
+    const handleDateChnageFromChild = (fechas: Date[]) => {
+        set_fechas_recomendadas(fechas)
     };
 
     const handleCloseFromChild = (trigger: boolean) => {
@@ -650,7 +655,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
     }
 
-    const addServicioPeriodically = async (cantidadServicios: number | null, date: Date | null, frecuencia: Enums<"FrecuenciaServicio">) => {
+    const addServicioPeriodically = async (cantidadServicios: number | null, date: Date | null, frecuencia: Enums<"FrecuenciaServicio">, fechas: Date[]) => {
 
         if (!cantidadServicios) {
             window.alert("Por favor defina la cantidad de servicios a crear")
@@ -665,77 +670,34 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
         }
         if (!date) return;
 
-        const addDays = (date: Date, days: number, day_of_the_week: number, cycles: number) => {
-            let result = new Date(date.getTime()); // Ensure a proper copy
 
-            result.setDate(result.getDate() + days);
-            if (cycles === 0) {
-                return result;
-            }
-            const prevDay = new Date(result);
-            prevDay.setDate(result.getDate() - ((result.getDay() - day_of_the_week + 7) % 7 || 7)); // Ensure we don't get the same day
-            
-            const nextDay = new Date(result);
-            nextDay.setDate(result.getDate() + ((day_of_the_week - result.getDay() + 7) % 7 || 7));
-
-          
-            if (prevDay && (cycles === 0 || cycles % 2 === 0)) {
-                console.log("Even cycles (or 0), choosing prevDay:", prevDay);
-                console.log("Nex day wouldve been", nextDay);
-            } else if (nextDay && (cycles % 2 !== 0)) {
-                console.log("Odd cycles, choosing nextDay:", nextDay);
-                console.log("Prev day wouldve been", prevDay);
-            } else {
-                console.log("Neither condition met, returning null");
-            }
-
-            // return Math.abs(result.getTime() - prevDay.getTime()) <= Math.abs(nextDay.getTime() - result.getTime()) 
-            // ? prevDay 
-            // : nextDay;
-
-
-        
-
-                return prevDay && (cycles === 0 || cycles % 2 === 0)
-                    ? prevDay
-                    :  nextDay && (cycles % 2 !== 0) 
-                        ? nextDay
-                        : null;
-
-        };
 
         if (frecuencia !== "Ninguna") {
             let folioGuardados = []; // Declare an empty array to store the folios
             let idsDelServicio = []
 
-            
 
-            const frequency_number = frecuencia === "Anual" ? 365 : frecuencia === "Bimestral" ? 56 : frecuencia === "Mensual" ? 28 : frecuencia === "Quincenal" ? 15 : frecuencia === "Semanal" ? 7 : frecuencia === "Semestral" ? 168 : frecuencia === "Trimestral" ? 84 : 0
-            let grupoId = await  createGrupoDeServicios();
+            let grupoId = await createGrupoDeServicios();
 
 
             for (let i = 0; i < cantidadServicios; i++) {
-                let newDate = addDays(date ?? new Date , frequency_number, selectedDays ?? 0 , i);
 
-                if (i === 0 ) {
-                    newDate = addDays(date ?? new Date, 0, selectedDays ?? 0, i);
-                }
-                const folioGuardado = await addServicio(newDate,grupoId ?? null);  // Store the result in folioGuardado
+                const folioGuardado = await addServicio(fechas[i], grupoId ?? null);  // Store the result in folioGuardado
                 await folioGuardados.push(folioGuardado);  // Add folioGuardado to the array
-                if (folioGuardado){
-                let idDelServicio = await getServicioId(folioGuardado)
-                await idsDelServicio.push(idDelServicio)
-                await createGrupoDeServicios(idsDelServicio as any[],grupoId)
-                
-            }
-               
-                date = newDate
+                if (folioGuardado) {
+                    let idDelServicio = await getServicioId(folioGuardado)
+                    await idsDelServicio.push(idDelServicio)
+                    await createGrupoDeServicios(idsDelServicio as any[], grupoId)
+
+                }
+
+                date = fechas[i]
                 console.log("pasada num:", i)
 
-                if (i === cantidadServicios - 1){
+                if (i === cantidadServicios - 1) {
 
                     console.log(folioGuardados)
-                     navigate(`/Servicios/${folioGuardados[0]}`)
+                    navigate(`/Servicios/${folioGuardados[0]}`)
                 }
 
             }
@@ -748,14 +710,70 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
     }
 
+    const createSuggestedDates = (
+        cantidadServicios: number | null,
+        startDate: Date | null,
+        frecuencia: Enums<"FrecuenciaServicio">,
+        selectedDays: number  // 0: Sunday, 1: Monday, ...
+    ) => {
+        if (!cantidadServicios || cantidadServicios <= 0) {
+            window.alert("Por favor defina la cantidad de servicios a crear");
+            return;
+        }
+        if (!startDate) {
+            window.alert("Por favor defina la fecha de inicio de creación de servicios");
+            return;
+        }
+
+        const getNextWeekday = (base: Date, targetDay: number): Date => {
+            const date = new Date(base);
+            const day = date.getDay();
+            const diff = (targetDay + 7 - day) % 7;
+            date.setDate(date.getDate() + diff);
+            return date;
+        };
+
+        const frequency_number =
+            frecuencia === "Anual" ? 365 :
+                frecuencia === "Semestral" ? 168 :
+                    frecuencia === "Trimestral" ? 84 :
+                        frecuencia === "Bimestral" ? 56 :
+                            frecuencia === "Mensual" ? 28 :
+                                frecuencia === "Quincenal" ? 14 :
+                                    frecuencia === "Semanal" ? 7 : 0;
+
+        let currentDate = getNextWeekday(startDate, selectedDays);
+        const generatedDates: Date[] = [];
+
+        for (let i = 0; i < cantidadServicios; i++) {
+            const nextDate = new Date(currentDate);
+            nextDate.setDate(currentDate.getDate() + i * frequency_number);
+            const adjustedDate = getNextWeekday(nextDate, selectedDays);
+            generatedDates.push(nextDate);
+        }
+
+        console.log(generatedDates)
+        set_fechas_recomendadas(generatedDates);
+    };
+
+
     const handleTagClicks = (event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation();
         const target = event.target;
 
         if (tagRef.current && target instanceof Node && tagRef.current.contains(target)) {
             setPeriodModalOpen(prev => !prev);
+            setDateTag(false);
+            const targetElement = target as HTMLElement;
+            const parentWithId = targetElement.closest("#dateTag");
+
+            if (parentWithId) {
+                console.log("Date tag clicked");
+                setDateTag(true);
+            }
 
         }
+
     };
 
     return (
@@ -845,7 +863,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                         } */}
 
                             {frecuencia !== "Ninguna" &&
-                                <div
+                                <><div
                                     ref={tagRef}
                                     onClick={handleTagClicks}
                                     className="tagsContainer">
@@ -854,24 +872,33 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                                             className="periodTag"
                                         >
                                             <p>{startDate?.toISOString().split("T")[0]}</p>
-                                        </PeriodicidadTag>
-                                    }
+                                        </PeriodicidadTag>}
 
                                     {(selectedDays || selectedDays === 0) &&
                                         <PeriodicidadTag
                                             className="periodTag"
                                         >
                                             <p>{dayLetters[selectedDays as number]}</p>
-                                        </PeriodicidadTag>
-                                    }
+                                        </PeriodicidadTag>}
                                     {numDeServicios &&
                                         <PeriodicidadTag
                                             className="periodTag"
                                         >
                                             <p>{numDeServicios}</p>
-                                        </PeriodicidadTag>
-                                    }
+                                        </PeriodicidadTag>}
+
+                                    <PeriodicidadTag
+                                        id="dateTag"
+                                        style={{ width: "10rem" }}
+                                        className="periodTag"
+                                    >
+                                        <p style={{ margin: 0, }}>Fechas recomendadas</p>
+                                    </PeriodicidadTag>
+
                                 </div>
+
+
+                                </>
                             }
 
 
@@ -880,10 +907,14 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
 
 
                                     <PeriodicidadModal
+                                        dateTag={dateTag}
+                                        fechas_recomendadas={fechas_recomendadas}
+                                        dateGenerator={() => createSuggestedDates(numDeServicios, startDate, frecuencia, selectedDays ? selectedDays : 1)}
                                         ModalCloser={handleCloseFromChild}
                                         selectedDaySend={handleSelectedDayFromChild}
                                         startDateSend={handleStartDateFromChild}
                                         numDeServiciosSend={handleNumDeServiciosFromChild}
+                                        datesSender={handleDateChnageFromChild}
                                         startDateProp={selectedDate ?? null}
                                         onClose={periodModalOpen}
                                     ></PeriodicidadModal>
@@ -956,7 +987,7 @@ const CreateServiceForm: React.FC<createServicioProps> = (props) => {
                             />
                         </FormatoInputs>
                         <div className="buttonRegistrar" style={{ width: "100%", display: "flex", justifyContent: "center" }}>
-                            <SearchButtonLink type="button" onClick={() => { addServicioPeriodically(numDeServicios, startDate, frecuencia) }}>Registrar</SearchButtonLink>
+                            <SearchButtonLink type="button" onClick={() => { addServicioPeriodically(numDeServicios, startDate, frecuencia, fechas_recomendadas) }}>Registrar</SearchButtonLink>
                         </div>
                     </CreateServicioForm>
                 </div>

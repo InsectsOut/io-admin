@@ -53,6 +53,24 @@ const ModalContainer = styled.div`
   position: absolute;
   z-index: 2;
   top: 100%;
+  display: flex;
+  flex-direction: column;
+  height: 50vh;
+  .modalTop{
+   height: 90%;
+   overflow: hidden;
+  }
+  .modalBottom{
+   height: 10%;
+  }
+  justify-content: space-between;
+  input[type="date"]::-webkit-calendar-picker-indicator {
+    opacity: 1;
+    display: block !important; 
+    filter: invert(1) ;
+    font-size: 1rem;
+    margin-right: 1rem;
+  }
 `;
 
 const Title = styled.h3`
@@ -144,13 +162,18 @@ interface periodicidadProps {
   selectedDaySend?: (day: number) => void;
   numDeServiciosSend?: (num: number) => void;
   ModalCloser?: (num: boolean) => void;
+  dateGenerator?: () => void;
+  dateTag: boolean;
+  fechas_recomendadas?: Date[];
+  datesSender?: (date: Date[]) => void;
 }
 
-const PeriodicidadModal: React.FC<periodicidadProps> = ({ onClose, startDateProp, startDateSend, selectedDaySend, numDeServiciosSend, ModalCloser }) => {
+
+const PeriodicidadModal: React.FC<periodicidadProps> = ({ onClose, startDateProp, startDateSend, selectedDaySend, numDeServiciosSend, ModalCloser, dateGenerator, dateTag, fechas_recomendadas, datesSender }) => {
   const [startDate, setStartDate] = useState<Date | null>(startDateProp);
   const [selectedDays, setSelectedDays] = useState<number | null>();
   const days = [
-    { name: "D", number_of_day: 0 as number},
+    { name: "D", number_of_day: 0 as number },
     { name: "L", number_of_day: 1 },
     { name: "M", number_of_day: 2 },
     { name: "M", number_of_day: 3 },
@@ -160,9 +183,12 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({ onClose, startDateProp
   ];
   const [numDeServicios, setNumDeServicios] = useState<number | null>(null)
   const modalRef = useRef<HTMLDivElement>(null);
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const [endDate, setEndDate] = useState("2025-08-02");
   const [repeatEvery, setRepeatEvery] = useState(1);
   const [modalOpen, setModalOpen] = useState<boolean>(false)
+  const [modifiedDates, setModifiedDates] = useState<Date[]>(fechas_recomendadas ? fechas_recomendadas : [])
+  const [dateTagState , setDateTagState] = useState<boolean>(dateTag)
 
 
   const toggleDay = (day: any, index: number) => {
@@ -189,11 +215,7 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({ onClose, startDateProp
     }
   }, [startDate])
 
-  // useEffect(()=>{
-  //     if (selectedDays && selectedDaySend){
-  //     selectedDaySend(selectedDays[0])
-  //     }
-  // },[selectedDays])
+
 
   useEffect(() => {
     if (numDeServicios && numDeServiciosSend) {
@@ -201,70 +223,119 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({ onClose, startDateProp
     }
   }, [numDeServicios])
 
+  useEffect(() => {
+    if (fechas_recomendadas && fechas_recomendadas.length > 0) {
+      setModifiedDates(fechas_recomendadas);
+    }
+  }, [fechas_recomendadas]); 
   useBodyClick(() => {
     ModalCloser ? ModalCloser(modalOpen) : null
+    setModalOpen(false)
+
   }, [modalRef])
 
+  const handleDatesChange = (event: React.ChangeEvent<HTMLInputElement>, index: number) => {
+    const cambio = new Date(event.target.value); 
+    setModifiedDates((prevDates) => {
+      const updated = [...prevDates];
+      updated[index] = cambio;
+      return updated;
+    });
+  };
+
+  
+
+  const dateTagChange = () =>{
+    setDateTagState(prev => !prev)
+    setModalOpen(true)
+
+    
+  }
+
+ 
 
   return (
+
     <ModalContainer
       ref={modalRef}
     >
-      <Title>Repetir</Title>
+      <div className="modalTop">
+        {!dateTagState && (
+          <><Title>Repetir</Title><Label>Iniciar</Label><InputContainer>
+            <FaCalendarAlt />
+            <StyledDatePicker
+              value={startDate?.toISOString().split("T")[0]}
+              dateFormat='yy-mm-dd'
+              onChange={(date: Date) => setStartDate(date)} />
+          </InputContainer><Label
+            marginBott={0}
+          >Número de servicios</Label><InputContainer>
+              <RepInput type="number"
+                value={numDeServicios}
+                onChange={handleNumServiciosChange}
+                placeholder="Eliga el número de servicios a crear"
+              ></RepInput>
+            </InputContainer><Label>Día de los servicios</Label><DaysContainer
+              margin={"0"}
+            >
+              {days.map(({ name, number_of_day }) => (
+                <DayButton
+                  selected={selectedDays === number_of_day}
+                  key={number_of_day} onClick={() => toggleDay(number_of_day, number_of_day)}>
+                  {name} {/* Ensure only a string is rendered */}
+                </DayButton>
+              ))}
+            </DaysContainer></>
+        )}
 
-      <Label>Iniciar</Label>
-      <InputContainer>
-        <FaCalendarAlt />
-        <StyledDatePicker
-          value={startDate?.toISOString().split("T")[0]}
-          dateFormat='yy-mm-dd'
-          onChange={(date: Date) => setStartDate(date)}
+        {dateTagState && (
+          <><><Title>Fechas recomendadas</Title><Label>Iniciar</Label></>
+            <div
 
-        />
-      </InputContainer>
+              style={{ overflowY: "scroll", marginTop: ".5rem", display: "flex", gap: ".5rem", flexDirection: "column", height: "100%" }}>
 
-      <Label
-        marginBott={0}
-      >Número de servicios</Label>
-      <InputContainer>
-        <RepInput type="number"
-          value={numDeServicios}
-          onChange={handleNumServiciosChange}
-          placeholder="Eliga el número de servicios a crear"
-        ></RepInput>
-      </InputContainer>
-      {/* <Select value={repeatEvery} onChange={(e:any) => setRepeatEvery(e.target.value)}>
-          <option value="1">1 semana</option>
-          <option value="2">2 semanas</option>
-          <option value="3">3 semanas</option>
-        </Select> */}
-      <Label>Día de los servicios</Label>
-      <DaysContainer
-        margin={"0"}
-      >
-        {days.map(({ name, number_of_day }) => (
-          <DayButton
-          selected={selectedDays === number_of_day}
-          key={number_of_day} onClick={() => toggleDay(number_of_day, number_of_day)}>
-            {name} {/* Ensure only a string is rendered */}
-          </DayButton>
-        ))}
-      </DaysContainer>
+              {modifiedDates?.map((fecha, index) =>
 
-      {/* <Label>Fecha de finalización</Label>
-        <InputContainer>
-          <FaCalendarAlt />
-          <DateInput
-            type="date"
-            value={endDate}
-            onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEndDate(e.target.value)}
-          />
-        </InputContainer> */}
+                <div style={{ marginTop: ".5rem", display: "flex", gap: ".5rem" }}>
+                  <input
+                    value={fecha?.toISOString().split("T")[0]}
+                    onChange={(e) => handleDatesChange(e, index)}
+                    style={{
+                      background: "white", width: "100%", color: "gray", border: "0.071793rem solid #727272", height: "2.5125rem", borderRadius: "0.215379rem"
+                    }} type="date"></input>
+                    {/* TODO PODER HACER QUE SE MODIFIQUE LA HORA  */}
+                  {/* <input style={{
+                    background: "white", width: "45%", color: "gray", border: "0.071793rem solid #727272", height: "2.5125rem", borderRadius: "0.215379rem"
+                  }} type="time"></input> */}
 
-      <Footer>
-        <CancelButton onClick={() => { ModalCloser ? ModalCloser(modalOpen) : null }}>Descartar</CancelButton>
-        <SaveButton onClick={() => alert("Guardado")}>Guardar</SaveButton>
-      </Footer>
+                </div>)}
+
+
+            </div></>
+        )}
+
+      </div>
+      <div className="modalBottom">
+
+        <Footer>
+          {!dateTagState &&
+            <><CancelButton onClick={() => { ModalCloser ? ModalCloser(modalOpen) : null;}}>Descartar</CancelButton>
+            <SaveButton ref={buttonRef} onClick={(event: React.MouseEvent<HTMLButtonElement>) =>{ ;dateGenerator ? dateGenerator() : null; dateTagChange(); }}>Generar fechas</SaveButton></>
+          }
+          {dateTagState &&
+            <><CancelButton onClick={() => { ModalCloser ? ModalCloser(modalOpen) : null; }}>Cancelar</CancelButton><SaveButton
+              onClick={() => {
+                if (datesSender) datesSender(modifiedDates);
+                if (ModalCloser) ModalCloser(modalOpen);
+                window.alert("fechas guardadas");
+              }}
+            >
+              Guardar fechas
+            </SaveButton></>
+
+          }
+        </Footer>
+      </div>
     </ModalContainer>
   );
 };

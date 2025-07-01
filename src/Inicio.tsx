@@ -301,11 +301,8 @@ const Dashboard = () => {
           <InsectImage src={logoGrande} />
           <InfoText>
             <p >
-              Hola! esta herramienta nos ayudara a agilizar la operación de Insects Out,
-              esta misma fue hecha a la medida de la empresa, por lo cual
-              encontraran que se ajusta de manera fácil al ritmo de trabajo que se
-              tiene, todo esto para aligerar la carga de trabajo y brindar un mejor servicio
-              y atenció a los clientes.
+            Hola,
+            Esta herramienta nos ayudará a agilizar la operación de Insects Out. Ha sido desarrollada a la medida de la empresa, por lo que encontrarán que se ajusta fácilmente al ritmo de trabajo que manejamos. Todo esto con el objetivo de aligerar la carga laboral y brindar un mejor servicio y atención a nuestros clientes.
             </p>
           </InfoText>
         </ImgCont>
