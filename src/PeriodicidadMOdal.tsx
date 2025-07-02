@@ -230,6 +230,10 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({ onClose, startDateProp
   }, [fechas_recomendadas]); 
   useBodyClick(() => {
     ModalCloser ? ModalCloser(modalOpen) : null
+    if (!dateTag){
+      "zuka!"
+      dateGenerator ? dateGenerator() : null
+    }
     setModalOpen(false)
 
   }, [modalRef])
