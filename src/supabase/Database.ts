@@ -7,6 +7,11 @@ export type Json =
   | Json[]
 
 export type Database = {
+  // Allows to automatically instanciate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "12.2.3 (519615d)"
+  }
   public: {
     Tables: {
       Clientes: {
@@ -234,6 +239,39 @@ export type Database = {
           },
         ]
       }
+      Equipos: {
+        Row: {
+          detalles: string | null
+          id: number
+          image: string | null
+          marca: string | null
+          modelo: string | null
+          nombre: string
+          numero_serie: string | null
+          tipo_equipo: Database["public"]["Enums"]["tipo_equipo_enum"]
+        }
+        Insert: {
+          detalles?: string | null
+          id?: number
+          image?: string | null
+          marca?: string | null
+          modelo?: string | null
+          nombre: string
+          numero_serie?: string | null
+          tipo_equipo: Database["public"]["Enums"]["tipo_equipo_enum"]
+        }
+        Update: {
+          detalles?: string | null
+          id?: number
+          image?: string | null
+          marca?: string | null
+          modelo?: string | null
+          nombre?: string
+          numero_serie?: string | null
+          tipo_equipo?: Database["public"]["Enums"]["tipo_equipo_enum"]
+        }
+        Relationships: []
+      }
       ErroresSistema: {
         Row: {
           created_at: string
@@ -292,6 +330,267 @@ export type Database = {
           servicios_id?: number[] | null
         }
         Relationships: []
+      }
+      Inventario: {
+        Row: {
+          id: number
+          inv_empleado: boolean | null
+          inv_equipo: boolean | null
+          inv_principal: boolean | null
+          inv_vehiculo: boolean | null
+          organizacion: string
+          tecnico_id: number | null
+        }
+        Insert: {
+          id?: number
+          inv_empleado?: boolean | null
+          inv_equipo?: boolean | null
+          inv_principal?: boolean | null
+          inv_vehiculo?: boolean | null
+          organizacion: string
+          tecnico_id?: number | null
+        }
+        Update: {
+          id?: number
+          inv_empleado?: boolean | null
+          inv_equipo?: boolean | null
+          inv_principal?: boolean | null
+          inv_vehiculo?: boolean | null
+          organizacion?: string
+          tecnico_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_tecnico_id_fkey"
+            columns: ["tecnico_id"]
+            isOneToOne: false
+            referencedRelation: "Empleados"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Inventario_equipos: {
+        Row: {
+          equipo_id: number | null
+          funcionales: boolean | null
+          id: number
+          inventario_id: number | null
+          precio: number
+          stock: number
+        }
+        Insert: {
+          equipo_id?: number | null
+          funcionales?: boolean | null
+          id?: number
+          inventario_id?: number | null
+          precio: number
+          stock: number
+        }
+        Update: {
+          equipo_id?: number | null
+          funcionales?: boolean | null
+          id?: number
+          inventario_id?: number | null
+          precio?: number
+          stock?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_equipos_equipo_id_fkey"
+            columns: ["equipo_id"]
+            isOneToOne: false
+            referencedRelation: "Equipos"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_equipos_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "Inventario"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Inventario_productos: {
+        Row: {
+          id: number
+          inventario_id: number | null
+          precio: number
+          presentacion_cantidad: number
+          presentacion_unidad: Database["public"]["Enums"]["presentación_unidad_enum"]
+          producto_id: number | null
+          stock: number
+          unidad_de_gasto: Database["public"]["Enums"]["unidad_de_gasto_enum"]
+        }
+        Insert: {
+          id?: number
+          inventario_id?: number | null
+          precio: number
+          presentacion_cantidad: number
+          presentacion_unidad: Database["public"]["Enums"]["presentación_unidad_enum"]
+          producto_id?: number | null
+          stock: number
+          unidad_de_gasto: Database["public"]["Enums"]["unidad_de_gasto_enum"]
+        }
+        Update: {
+          id?: number
+          inventario_id?: number | null
+          precio?: number
+          presentacion_cantidad?: number
+          presentacion_unidad?: Database["public"]["Enums"]["presentación_unidad_enum"]
+          producto_id?: number | null
+          stock?: number
+          unidad_de_gasto?: Database["public"]["Enums"]["unidad_de_gasto_enum"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_productos_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "Inventario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_productos_producto_id_fkey"
+            columns: ["producto_id"]
+            isOneToOne: false
+            referencedRelation: "Productos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Inventario_vehiculos: {
+        Row: {
+          funcionales: boolean | null
+          id: number
+          inventario_id: number | null
+          precio: number
+          stock: number
+          vehiculo_id: number | null
+        }
+        Insert: {
+          funcionales?: boolean | null
+          id?: number
+          inventario_id?: number | null
+          precio: number
+          stock: number
+          vehiculo_id?: number | null
+        }
+        Update: {
+          funcionales?: boolean | null
+          id?: number
+          inventario_id?: number | null
+          precio?: number
+          stock?: number
+          vehiculo_id?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "inventario_vehículos_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "Inventario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "inventario_vehículos_vehículo_id_fkey"
+            columns: ["vehiculo_id"]
+            isOneToOne: false
+            referencedRelation: "Vehiculos"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      Logs: {
+        Row: {
+          created_at: string
+          debug: Json | null
+          id: number
+          message: string
+          severity: Database["public"]["Enums"]["Severity"]
+          stack: string | null
+          type: Database["public"]["Enums"]["LogType"]
+        }
+        Insert: {
+          created_at?: string
+          debug?: Json | null
+          id?: number
+          message: string
+          severity?: Database["public"]["Enums"]["Severity"]
+          stack?: string | null
+          type?: Database["public"]["Enums"]["LogType"]
+        }
+        Update: {
+          created_at?: string
+          debug?: Json | null
+          id?: number
+          message?: string
+          severity?: Database["public"]["Enums"]["Severity"]
+          stack?: string | null
+          type?: Database["public"]["Enums"]["LogType"]
+        }
+        Relationships: []
+      }
+      Movimientos: {
+        Row: {
+          date: string
+          id: number
+          inventario_id: number | null
+          item_id: number
+          item_type: Database["public"]["Enums"]["item_type_enum"]
+          notes: string | null
+          quantity: number
+          servicio_id: number | null
+          tecnico_id: number | null
+          type: Database["public"]["Enums"]["movimiento_type_enum"]
+        }
+        Insert: {
+          date: string
+          id?: number
+          inventario_id?: number | null
+          item_id: number
+          item_type: Database["public"]["Enums"]["item_type_enum"]
+          notes?: string | null
+          quantity: number
+          servicio_id?: number | null
+          tecnico_id?: number | null
+          type: Database["public"]["Enums"]["movimiento_type_enum"]
+        }
+        Update: {
+          date?: string
+          id?: number
+          inventario_id?: number | null
+          item_id?: number
+          item_type?: Database["public"]["Enums"]["item_type_enum"]
+          notes?: string | null
+          quantity?: number
+          servicio_id?: number | null
+          tecnico_id?: number | null
+          type?: Database["public"]["Enums"]["movimiento_type_enum"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "movimientos_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "Inventario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimientos_servicio_id_fkey"
+            columns: ["servicio_id"]
+            isOneToOne: false
+            referencedRelation: "Servicios"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "movimientos_tecnico_id_fkey"
+            columns: ["tecnico_id"]
+            isOneToOne: false
+            referencedRelation: "Empleados"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       Plagas: {
         Row: {
@@ -639,6 +938,42 @@ export type Database = {
           },
         ]
       }
+      Vehiculos: {
+        Row: {
+          año: number | null
+          color: string | null
+          detalles: string | null
+          id: number
+          image: string | null
+          marca: string
+          modelo: string
+          numero_serie: string | null
+          placa: string
+        }
+        Insert: {
+          año?: number | null
+          color?: string | null
+          detalles?: string | null
+          id?: number
+          image?: string | null
+          marca: string
+          modelo: string
+          numero_serie?: string | null
+          placa: string
+        }
+        Update: {
+          año?: number | null
+          color?: string | null
+          detalles?: string | null
+          id?: number
+          image?: string | null
+          marca?: string
+          modelo?: string
+          numero_serie?: string | null
+          placa?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -664,8 +999,26 @@ export type Database = {
         | "Trimestral"
         | "Semestral"
         | "Anual"
+      item_type_enum: "producto" | "equipo" | "vehiculo"
+      LogType: "Error" | "Info" | "Auth" | "Other"
+      movimiento_type_enum:
+        | "salida"
+        | "traspaso"
+        | "caducidad"
+        | "venta"
+        | "basura"
+        | "servicio"
+      presentación_unidad_enum: "L" | "ml" | "g" | "kg" | "pzs"
       RolesEmpleado: "tecnico" | "administrador" | "superadmin"
+      Severity: "None" | "Low" | "Mid" | "High"
+      tipo_equipo_enum:
+        | "computo"
+        | "bomba_ulv"
+        | "termo_nebulizadora"
+        | "estacion_control"
+        | "otro"
       tipo_producto: "plaguicida" | "trampa" | "cebo" | "gel"
+      unidad_de_gasto_enum: "ml" | "g" | "pzs"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -673,21 +1026,25 @@ export type Database = {
   }
 }
 
-type DefaultSchema = Database[Extract<keyof Database, "public">]
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">]
 
 export type Tables<
   DefaultSchemaTableNameOrOptions extends
     | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-        Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? (Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
-      Database[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
       Row: infer R
     }
     ? R
@@ -705,14 +1062,16 @@ export type Tables<
 export type TablesInsert<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Insert: infer I
     }
     ? I
@@ -728,14 +1087,16 @@ export type TablesInsert<
 export type TablesUpdate<
   DefaultSchemaTableNameOrOptions extends
     | keyof DefaultSchema["Tables"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   TableName extends DefaultSchemaTableNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
     : never = never,
-> = DefaultSchemaTableNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
       Update: infer U
     }
     ? U
@@ -751,14 +1112,16 @@ export type TablesUpdate<
 export type Enums<
   DefaultSchemaEnumNameOrOptions extends
     | keyof DefaultSchema["Enums"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   EnumName extends DefaultSchemaEnumNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
     : never = never,
-> = DefaultSchemaEnumNameOrOptions extends { schema: keyof Database }
-  ? Database[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
   : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
     ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
     : never
@@ -766,14 +1129,16 @@ export type Enums<
 export type CompositeTypes<
   PublicCompositeTypeNameOrOptions extends
     | keyof DefaultSchema["CompositeTypes"]
-    | { schema: keyof Database },
+    | { schema: keyof DatabaseWithoutInternals },
   CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
-    schema: keyof Database
+    schema: keyof DatabaseWithoutInternals
   }
-    ? keyof Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
     : never = never,
-> = PublicCompositeTypeNameOrOptions extends { schema: keyof Database }
-  ? Database[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
   : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
     ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
     : never
@@ -792,8 +1157,28 @@ export const Constants = {
         "Semestral",
         "Anual",
       ],
+      item_type_enum: ["producto", "equipo", "vehiculo"],
+      LogType: ["Error", "Info", "Auth", "Other"],
+      movimiento_type_enum: [
+        "salida",
+        "traspaso",
+        "caducidad",
+        "venta",
+        "basura",
+        "servicio",
+      ],
+      presentación_unidad_enum: ["L", "ml", "g", "kg", "pzs"],
       RolesEmpleado: ["tecnico", "administrador", "superadmin"],
+      Severity: ["None", "Low", "Mid", "High"],
+      tipo_equipo_enum: [
+        "computo",
+        "bomba_ulv",
+        "termo_nebulizadora",
+        "estacion_control",
+        "otro",
+      ],
       tipo_producto: ["plaguicida", "trampa", "cebo", "gel"],
+      unidad_de_gasto_enum: ["ml", "g", "pzs"],
     },
   },
 } as const
