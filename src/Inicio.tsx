@@ -136,6 +136,12 @@ align-items:center;
    flex-direction:column;
   }
 
+  &.inventario {
+    background-color: hsl(102.08955223880596, 37.43016759776537%, 35.09803921568627%);
+
+    }
+
+
 
 `;
 
@@ -294,6 +300,12 @@ const Dashboard = () => {
           <OptionContainer className='bitacoras'>
             <PiNotebookDuotone size={80}></PiNotebookDuotone>
             <h2>Bitacoras</h2>
+          </OptionContainer>
+          </Link>
+          <Link to="/inventario ">
+          <OptionContainer className='inventario'>
+            <PiNotebookDuotone size={80}></PiNotebookDuotone>
+            <h2>Inventario</h2>
           </OptionContainer>
           </Link>
         </OptionsCardsCont>

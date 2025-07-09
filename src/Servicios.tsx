@@ -13,6 +13,7 @@ import { BsCalendarDate } from "react-icons/bs";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { MdDoNotDisturb } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { cl, co } from "@fullcalendar/core/internal-common";
 
 
 
@@ -561,6 +562,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const [empleados, setEmpleados] = useState<any[]>([])
   const estatusRefRealizado = useRef<HTMLInputElement>(null);
   const estatusRefNorealizado = useRef<HTMLInputElement>(null);
+  const [_, forceRender] = useState(0);
+  const [triggered, setTriggered] = useState(false); 
+
 
 
 
@@ -673,8 +677,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       const { count } = await supabase
         .from("Servicios")
         .select("id", { count: "exact" })
+        .order("fecha_servicio", { ascending: false })
         .filter("organizacion", "eq", props.organizacion)
-        .order("fecha_servicio", { ascending: true });
+
       // setPaginasNoFilter(count)
 
 
@@ -690,7 +695,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
         .filter("organizacion", "eq", props.organizacion)
-        .order('fecha_servicio', { ascending: true })
+        .order('fecha_servicio', { ascending: false })
         .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
 
       if (barraBusqueda !== "") {
@@ -755,59 +760,154 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
 
 
+  // const filterServicios = async () => {
+  //   console.log(`$los estados de lso filtros son: ${clientId}, ${tipoServicio}, ${tecnicoId}, ${estatus}, ${startDate}, ${endDate}`)
+  //   try {
+  //   //  syncUrlWithState();
+  //     const url = new URL(window.location.href);
+  //     const params = url.searchParams;
+     
+  //     let query = supabase
+  //       .from("Servicios")
+  //       .select(`*, Clientes!inner(*)`, { count: "exact" })
+  //       .filter("organizacion", "eq", props.organizacion)
+  //       .order("fecha_servicio", { ascending: false })
+  //       .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+
+
+  //     // Apply multiple filters dynamically
+  //     if (clientId) {
+  //       console.log("hay cliente", clientId)
+  //       query = query.eq("Clientes.id", clientId);
+  //       params.set("cliente", clientId.toString());
+  //     }
+  //     if (tipoServicio !== "") {
+  //       console.log("hay tipo de servicio", tipoServicio)
+  //       query = query.eq("tipo_servicio", tipoServicio);
+  //       params.set("tipo_servicio", tipoServicio.toString());
+  //     }
+
+  //     if (tecnicoId) {
+  //       console.log("hay tecnico", tecnicoId)
+  //       query = query.eq("tecnico_id", tecnicoId);
+  //       params.set("tecnico_id", tecnicoId.toString());
+  //     }
+
+  //     // let relizado = false
+  //     if (estatusRefRealizado.current?.checked) {
+
+  //       setEstatus(true)
+  //     }
+  //     if (estatusRefNorealizado.current?.checked) {
+  //       setEstatus(false)
+  //     }
+
+  //     //  if (selectedStatuses.length > 0) {
+  //     if (estatus !== null) {
+  //       query = query.eq("realizado", estatus);
+  //       params.set("realizado", estatus.toString());
+  //     }
+  //     //}
+  //     if (startDate && endDate) {
+  //       console.log("hay fecha", startDate, endDate)
+  //       const formattedStartDate = formatDate(startDate);
+  //       const formattedEndDate = formatDate(endDate);
+  //       query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
+  //       params.set("startDate", formattedStartDate.toString());
+  //       params.set("endDate", formattedEndDate.toString());
+  //     }
+  //     const { error, data: servicios, count } = await query;
+
+  //     const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+  //     setTotalPages(totalPages);
+
+  //     if (error) {
+  //       setFetchError("No se pudieron conseguir los datos de servicio");
+  //       setServicios([]);
+  //       console.error("Error fetching data:", error);
+  //     } else {
+  //       console.log(servicios)
+  //       setServicios(servicios);
+  //       setFetchError("");
+
+  //      // params.set("currentPage", currentPage.toString());
+  //       const updatedUrl = new URL(window.location.href);
+  //       updatedUrl.search = params.toString();
+  //       window.history.pushState({}, "", updatedUrl);
+  //     }
+
+  //     setModalVisible(false);
+  //   } catch (error) {
+  //     console.error("An unexpected error occurred:", error);
+  //   }
+  // };
+
   const filterServicios = async () => {
     try {
+      const url = new URL(window.location.href);
+      const params = url.searchParams;
+  
+      const clienteParam = params.get("cliente");
+      const tipoServicioParam = params.get("tipo_servicio");
+      const tecnicoIdParam = params.get("tecnico_id");
+      const realizadoParam = params.get("realizado");
+      const startDateParam = params.get("startDate");
+      const endDateParam = params.get("endDate");
+  
+      const clienteId = clienteParam ? Number(clienteParam) : null;
+      const tecnicoId = tecnicoIdParam ? Number(tecnicoIdParam) : null;
+      const estatus = realizadoParam === "true" ? true : realizadoParam === "false" ? false : undefined;
+  
       let query = supabase
         .from("Servicios")
         .select(`*, Clientes!inner(*)`, { count: "exact" })
         .filter("organizacion", "eq", props.organizacion)
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
-        .order("fecha_servicio")
-
-      // Apply multiple filters dynamically
-      if (clientId) {
-        query = query.eq("Clientes.id", clientId);
+        .order("fecha_servicio", { ascending: false })
+        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+  
+      if (clienteId) {
+        query = query.eq("Clientes.id", clienteId);
       }
-      if (tipoServicio !== "") {
-        query = query.eq("tipo_servicio", tipoServicio);
+  
+      if (tipoServicioParam) {
+        query = query.eq("tipo_servicio", tipoServicioParam);
       }
-
+  
       if (tecnicoId) {
         query = query.eq("tecnico_id", tecnicoId);
       }
-      const selectedStatuses: boolean[] = [];
-      if (estatusRefRealizado.current?.checked) selectedStatuses.push(true);
-      if (estatusRefNorealizado.current?.checked) selectedStatuses.push(false);
-
-      if (selectedStatuses.length > 0) {
-
-        query = query.in("realizado", selectedStatuses); // Allow multiple values
+  
+      if (estatus !== undefined) {
+        query = query.eq("realizado", estatus);
       }
-      if (startDate && endDate) {
-        const formattedStartDate = formatDate(startDate);
-        const formattedEndDate = formatDate(endDate);
-        query = query.gte("fecha_servicio", formattedStartDate).lte("fecha_servicio", formattedEndDate);
+  
+      if (startDateParam && endDateParam) {
+        const formattedStartDate = new Date(startDateParam).toISOString().split("T")[0];
+        const formattedEndDate = new Date(endDateParam).toISOString().split("T")[0];
+        query = query
+          .gte("fecha_servicio", formattedStartDate)
+          .lte("fecha_servicio", formattedEndDate);
       }
+  
       const { error, data: servicios, count } = await query;
-
       const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
       setTotalPages(totalPages);
-
+  
       if (error) {
         setFetchError("No se pudieron conseguir los datos de servicio");
         setServicios([]);
         console.error("Error fetching data:", error);
       } else {
-        console.log(servicios)
         setServicios(servicios);
         setFetchError("");
       }
-
+  
       setModalVisible(false);
     } catch (error) {
       console.error("An unexpected error occurred:", error);
     }
   };
+  
 
 
 
@@ -815,11 +915,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
 
     if (textModal != "") {
-      filterServicios()
+     filterServicios()
     }
 
     if (textModal === "") {
-      fetchServicios()
+     fetchServicios()
     }
 
   }, [currentPage])
@@ -844,7 +944,41 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     }
   }
 
+  
 
+
+  const syncUrlWithState = async () => {
+    console.log("se te olvida que hasta puedo hacerte mal si me decido")
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+
+    if (params.get("cliente")) setClientId(Number(params.get("cliente"))); console.log(params.get("cliente"));
+    if (params.get("tipo_servicio")) setTipoServicio(params.get("tipo_servicio")!); console.log(params.get("tipo_servicio"));
+    if (params.get("tecnico_id")) setTecnicoId(Number(params.get("tecnico_id"))); console.log(params.get("tecnico_id"));
+    if (params.get("realizado")) {
+      setEstatus(params.get("realizado") === "true" ? true : params.get("realizado") === "false" ? false : null);
+      console.log(params.get("realizado"))
+    }
+    const dateString = params.get("startDate"); console.log(params.get("startDate"));
+    if (dateString) setStartDate(new Date(dateString));
+    const endDateString = params.get("endDate"); console.log(params.get("endDate"));
+    if (endDateString) setEndDate(new Date(endDateString));
+
+  }
+
+
+  // useEffect(() => {
+  //   // Filtrar solo cuando alguno de los filtros está definido
+  //   if (
+  //     clientId !== null ||
+  //     tipoServicio !== "" ||
+  //     tecnicoId !== null ||
+  //     estatus !== undefined ||
+  //     (startDate && endDate)
+  //   ) {
+  //     filterServicios();
+  //   }
+  // }, [clientId, tipoServicio, tecnicoId, estatus, startDate, endDate]);
 
 
   const getClientNameStyle = (clienteId: number) => ({
@@ -1025,8 +1159,8 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     document.querySelectorAll<HTMLInputElement>('div.optionsContainer input[type="radio"]').forEach((checkbox) => {
       checkbox.checked = false;
     });
-    setSelectedOptions("")
-    setEstatus(null)
+    // setSelectedOptions("")
+    // setEstatus(null)
   }
   const clearSelectionTecnico = () => {
     setTecnicoId(null)
@@ -1036,17 +1170,46 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     setDeleteModalVisible(false)
   }
 
-  const handleSetText = async () => {
-    console.log(textModal)
-    const text = textModal
-    if (textModal) {
-      if (text) {
-        setText(text)
-        filterServicios()
-      }
-    }
+  const clearAllQueryParams = () => {
+    const url = new URL(window.location.href);
+    url.search = "";
+    window.history.replaceState({}, "", url);
+  };
+  const clearQueryParameter = (toClear: string) => {
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+  
+    params.delete(toClear); // Remove the specific param
+  
+    url.search = params.toString();
+    window.history.replaceState({}, "", url.toString());
+    filterServicios();
+  };
 
-  }
+  const handleSetText = async (paramsList: string[], valuesList: string[]) => {
+    if (paramsList.length !== valuesList.length) {
+      console.error("Parameter and value arrays must be of the same length.");
+      return;
+    }
+  
+    const text = textModal;
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+  
+    // Set each parameter
+    paramsList.forEach((param, index) => {
+      params.set(param, valuesList[index]);
+    });
+  
+    url.search = params.toString();
+    window.history.pushState({}, "", url.toString());
+  
+    if (textModal && text) {
+      setText(text);
+      filterServicios();
+    }
+  };
+  
 
   const handleDelete = (servicio: Servicio) => {
     // Perform the delete action here
@@ -1161,11 +1324,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     >
                       <div className="filtroActionButtons">
                         <button className="actionButtonsStyles" id="limpiar"
-                          onClick={() => { setClientId(0) }}
+                          onClick={() => { clearQueryParameter("cliente"); setClientId(null); handleClearSelection(); }}
                         >Limpiar</button>
                         <button className="actionButtonsStyles" id="aplicar"
                           onClick={() => {
-                            handleSetText()
+                            handleSetText(["cliente"], [clientId?.toString() ?? ""])
                               .then(() => {
                                 // filterServicios()
                                 handlePageSetter();
@@ -1197,10 +1360,10 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     >
                       <div className="filtroActionButtons">
                         <button className="actionButtonsStyles" id="limpiar"
-                          onClick={() => { handleClearSelection(); }}
+                          onClick={() => { clearQueryParameter("tipo_servicio");handleClearSelection(); }}
                         >Limpiar</button>
                         <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                          handleSetText()
+                          handleSetText(["tipo_servicio"], [tipoServicio])
                             .then(() => {
                               // filterServicios()
                               handlePageSetter();
@@ -1247,6 +1410,9 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                           onClick={() => {
                             setStartDate(new Date());
                             setEndDate(new Date());
+                            handleSetText(["startDate","endDate"],[new Date()?.toISOString().split("T")[0] ?? "", new Date()?.toISOString().split("T")[0] ?? ""])
+                            clearQueryParameter("startDate");
+                            clearQueryParameter("endDate");
                           }}
                           className="actionButtonsStyles"
                           id="limpiar"
@@ -1254,7 +1420,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                           Limpiar
                         </button>
                         <button type="button" className="actionButtonsStyles" id="aplicar" onClick={() => {
-                          handleSetText()
+                          handleSetText(["startDate","endDate"],[startDate?.toISOString().split("T")[0] ?? "", endDate?.toISOString().split("T")[0] ?? ""])
                             .then(() => {
                               //filterServicios()
                               handlePageSetter();
@@ -1290,12 +1456,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     >
                       <div className="filtroActionButtons">
                         <button className="actionButtonsStyles" id="limpiar"
-                          onClick={() => { handleClearSelection() }}
+                          onClick={() => { clearQueryParameter("realizado");handleClearSelection() }}
                         >Limpiar</button>
                         <button
                           style={{ color: "white" }}
                           className="actionButtonsStyles" id="aplicar" onClick={() => {
-                            handleSetText()
+                            handleSetText(["realizado"],[estatus?.toString() ?? ""])
                               .then(() => {
                                 //filterServicios()
                                 handlePageSetter();
@@ -1337,12 +1503,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                     >
                       <div className="filtroActionButtons">
                         <button className="actionButtonsStyles" id="limpiar"
-                          onClick={() => { clearSelectionTecnico() }}
+                          onClick={() => { clearQueryParameter("tecnico_id");clearSelectionTecnico() }}
                         >Limpiar</button>
                         <button
                           style={{ color: "white" }}
                           className="actionButtonsStyles" id="aplicar" onClick={() => {
-                            handleSetText()
+                            handleSetText(["tecnico_id"], [tecnicoId?.toString() ?? ""])
                               .then(() => {
                                 //filterServicios()
                                 handlePageSetter();
@@ -1412,7 +1578,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                       setWidth={"85%"}
                       to={`/Clientes/${servicio?.Clientes?.id}`} style={{ textAlign: "left", padding: "0", display: "flex", justifyContent: "left" }} className="primerSector"> {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos} </FolioLink>
                   </div>
-                  <p>{`$${servicio?.precio ? servicio?.precio :0 }`}</p>
+                  <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>
                   {screenWidth > 900 &&
                     <h3 className="primerSector" id="iconSector" > <FaEdit /></h3>
                   }

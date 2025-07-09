@@ -18,6 +18,7 @@ import EmpleadosCard from "./EmpleadosCard";
 import CreateEmployee from "./CreateEmployee";
 import MyConstanciaMobile from "./ConstanciaMobile";
 import Bitacoras from "./Bitacoras";
+import Inventario from "./Inventario";
 
 
 
@@ -138,6 +139,9 @@ const AppRoutes = () => {
                         organizacion={localStorage.getItem("org") ?? ""}
                     />} />
                      <Route path="/bitacoras" element={<Bitacoras
+                        organizacion={localStorage.getItem("org") ?? ""}
+                    />} />
+                     <Route path="/inventario" element={<Inventario
                         organizacion={localStorage.getItem("org") ?? ""}
                     />} />
                 </>
