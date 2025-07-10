@@ -747,6 +747,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
 
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
+    const url = new URL(window.location.href);
+    const params = url.searchParams;
+    params.set("currentPage", page.toString());
+    url.search = params.toString();
+    window.history.pushState({}, "", url.toString());
   };
   const formatDate = (date: Date) => date.toISOString().split('T')[0];  // For date only (YYYY-MM-DD)
 
@@ -853,6 +858,11 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       const realizadoParam = params.get("realizado");
       const startDateParam = params.get("startDate");
       const endDateParam = params.get("endDate");
+      const currentPageParam = params.get("currentPage");
+
+      // if (currentPageParam){
+      //   setCurrentPage(() => Number(currentPageParam));
+      // }
   
       const clienteId = clienteParam ? Number(clienteParam) : null;
       const tecnicoId = tecnicoIdParam ? Number(tecnicoIdParam) : null;
@@ -863,7 +873,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
         .select(`*, Clientes!inner(*)`, { count: "exact" })
         .filter("organizacion", "eq", props.organizacion)
         .order("fecha_servicio", { ascending: false })
-        .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+        .range(((Number(currentPageParam) || 1) - 1) * itemsPerPage, (Number(currentPageParam) || 1) * itemsPerPage);
   
       if (clienteId) {
         query = query.eq("Clientes.id", clienteId);
@@ -900,6 +910,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
       } else {
         setServicios(servicios);
         setFetchError("");
+       
       }
   
       setModalVisible(false);
@@ -942,28 +953,6 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     catch (err) {
 
     }
-  }
-
-  
-
-
-  const syncUrlWithState = async () => {
-    console.log("se te olvida que hasta puedo hacerte mal si me decido")
-    const url = new URL(window.location.href);
-    const params = url.searchParams;
-
-    if (params.get("cliente")) setClientId(Number(params.get("cliente"))); console.log(params.get("cliente"));
-    if (params.get("tipo_servicio")) setTipoServicio(params.get("tipo_servicio")!); console.log(params.get("tipo_servicio"));
-    if (params.get("tecnico_id")) setTecnicoId(Number(params.get("tecnico_id"))); console.log(params.get("tecnico_id"));
-    if (params.get("realizado")) {
-      setEstatus(params.get("realizado") === "true" ? true : params.get("realizado") === "false" ? false : null);
-      console.log(params.get("realizado"))
-    }
-    const dateString = params.get("startDate"); console.log(params.get("startDate"));
-    if (dateString) setStartDate(new Date(dateString));
-    const endDateString = params.get("endDate"); console.log(params.get("endDate"));
-    if (endDateString) setEndDate(new Date(endDateString));
-
   }
 
 
@@ -1153,6 +1142,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
   const handlePageSetter = async () => {
     //await new Promise((resolve) => setTimeout(resolve, 1000)); // Delay for 1 second
     setCurrentPage(1);
+   
   }
 
   const handleClearSelection = () => {
@@ -1175,6 +1165,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     url.search = "";
     window.history.replaceState({}, "", url);
   };
+
   const clearQueryParameter = (toClear: string) => {
     const url = new URL(window.location.href);
     const params = url.searchParams;
@@ -1190,6 +1181,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     if (paramsList.length !== valuesList.length) {
       console.error("Parameter and value arrays must be of the same length.");
       return;
+
     }
   
     const text = textModal;
@@ -1200,10 +1192,12 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
     paramsList.forEach((param, index) => {
       params.set(param, valuesList[index]);
     });
-  
+
+         
     url.search = params.toString();
     window.history.pushState({}, "", url.toString());
-  
+
+     
     if (textModal && text) {
       setText(text);
       filterServicios();
@@ -1533,7 +1527,7 @@ export const Servicios: React.FC<serviciosProps> = (props) => {
                   to="/nuevo-servicio">Nuevo Servicio</CreateButton>
 
                 <PaginationComponent
-                  currentPage={currentPage}
+                  currentPage={new URLSearchParams(window.location.search).get("currentPage") ? Number(new URLSearchParams(window.location.search).get("currentPage")) : currentPage}
                   totalPages={totalPages}
                   onPageChange={handlePageChange} />
               </div></>
