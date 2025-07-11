@@ -189,12 +189,12 @@ const dateInputStyle = {
     backgroundImage: `url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>')`,
     backgroundRepeat: 'no-repeat',
     backgroundPosition: 'right 10px center',
-  };
+};
 
 const EmpleadosCard = () => {
     const [nombre, setNombre] = useState<string>("")
     const [telefono, setTelefono] = useState<string>("")
-    const { id } = useParams<string >()
+    const { id } = useParams<string>()
     const [, setResponsable] = useState<string>("")
     const [isClicked, setClicked] = useState<boolean>(false);
     const [responsableExists] = useState<boolean | null>(false)
@@ -219,8 +219,8 @@ const EmpleadosCard = () => {
     const [esCapacitacion, setEsCapacitacion] = useState<boolean>(false);
     const [mostrarCapacitaciones, setMostrarCapacitaciones] = useState<boolean>(false)
     const [fileUrl, setFileUrl] = useState<string>("")
-    const [firmaSelected,setFirmaSelected] = useState<boolean>(false)
-    const [FirmaUrl,setFirmaUrl] = useState<string>("")
+    const [firmaSelected, setFirmaSelected] = useState<boolean>(false)
+    const [FirmaUrl, setFirmaUrl] = useState<string>("")
 
     const handleMostrarCapacitaciones = () => {
         setMostrarCapacitaciones(prev => !prev)
@@ -291,7 +291,7 @@ const EmpleadosCard = () => {
         setInfoTab(tag);
     }
 
-    const openUploader = (firmaSelected:boolean) => {
+    const openUploader = (firmaSelected: boolean) => {
         setFirmaSelected(firmaSelected)
         setUploaderOpen(prev => !prev);
     }
@@ -336,7 +336,11 @@ const EmpleadosCard = () => {
             console.log(await supabase.auth.getUser())
             const query = supabase
             let url = ""
-            let trimNombre = nombre.trim().replace(/\s+/g, '_');
+            let trimNombre = nombre
+                .trim()
+                .normalize("NFD")                     // Decompose accented characters
+                .replace(/[\u0300-\u036f]/g, "")     // Remove diacritical marks
+                .replace(/\s+/g, "_");               // Replace spaces with underscores
             const { data, error } = await query
                 .storage
                 .from('documentos_empleados')
@@ -344,66 +348,71 @@ const EmpleadosCard = () => {
                     cacheControl: '3600',
                     upsert: false
                 })
+            if (error) {
+                console.error('Error uploading file:', error.message);
+                return;
+            }
 
-            if(!firmaSelected){
-            try {
+            if (!firmaSelected) {
+                try {
 
-                const query = supabase.from("DocumentosEmpleados")
-                const { error } = await query
-                
-                    .insert([
-                        {
+                    const query = supabase.from("DocumentosEmpleados")
+                    const { error } = await query
 
-                            nombre: file_title,
-                            url: data?.path,
-                            id_empleado: id,
-                            es_capacitacion: capacitacion
+                        .insert([
+                            {
 
-                        },
-                    ] as any)
+                                nombre: file_title,
+                                url: data?.path,
+                                id_empleado: id,
+                                es_capacitacion: capacitacion
 
-                    .select();
+                            },
+                        ] as any)
 
-                if (error) {
-                    console.log(error)
+                        .select();
+
+                    if (error) {
+                        console.log(error)
+                    }
+                    setUploaderOpen(false)
+
                 }
-                setUploaderOpen(false)
 
+                catch (err) {
+                    console.log(err)
+                }
             }
-        
-            catch (err) {
-                console.log(err)
-            }
-        }
-            if(firmaSelected){
+            if (firmaSelected) {
                 console.log("firma selected")
-                console.log("path", data?.path);
-            try {
+                console.log("path", data);
+                console.log("dudu", file)
+                try {
 
-                const query = supabase.from("Empleados")
-                const { error } = await query
-                
-                    .update([
-                        {
-                            Firma: data?.path,
-                        },
-                    ] as any)
-                .eq("id", Number(id))
-                .select();
+                    const query = supabase.from("Empleados")
+                    const { error } = await query
 
-                if (error) {
-                    console.log(error)
+                        .update([
+                            {
+                                Firma: data?.path,
+                            },
+                        ] as any)
+                        .eq("id", Number(id))
+                        .select();
+
+                    if (error) {
+                        console.log(error)
+                    }
+                    setUploaderOpen(false)
+                    fetchEmpleados(id);
+                    //   await setFirmaSelected(false)
+
                 }
-                setUploaderOpen(false)
-                fetchEmpleados(id);
-             //   await setFirmaSelected(false)
 
+                catch (err) {
+                    console.log(err)
+                }
             }
-        
-            catch (err) {
-                console.log(err)
-            }
-        }
             if (error) {
                 console.log(error);
             }
@@ -446,7 +455,7 @@ const EmpleadosCard = () => {
                     setTelefono(data[0]?.telefono as any)
                     setPuesto(data[0]?.puesto as string)
                     setEmpleadoStatus(data[0]?.activo as boolean)
-                   
+
                     setIneNumber(data[0]?.ine as string)
                     setCurp(data[0]?.curp as string)
                     setImss(data[0]?.imss as string)
@@ -616,23 +625,23 @@ const EmpleadosCard = () => {
             window.open(fileUrl, "_blank"); // Opens the URL in a new tab
         }
     }, [fileUrl]);
-    
-    useEffect(() => {
-        if (fileUrl) {
-            // Trigger the download only when fileUrl changes
-            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
-        }
-    }, []);
-    
-    useEffect(() => {
-        if (fileUrl) {
-            // Trigger the download only when fileUrl changes
-            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
-        }
-    }, []);
-    
 
-    
+    useEffect(() => {
+        if (fileUrl) {
+            // Trigger the download only when fileUrl changes
+            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
+        }
+    }, []);
+
+    useEffect(() => {
+        if (fileUrl) {
+            // Trigger the download only when fileUrl changes
+            window.open(fileUrl, "_blank"); // Opens the URL in a new tab
+        }
+    }, []);
+
+
+
 
 
 
@@ -640,9 +649,9 @@ const EmpleadosCard = () => {
         <>
             <Titulo>Empleados</Titulo>
             <BodyContainer id="bodyContainer">
-                <ClientCardContainer 
+                <ClientCardContainer
 
-                style={{ position: "relative" }}>
+                    style={{ position: "relative" }}>
                     <DetallesTitulo>Información del Empleado</DetallesTitulo>
 
                     <div className="selectTag">
@@ -690,7 +699,7 @@ const EmpleadosCard = () => {
                                     Fecha de nacimiento</DetailsTitle>
                                 <div style={{ width: "20.003rem", background: "white", border: " 0.071793rem solid #727272", borderRadius: "0.215379rem", }}>
                                     <DateInput wrapperClassName="datepicker"
-                                    //@ts-ignore
+                                        //@ts-ignore
                                         wid="20.003rem"
                                         dateFormat="YYYY-MM-dd"
                                         onChange={(date) => { handleFechaDeNacimeintoChange(date); }}
@@ -821,7 +830,7 @@ const EmpleadosCard = () => {
                                     height="3rem"
                                     color="#0D4E80"
                                     justify="space-between"
-                                    onClick={() => {openUploader(false)}}
+                                    onClick={() => { openUploader(false) }}
                                 >
                                     <p>{uploaderOpen ? "Ver archivos" : "Subir un archivo"}</p>
                                     <MdFileUpload />
@@ -839,27 +848,27 @@ const EmpleadosCard = () => {
                             </div>
                             {uploaderOpen &&
                                 <FileUpload
-                                firmaSelected={firmaSelected}
-                                onChange={async (e) => {
-                                    await uploadImage(e, file_title, esCapacitacion);
-                                    fetchDocs(id);
-                                }}
+                                    firmaSelected={firmaSelected}
+                                    onChange={async (e) => {
+                                        await uploadImage(e, file_title, esCapacitacion);
+                                        fetchDocs(id);
+                                    }}
                                     onValueChange={handleValueChange}
                                     onDocTypeChange={handleDocTypeChange}
                                 />
                             }
                             <FileContainer >
 
-                                {!uploaderOpen  && !mostrarCapacitaciones &&
-                                <FileDownloader
-                                    onclick={() => { fetchDocumentUrl(FirmaUrl) }}
-                                    file_id={0}
-                                    triggerFunction={triggerFromChild}
-                                    file_url={fileUrl}
-                                    file_name={"Firma"}
-                                    openUploader={() =>{openUploader(true)}}
-                                />
-                            }
+                                {!uploaderOpen && !mostrarCapacitaciones &&
+                                    <FileDownloader
+                                        onclick={() => { fetchDocumentUrl(FirmaUrl) }}
+                                        file_id={0}
+                                        triggerFunction={triggerFromChild}
+                                        file_url={fileUrl}
+                                        file_name={"Firma"}
+                                        openUploader={() => { openUploader(true) }}
+                                    />
+                                }
                                 {docs.filter((docs) => docs.es_capacitacion === mostrarCapacitaciones)
                                     .map((docs) => (
                                         !uploaderOpen && (
@@ -886,7 +895,7 @@ const EmpleadosCard = () => {
 
             </BodyContainer>
             <ReturnButton
-             onClick={() => window.history.back()}
+                onClick={() => window.history.back()}
             >Regresar</ReturnButton>
             <StyledButton
                 disabled={!isClicked}
