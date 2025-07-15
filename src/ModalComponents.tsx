@@ -127,7 +127,7 @@ enum dosis_recomendada {
   }
 
 type Productos = Tables<"Productos">
-type TipoProducto = Database["public"]["Enums"]["tipo_producto"];
+type TipoProducto = Database["public"]["Enums"]["TipoProducto"];
 
 enum TipoProductoEnum {
     Plaguicida = "plaguicida",
