@@ -134,7 +134,6 @@ const Inventario: React.FC<inventarioProps> = (props) => {
     const [inventarioFlag, setInventarioFlag] = useState<InventarioFlag>();
 
     const handleMenuClick = (flag: InventarioFlag) => {
-        console.log("AasaSDLK")
         setInventarioMenu(true);
         console.log(inventarioFlag);
         setInventarioFlag(flag);
@@ -237,6 +236,7 @@ const Inventario: React.FC<inventarioProps> = (props) => {
                     {
                         inventarioMenu &&
                         <Inventario_Menu
+                        organizacion={props.organizacion ? props.organizacion : ""} 
                             flag={inventarioFlag}
                         />
                     }

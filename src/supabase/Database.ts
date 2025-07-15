@@ -248,7 +248,7 @@ export type Database = {
           modelo: string | null
           nombre: string
           numero_serie: string | null
-          tipo_equipo: Database["public"]["Enums"]["tipo_equipo_enum"]
+          tipo_equipo: Database["public"]["Enums"]["TipoEquipo"]
         }
         Insert: {
           detalles?: string | null
@@ -258,7 +258,7 @@ export type Database = {
           modelo?: string | null
           nombre: string
           numero_serie?: string | null
-          tipo_equipo: Database["public"]["Enums"]["tipo_equipo_enum"]
+          tipo_equipo: Database["public"]["Enums"]["TipoEquipo"]
         }
         Update: {
           detalles?: string | null
@@ -268,7 +268,7 @@ export type Database = {
           modelo?: string | null
           nombre?: string
           numero_serie?: string | null
-          tipo_equipo?: Database["public"]["Enums"]["tipo_equipo_enum"]
+          tipo_equipo?: Database["public"]["Enums"]["TipoEquipo"]
         }
         Relationships: []
       }
@@ -336,6 +336,7 @@ export type Database = {
           id: number
           inv_empleado: boolean | null
           inv_equipo: boolean | null
+          inv_nombre: string | null
           inv_principal: boolean | null
           inv_vehiculo: boolean | null
           organizacion: string
@@ -345,6 +346,7 @@ export type Database = {
           id?: number
           inv_empleado?: boolean | null
           inv_equipo?: boolean | null
+          inv_nombre?: string | null
           inv_principal?: boolean | null
           inv_vehiculo?: boolean | null
           organizacion: string
@@ -354,6 +356,7 @@ export type Database = {
           id?: number
           inv_empleado?: boolean | null
           inv_equipo?: boolean | null
+          inv_nombre?: string | null
           inv_principal?: boolean | null
           inv_vehiculo?: boolean | null
           organizacion?: string
@@ -417,30 +420,30 @@ export type Database = {
           inventario_id: number | null
           precio: number
           presentacion_cantidad: number
-          presentacion_unidad: Database["public"]["Enums"]["presentación_unidad_enum"]
+          presentacion_unidad: Database["public"]["Enums"]["PresentacionUnidad"]
           producto_id: number | null
           stock: number
-          unidad_de_gasto: Database["public"]["Enums"]["unidad_de_gasto_enum"]
+          unidad_de_gasto: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Insert: {
           id?: number
           inventario_id?: number | null
           precio: number
           presentacion_cantidad: number
-          presentacion_unidad: Database["public"]["Enums"]["presentación_unidad_enum"]
+          presentacion_unidad: Database["public"]["Enums"]["PresentacionUnidad"]
           producto_id?: number | null
           stock: number
-          unidad_de_gasto: Database["public"]["Enums"]["unidad_de_gasto_enum"]
+          unidad_de_gasto: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Update: {
           id?: number
           inventario_id?: number | null
           precio?: number
           presentacion_cantidad?: number
-          presentacion_unidad?: Database["public"]["Enums"]["presentación_unidad_enum"]
+          presentacion_unidad?: Database["public"]["Enums"]["PresentacionUnidad"]
           producto_id?: number | null
           stock?: number
-          unidad_de_gasto?: Database["public"]["Enums"]["unidad_de_gasto_enum"]
+          unidad_de_gasto?: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Relationships: [
           {
@@ -537,36 +540,36 @@ export type Database = {
           id: number
           inventario_id: number | null
           item_id: number
-          item_type: Database["public"]["Enums"]["item_type_enum"]
+          item_type: Database["public"]["Enums"]["TipoItem"]
           notes: string | null
           quantity: number
           servicio_id: number | null
           tecnico_id: number | null
-          type: Database["public"]["Enums"]["movimiento_type_enum"]
+          type: Database["public"]["Enums"]["TipoMovimiento"]
         }
         Insert: {
           date: string
           id?: number
           inventario_id?: number | null
           item_id: number
-          item_type: Database["public"]["Enums"]["item_type_enum"]
+          item_type: Database["public"]["Enums"]["TipoItem"]
           notes?: string | null
           quantity: number
           servicio_id?: number | null
           tecnico_id?: number | null
-          type: Database["public"]["Enums"]["movimiento_type_enum"]
+          type: Database["public"]["Enums"]["TipoMovimiento"]
         }
         Update: {
           date?: string
           id?: number
           inventario_id?: number | null
           item_id?: number
-          item_type?: Database["public"]["Enums"]["item_type_enum"]
+          item_type?: Database["public"]["Enums"]["TipoItem"]
           notes?: string | null
           quantity?: number
           servicio_id?: number | null
           tecnico_id?: number | null
-          type?: Database["public"]["Enums"]["movimiento_type_enum"]
+          type?: Database["public"]["Enums"]["TipoMovimiento"]
         }
         Relationships: [
           {
@@ -619,7 +622,7 @@ export type Database = {
           nombre: string | null
           presentacion: string | null
           registro: string | null
-          tipo_de_producto: Database["public"]["Enums"]["tipo_producto"] | null
+          tipo_de_producto: Database["public"]["Enums"]["TipoProducto"] | null
         }
         Insert: {
           dosis_max?: string | null
@@ -629,7 +632,7 @@ export type Database = {
           nombre?: string | null
           presentacion?: string | null
           registro?: string | null
-          tipo_de_producto?: Database["public"]["Enums"]["tipo_producto"] | null
+          tipo_de_producto?: Database["public"]["Enums"]["TipoProducto"] | null
         }
         Update: {
           dosis_max?: string | null
@@ -639,7 +642,7 @@ export type Database = {
           nombre?: string | null
           presentacion?: string | null
           registro?: string | null
-          tipo_de_producto?: Database["public"]["Enums"]["tipo_producto"] | null
+          tipo_de_producto?: Database["public"]["Enums"]["TipoProducto"] | null
         }
         Relationships: []
       }
@@ -688,7 +691,7 @@ export type Database = {
           cantidad_usada: number | null
           created_at: string
           dosis_recomendada:
-            | Database["public"]["Enums"]["dosis_recomendada"]
+            | Database["public"]["Enums"]["DosisRecomendada"]
             | null
           id: number
           producto_id: number | null
@@ -704,7 +707,7 @@ export type Database = {
           cantidad_usada?: number | null
           created_at?: string
           dosis_recomendada?:
-            | Database["public"]["Enums"]["dosis_recomendada"]
+            | Database["public"]["Enums"]["DosisRecomendada"]
             | null
           id?: number
           producto_id?: number | null
@@ -720,7 +723,7 @@ export type Database = {
           cantidad_usada?: number | null
           created_at?: string
           dosis_recomendada?:
-            | Database["public"]["Enums"]["dosis_recomendada"]
+            | Database["public"]["Enums"]["DosisRecomendada"]
             | null
           id?: number
           producto_id?: number | null
@@ -940,9 +943,9 @@ export type Database = {
       }
       Vehiculos: {
         Row: {
-          año: number | null
           color: string | null
           detalles: string | null
+          edad: number | null
           id: number
           image: string | null
           marca: string
@@ -951,9 +954,9 @@ export type Database = {
           placa: string
         }
         Insert: {
-          año?: number | null
           color?: string | null
           detalles?: string | null
+          edad?: number | null
           id?: number
           image?: string | null
           marca: string
@@ -962,9 +965,9 @@ export type Database = {
           placa: string
         }
         Update: {
-          año?: number | null
           color?: string | null
           detalles?: string | null
+          edad?: number | null
           id?: number
           image?: string | null
           marca?: string
@@ -989,7 +992,7 @@ export type Database = {
       }
     }
     Enums: {
-      dosis_recomendada: "min" | "max"
+      DosisRecomendada: "min" | "max"
       FrecuenciaServicio:
         | "Ninguna"
         | "Semanal"
@@ -999,26 +1002,26 @@ export type Database = {
         | "Trimestral"
         | "Semestral"
         | "Anual"
-      item_type_enum: "producto" | "equipo" | "vehiculo"
       LogType: "Error" | "Info" | "Auth" | "Other"
-      movimiento_type_enum:
+      PresentacionUnidad: "L" | "ml" | "g" | "kg" | "pzs"
+      RolesEmpleado: "tecnico" | "administrador" | "superadmin"
+      Severity: "None" | "Low" | "Mid" | "High"
+      TipoEquipo:
+        | "computo"
+        | "bomba_ulv"
+        | "termo_nebulizadora"
+        | "estacion_control"
+        | "otro"
+      TipoItem: "producto" | "equipo" | "vehiculo"
+      TipoMovimiento:
         | "salida"
         | "traspaso"
         | "caducidad"
         | "venta"
         | "basura"
         | "servicio"
-      presentación_unidad_enum: "L" | "ml" | "g" | "kg" | "pzs"
-      RolesEmpleado: "tecnico" | "administrador" | "superadmin"
-      Severity: "None" | "Low" | "Mid" | "High"
-      tipo_equipo_enum:
-        | "computo"
-        | "bomba_ulv"
-        | "termo_nebulizadora"
-        | "estacion_control"
-        | "otro"
-      tipo_producto: "plaguicida" | "trampa" | "cebo" | "gel"
-      unidad_de_gasto_enum: "ml" | "g" | "pzs"
+      TipoProducto: "plaguicida" | "trampa" | "cebo" | "gel"
+      UnidadDeGasto: "ml" | "g" | "pzs"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1146,7 +1149,7 @@ export type CompositeTypes<
 export const Constants = {
   public: {
     Enums: {
-      dosis_recomendada: ["min", "max"],
+      DosisRecomendada: ["min", "max"],
       FrecuenciaServicio: [
         "Ninguna",
         "Semanal",
@@ -1157,9 +1160,19 @@ export const Constants = {
         "Semestral",
         "Anual",
       ],
-      item_type_enum: ["producto", "equipo", "vehiculo"],
       LogType: ["Error", "Info", "Auth", "Other"],
-      movimiento_type_enum: [
+      PresentacionUnidad: ["L", "ml", "g", "kg", "pzs"],
+      RolesEmpleado: ["tecnico", "administrador", "superadmin"],
+      Severity: ["None", "Low", "Mid", "High"],
+      TipoEquipo: [
+        "computo",
+        "bomba_ulv",
+        "termo_nebulizadora",
+        "estacion_control",
+        "otro",
+      ],
+      TipoItem: ["producto", "equipo", "vehiculo"],
+      TipoMovimiento: [
         "salida",
         "traspaso",
         "caducidad",
@@ -1167,18 +1180,8 @@ export const Constants = {
         "basura",
         "servicio",
       ],
-      presentación_unidad_enum: ["L", "ml", "g", "kg", "pzs"],
-      RolesEmpleado: ["tecnico", "administrador", "superadmin"],
-      Severity: ["None", "Low", "Mid", "High"],
-      tipo_equipo_enum: [
-        "computo",
-        "bomba_ulv",
-        "termo_nebulizadora",
-        "estacion_control",
-        "otro",
-      ],
-      tipo_producto: ["plaguicida", "trampa", "cebo", "gel"],
-      unidad_de_gasto_enum: ["ml", "g", "pzs"],
+      TipoProducto: ["plaguicida", "trampa", "cebo", "gel"],
+      UnidadDeGasto: ["ml", "g", "pzs"],
     },
   },
 } as const
