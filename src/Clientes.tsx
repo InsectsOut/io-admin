@@ -1,7 +1,30 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./utils/ClientSupabase";
 import { Tables } from "../src/supabase/Database";
-import { ClientList, ClientName, CreateButton, EstatusForma, FiltrosContainer, FiltrosLista, FlechaAbajo, FolioLink, ModalContainer, ModalContentBottom, ModalContentTop, SearchBar, SearchBarForm, SearchButton, ServiciosContainer, ServiciosElement, ServiciosElement1, ServiciosElement2, ServiciosElement3, ServiciosElement4, ServiciosSelectContainer, Titulo } from "./Servicios";
+import {
+    ClientList,
+    ClientName,
+    CreateButton,
+    EstatusForma,
+    FiltrosContainer,
+    FiltrosLista,
+    FlechaAbajo,
+    FolioLink,
+    ModalContainer,
+    ModalContentBottom,
+    ModalContentTop,
+    SearchBar,
+    SearchBarForm,
+    SearchButton,
+    ServiciosContainer,
+    ServiciosElement,
+    ServiciosElement1,
+    ServiciosElement2,
+    ServiciosElement3,
+    ServiciosElement4,
+    ServiciosSelectContainer,
+    Titulo,
+} from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
@@ -9,54 +32,51 @@ import DelModal from "./DeleteModal";
 import { LowerActionButtons } from "./Servicios";
 import { FiltrosLeft } from "./Servicios";
 
-type Cliente = Tables<"Clientes">
+type Cliente = Tables<"Clientes">;
 
 const ClientesElement1 = styled(ServiciosElement1)`
-justify-content:unset;
-justify-content:left;
-&:hover{
-
-}
-`
+    justify-content: unset;
+    justify-content: left;
+    &:hover {
+    }
+`;
 interface clientesProps {
-    user_id?: string
-    organizacion?: string
+    user_id?: string;
+    organizacion?: string;
 }
 
-const Clientes: React.FC<clientesProps> = (props) => {
+const Clientes: React.FC<clientesProps> = props => {
     const [isRotated, setIsRotated] = useState(false);
-    const [isRotated2, setIsRotated2] = useState(false)
-    const [text, setText] = useState("")
-    const [modalVisible, setModalVisible] = useState(false)
+    const [isRotated2, setIsRotated2] = useState(false);
+    const [text, setText] = useState("");
+    const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
-    const [clientes, SetClientes] = useState<Cliente[]>([])
-    const [clientId, setClientId] = useState<number | null>()
-    const [selectedOptions, setSelectedOptions] = useState("")
+    const [clientes, SetClientes] = useState<Cliente[]>([]);
+    const [clientId, setClientId] = useState<number | null>();
+    const [selectedOptions, setSelectedOptions] = useState("");
     const [_fetchError] = useState("");
     const [barraBusqueda, setBarraBusqueda] = useState("");
-    const [clientesFiltrados] = useState<Cliente[]>([])
+    const [clientesFiltrados] = useState<Cliente[]>([]);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const [totalPages, setTotalPages] = useState<number>(1);
     const itemsPerPage: number = 8;
-    const [allClientes, setAllCliente] = useState<Cliente[]>([])
-    const [deleteModalVisible, setDeleteModalVisible] = useState(false)
-    const [deletedClient, setDeletedCliente] = useState<any>([])
+    const [allClientes, setAllCliente] = useState<Cliente[]>([]);
+    const [deleteModalVisible, setDeleteModalVisible] = useState(false);
+    const [deletedClient, setDeletedCliente] = useState<any>([]);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
 
-
     const handleSearchChange = (e: any) => {
-        const cambio = e.target.value
-        setBarraBusqueda(cambio)
-    }
+        const cambio = e.target.value;
+        setBarraBusqueda(cambio);
+    };
 
     const handleFiltrosClick = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
         const target = event.currentTarget as HTMLLIElement;
         const { top, left, height } = target.getBoundingClientRect();
 
-
         const newPosition = {
             top: top + height + window.scrollY,
-            left: left + window.scrollX
+            left: left + window.scrollX,
         };
         if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left) {
             setModalVisible(false);
@@ -65,49 +85,48 @@ const Clientes: React.FC<clientesProps> = (props) => {
             setModalPosition(newPosition);
             setModalVisible(true);
         }
-    }
+    };
 
     const handleRotation = () => {
-        setText("Cliente")
+        setText("Cliente");
 
-        setIsRotated((prev) => !prev);
-    }
+        setIsRotated(prev => !prev);
+    };
 
     const handleRotation2 = () => {
-        setText("Tipo")
+        setText("Tipo");
 
-        setIsRotated2((prev) => !prev);
-    }
-
+        setIsRotated2(prev => !prev);
+    };
 
     const returnRotation = () => {
         if (text !== "Cliente") {
-            setIsRotated(false)
+            setIsRotated(false);
         }
         if (text !== "Tipo") {
-            setIsRotated2(false)
+            setIsRotated2(false);
         }
-    }
+    };
 
     const handleModalCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { value } = e.target;
 
         setSelectedOptions(value);
-        console.log(selectedOptions)
-    }
+        console.log(selectedOptions);
+    };
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
 
     const fetchClientes = async () => {
-        setText("")
+        setText("");
 
         if (barraBusqueda === "") {
             const { count } = await supabase
                 .from("Clientes")
                 .select("id", { count: "exact" })
-                .filter("organizacion", "eq", props.organizacion)
+                .filter("organizacion", "eq", props.organizacion);
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
         }
@@ -116,71 +135,65 @@ const Clientes: React.FC<clientesProps> = (props) => {
                 .from("Clientes")
                 .select("*", { count: "exact" })
                 .filter("organizacion", "eq", props.organizacion)
-                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
             if (barraBusqueda) {
-                query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`)
-                const { data: cliente, count } = await query
+                query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`);
+                const { data: cliente, count } = await query;
                 if (cliente) {
-                    console.log(cliente)
+                    console.log(cliente);
                     SetClientes(cliente);
                     const totalPages = count && Math.ceil(count / itemsPerPage);
                     setTotalPages(totalPages || 0);
                 }
             }
-            const { data: cliente } = await query
+            const { data: cliente } = await query;
             if (cliente) {
                 SetClientes(cliente);
             }
+        } catch (err) {
+            console.log("Ocurrió un error al realizar la operacó", err);
         }
-
-        catch (err) {
-            console.log("Ocurrió un error al realizar la operacó", err)
-        }
-    }
+    };
 
     useEffect(() => {
-        fetchClientes2()
-    }, [])
+        fetchClientes2();
+    }, []);
 
     const fetchClientes2 = async () => {
         try {
-
             const { data, error } = await supabase
                 .from("Clientes")
                 .select("*")
-                .filter("organizacion", "eq", props.organizacion)
+                .filter("organizacion", "eq", props.organizacion);
 
             if (error) {
-                SetClientes([])
-                console.log("Error consiguiendo los datos del cliente", error)
+                SetClientes([]);
+                console.log("Error consiguiendo los datos del cliente", error);
             }
             if (data) {
                 // console.log("Recividos datos de clientes");
-                setAllCliente(data)
+                setAllCliente(data);
             }
-
+        } catch (err) {
+            console.log("Ocurrió un error al realizar la operacó", err);
         }
-        catch (err) {
-            console.log("Ocurrió un error al realizar la operacó", err)
-        }
-    }
+    };
 
     const filtrarClientes = async () => {
-
-        let filtroQuery = ""
-        let parametros = "" as any
+        let filtroQuery = "";
+        let parametros = "" as any;
 
         switch (text) {
             case "Cliente":
-                filtroQuery = "id"
-                parametros = clientId
-                setBarraBusqueda("")
+                filtroQuery = "id";
+                parametros = clientId;
+                setBarraBusqueda("");
                 break;
 
             case "Tipo":
-                filtroQuery = "tipo_cliente"
-                parametros = selectedOptions
-                setBarraBusqueda("")
+                filtroQuery = "tipo_cliente";
+                parametros = selectedOptions;
+                setBarraBusqueda("");
                 break;
 
             default:
@@ -190,63 +203,57 @@ const Clientes: React.FC<clientesProps> = (props) => {
         }
 
         try {
-
             let query = supabase
                 .from("Clientes")
                 .select("*", { count: "exact" })
                 .filter("organizacion", "eq", props.organizacion)
-                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage)
+                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
             if (filtroQuery && parametros !== null) {
                 query = query.eq(filtroQuery, parametros);
             }
 
-            const { data: cliente, count } = await query
+            const { data: cliente, count } = await query;
             const totalPages = count && Math.ceil(count / itemsPerPage);
             setTotalPages(totalPages || 0);
 
             if (cliente) {
-                SetClientes(cliente)
-                setModalVisible(false)
-
+                SetClientes(cliente);
+                setModalVisible(false);
             }
+        } catch (error) {
+            console.log("Error al filtrar los clientes ", error);
         }
-        catch (error) {
-            console.log("Error al filtrar los clientes ", error)
-        }
-    }
+    };
 
     useEffect(() => {
-        filtrarClientes()
-    }, [currentPage])
+        filtrarClientes();
+    }, [currentPage]);
 
     useEffect(() => {
-        returnRotation()
-        console.log(clientesFiltrados)
-    }, [modalPosition])
+        returnRotation();
+        console.log(clientesFiltrados);
+    }, [modalPosition]);
 
     const handleClientClick = (clienteId: number) => {
         setClientId(clienteId);
-        console.log('Clicked client ID:', clienteId);
+        console.log("Clicked client ID:", clienteId);
     };
 
     const getClientNameStyle = (clienteId: number) => ({
-        backgroundColor: clientId === clienteId ? '#d3c7e9' : 'white',
-        cursor: 'pointer', // Optional: add a pointer cursor for better UX
+        backgroundColor: clientId === clienteId ? "#d3c7e9" : "white",
+        cursor: "pointer", // Optional: add a pointer cursor for better UX
     });
 
     const handleModalClose = () => {
-        setDeleteModalVisible(false)
-    }
-
-
-
+        setDeleteModalVisible(false);
+    };
 
     const deleteClienteHandler = async (cliente: any) => {
-        setDeletedCliente(cliente)
+        setDeletedCliente(cliente);
         //console.log(servicio)
-        console.log("deleted", deletedClient)
-    }
+        console.log("deleted", deletedClient);
+    };
 
     const deleteCliente = async (clienteId: number) => {
         try {
@@ -254,34 +261,28 @@ const Clientes: React.FC<clientesProps> = (props) => {
                 .from("Clientes")
                 .delete()
                 .eq("id", clienteId)
-                .eq("organizacion",props.organizacion ?? "")
+                .eq("organizacion", props.organizacion ?? "");
 
-            const { error, data: clientes } = await query
+            const { error, data: clientes } = await query;
 
             if (error) {
-                console.log("There was an error ", error)
-                return
+                console.log("There was an error ", error);
+                return;
             }
-            console.log("cliente eliminado", clientes)
-            location.reload()
-
-        }
-
-        catch (err) {
-
-        }
-    }
+            console.log("cliente eliminado", clientes);
+            location.reload();
+        } catch (err) {}
+    };
 
     useEffect(() => {
         if (!modalVisible) {
-            setIsRotated(false)
-            setIsRotated2(false)
+            setIsRotated(false);
+            setIsRotated2(false);
         }
-    }, [modalVisible])
+    }, [modalVisible]);
 
     return (
         <>
-
             {deleteModalVisible && (
                 <DelModal
                     closeModal={handleModalClose}
@@ -289,24 +290,20 @@ const Clientes: React.FC<clientesProps> = (props) => {
                     nombre={deletedClient?.nombre}
                     apellido={deletedClient?.apellidos}
                     fecha={deletedClient?.fecha_servicio}
-                      del={() => {
+                    del={() => {
                         deleteCliente(deletedClient.id).then(() => window.location.reload());
-                      }}
-                   // del={() => deleteCliente(deletedClient?.id)}
+                    }}
+                    // del={() => deleteCliente(deletedClient?.id)}
                     titulo="¿Seguro quiere eliminar al cliente?"
                     btnText="Eliminar Cliente"
                     tipo={deletedClient?.tipo_cliente}
                 ></DelModal>
             )}
 
-            <ServiciosContainer
-            >
-                <Titulo>
-                    Clientes
-                </Titulo>
+            <ServiciosContainer>
+                <Titulo>Clientes</Titulo>
                 <SearchBarForm>
                     <SearchBar
-
                         type="text"
                         name="barra"
                         onChange={handleSearchChange}
@@ -315,37 +312,40 @@ const Clientes: React.FC<clientesProps> = (props) => {
                     />
                     <SearchButton
                         type="button"
-                        onClick={() => { fetchClientes(); setModalVisible(false); }}
-                    >Buscar
+                        onClick={() => {
+                            fetchClientes();
+                            setModalVisible(false);
+                        }}
+                    >
+                        Buscar
                     </SearchButton>
                 </SearchBarForm>
                 <FiltrosContainer>
                     <FiltrosLeft>
                         <FiltrosLista
-                            onClick={(event: any) => { handleFiltrosClick(event); handleRotation(); }}
-                        >Cliente <FlechaAbajo
-                                className={isRotated ? "rotated" : ""}
-
-                            /> </FiltrosLista>
+                            onClick={(event: any) => {
+                                handleFiltrosClick(event);
+                                handleRotation();
+                            }}
+                        >
+                            Cliente <FlechaAbajo className={isRotated ? "rotated" : ""} />{" "}
+                        </FiltrosLista>
                         <FiltrosLista
-                            onClick={(event: any) => { handleFiltrosClick(event); handleRotation2(); }}
-                        >Tipo de Cliente <FlechaAbajo
-                                className={isRotated2 ? "rotated2" : ""}
-                            />
+                            onClick={(event: any) => {
+                                handleFiltrosClick(event);
+                                handleRotation2();
+                            }}
+                        >
+                            Tipo de Cliente <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />
                         </FiltrosLista>
                         {modalVisible && (
-
                             <ModalContainer
                                 open={modalVisible}
                                 style={{ top: modalPosition.top, left: modalPosition.left }}
-
                             >
                                 {text === "Cliente" && (
                                     <>
-                                        <ModalContentTop
-                                            open={modalVisible}
-                                        >
-
+                                        <ModalContentTop open={modalVisible}>
                                             {allClientes && (
                                                 <ClientList>
                                                     {allClientes
@@ -355,153 +355,226 @@ const Clientes: React.FC<clientesProps> = (props) => {
                                                             const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
                                                             return nameA.localeCompare(nameB);
                                                         })
-                                                        .map((cliente) => (
-                                                            <ClientName key={cliente.id}
-                                                                onClick={() => { handleClientClick(cliente.id) }}
+                                                        .map(cliente => (
+                                                            <ClientName
+                                                                key={cliente.id}
+                                                                onClick={() => {
+                                                                    handleClientClick(cliente.id);
+                                                                }}
                                                                 style={getClientNameStyle(cliente.id)}
-                                                            >{cliente.nombre
-                                                                } {cliente.apellidos}</ClientName>
+                                                            >
+                                                                {cliente.nombre} {cliente.apellidos}
+                                                            </ClientName>
                                                         ))}
                                                 </ClientList>
                                             )}
-
                                         </ModalContentTop>
-                                        <ModalContentBottom
-                                            open={modalVisible}
-                                        >
+                                        <ModalContentBottom open={modalVisible}>
                                             <div className="filtroActionButtons">
-                                                <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
-                                                <button className="actionButtonsStyles" id="aplicar"
+                                                <button className="actionButtonsStyles" id="limpiar">
+                                                    Limpiar
+                                                </button>
+                                                <button
+                                                    className="actionButtonsStyles"
+                                                    id="aplicar"
                                                     type="button"
                                                     onClick={() => {
-                                                        filtrarClientes()
-                                                            .then(() => {
-                                                                setCurrentPage(1);
-                                                                setIsRotated(false);
-                                                            });
+                                                        filtrarClientes().then(() => {
+                                                            setCurrentPage(1);
+                                                            setIsRotated(false);
+                                                        });
                                                     }}
-                                                >Aplicar</button>
+                                                >
+                                                    Aplicar
+                                                </button>
                                             </div>
                                         </ModalContentBottom>
                                     </>
                                 )}
                                 {text === "Tipo" && (
                                     <>
-                                        <ModalContentTop
-                                            open={modalVisible}
-                                        >
+                                        <ModalContentTop open={modalVisible}>
                                             <EstatusForma>
                                                 <div className="optionsContainer" id="realizadoContainer">
-                                                    <input type="radio" className="checked" id="residencial" name="choice" value="Residencial" onChange={handleModalCheck} />
-                                                    <label id="realizado2" htmlFor="residencial">Residencial</label>
+                                                    <input
+                                                        type="radio"
+                                                        className="checked"
+                                                        id="residencial"
+                                                        name="choice"
+                                                        value="Residencial"
+                                                        onChange={handleModalCheck}
+                                                    />
+                                                    <label id="realizado2" htmlFor="residencial">
+                                                        Residencial
+                                                    </label>
                                                 </div>
                                                 <div className="optionsContainer" id="noRealizadoContainer">
-                                                    <input type="radio" className="checked" id="industrial" name="choice" value="Industrial" onChange={handleModalCheck} />
-                                                    <label id="noRealizado2" htmlFor="industrial">Industrial</label>
+                                                    <input
+                                                        type="radio"
+                                                        className="checked"
+                                                        id="industrial"
+                                                        name="choice"
+                                                        value="Industrial"
+                                                        onChange={handleModalCheck}
+                                                    />
+                                                    <label id="noRealizado2" htmlFor="industrial">
+                                                        Industrial
+                                                    </label>
                                                 </div>
                                                 <div className="optionsContainer" id="realizadoContainer">
-                                                    <input type="radio" className="checked" id="comercial" name="choice" value="Comercial" onChange={handleModalCheck} />
-                                                    <label id="realizado2" htmlFor="comercial">Comercial</label>
+                                                    <input
+                                                        type="radio"
+                                                        className="checked"
+                                                        id="comercial"
+                                                        name="choice"
+                                                        value="Comercial"
+                                                        onChange={handleModalCheck}
+                                                    />
+                                                    <label id="realizado2" htmlFor="comercial">
+                                                        Comercial
+                                                    </label>
                                                 </div>
                                                 <div className="optionsContainer" id="noRealizadoContainer">
-                                                    <input type="radio" className="checked" id="gubernamental" name="choice" value="Gubernamental" onChange={handleModalCheck} />
-                                                    <label id="noRealizado2" htmlFor="gubernamental">Gubernamental </label>
+                                                    <input
+                                                        type="radio"
+                                                        className="checked"
+                                                        id="gubernamental"
+                                                        name="choice"
+                                                        value="Gubernamental"
+                                                        onChange={handleModalCheck}
+                                                    />
+                                                    <label id="noRealizado2" htmlFor="gubernamental">
+                                                        Gubernamental{" "}
+                                                    </label>
                                                 </div>
                                                 <div className="optionsContainer" id="noRealizadoContainer">
-                                                    <input type="radio" className="checked" id="hoteleria" name="choice" value="Hotelería" onChange={handleModalCheck} />
-                                                    <label id="noRealizado2" htmlFor="hoteleria">Hotelería </label>
+                                                    <input
+                                                        type="radio"
+                                                        className="checked"
+                                                        id="hoteleria"
+                                                        name="choice"
+                                                        value="Hotelería"
+                                                        onChange={handleModalCheck}
+                                                    />
+                                                    <label id="noRealizado2" htmlFor="hoteleria">
+                                                        Hotelería{" "}
+                                                    </label>
                                                 </div>
                                                 <div className="optionsContainer" id="noRealizadoContainer">
-                                                    <input type="radio" className="checked" id="escolar" name="choice" value="Escolar" onChange={handleModalCheck} />
-                                                    <label id="noRealizado2" htmlFor="escolar">Escolar </label>
+                                                    <input
+                                                        type="radio"
+                                                        className="checked"
+                                                        id="escolar"
+                                                        name="choice"
+                                                        value="Escolar"
+                                                        onChange={handleModalCheck}
+                                                    />
+                                                    <label id="noRealizado2" htmlFor="escolar">
+                                                        Escolar{" "}
+                                                    </label>
                                                 </div>
                                             </EstatusForma>
                                         </ModalContentTop>
-                                        <ModalContentBottom
-                                            open={modalVisible}
-                                        >
+                                        <ModalContentBottom open={modalVisible}>
                                             <div className="filtroActionButtons">
-                                                <button className="actionButtonsStyles" id="limpiar">Limpiar</button>
-                                                <button className="actionButtonsStyles" id="aplicar" onClick={() => {
-                                                    filtrarClientes()
-                                                        .then(() => {
+                                                <button className="actionButtonsStyles" id="limpiar">
+                                                    Limpiar
+                                                </button>
+                                                <button
+                                                    className="actionButtonsStyles"
+                                                    id="aplicar"
+                                                    onClick={() => {
+                                                        filtrarClientes().then(() => {
                                                             setCurrentPage(1);
                                                             setIsRotated2(false);
                                                         });
-                                                }}>Aplicar</button>
+                                                    }}
+                                                >
+                                                    Aplicar
+                                                </button>
                                             </div>
                                         </ModalContentBottom>
                                     </>
                                 )}
                             </ModalContainer>
-
                         )}
                     </FiltrosLeft>
                     <>
                         <div style={{ display: "flex", alignItems: "center" }}>
-
-                            <CreateButton
-                                style={{ position: "relative" }}
-                                to="/nuevo-cliente">Nuevo Cliente</CreateButton>
+                            <CreateButton style={{ position: "relative" }} to="/nuevo-cliente">
+                                Nuevo Cliente
+                            </CreateButton>
 
                             <PaginationComponent
                                 currentPage={currentPage}
                                 totalPages={totalPages}
-                                onPageChange={handlePageChange} />
+                                onPageChange={handlePageChange}
+                            />
                         </div>
                     </>
                 </FiltrosContainer>
-
             </ServiciosContainer>
             <ServiciosSelectContainer>
-
-                {clientes.map((cliente) => (
-                    <ServiciosElement
-                        key={cliente.id}
-                    >
-
+                {clientes.map(cliente => (
+                    <ServiciosElement key={cliente.id}>
                         <ClientesElement1 style={{ minWidth: "15%", maxWidth: "25%" }}>
-                            <FolioLink to={`${location.pathname}/${cliente.id}`} className="primerSector"> {cliente.nombre} {cliente.apellidos} </FolioLink>
+                            <FolioLink to={`${location.pathname}/${cliente.id}`} className="primerSector">
+                                {" "}
+                                {cliente.nombre} {cliente.apellidos}{" "}
+                            </FolioLink>
                         </ClientesElement1>
                         <ServiciosElement2 style={{ justifyContent: "left" }}>
-                            <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector" > <FaEdit size={20} /></h3>
+                            <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
+                                {" "}
+                                <FaEdit size={20} />
+                            </h3>
                         </ServiciosElement2>
                         <ServiciosElement3>
-                            <h3 className="primerSector"
+                            <h3
+                                className="primerSector"
                                 style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                            >  Tipo de Cliente : {cliente.tipo_cliente}
+                            >
+                                {" "}
+                                Tipo de Cliente : {cliente.tipo_cliente}
                             </h3>
-
                         </ServiciosElement3>
-                        <ServiciosElement4 style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                        <ServiciosElement4
+                            style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
                             screen_width={screenWidth}
                         >
-                            <button id="borrarServicio"
-                                onClick={() => { deleteClienteHandler(cliente).then(() => { setDeleteModalVisible(true) }) }}
+                            <button
+                                id="borrarServicio"
+                                onClick={() => {
+                                    deleteClienteHandler(cliente).then(() => {
+                                        setDeleteModalVisible(true);
+                                    });
+                                }}
                                 style={{ fontWeight: "bold", fontSize: "105%" }}
                             >
                                 X
                             </button>
                         </ServiciosElement4>
                     </ServiciosElement>
-
-
                 ))}
-    {screenWidth < 900 &&
-                <LowerActionButtons >
-
-                    <div style={{ width: "82.485625rem", height: "2.25rem", position: "absolute", top: "90%", right: "9%", color: "white" }}>
-                        <CreateButton to="/nuevo-cliente" >Nuevo Cliente</CreateButton>
-                    </div>
-                </LowerActionButtons>
-}
-
+                {screenWidth < 900 && (
+                    <LowerActionButtons>
+                        <div
+                            style={{
+                                width: "82.485625rem",
+                                height: "2.25rem",
+                                position: "absolute",
+                                top: "90%",
+                                right: "9%",
+                                color: "white",
+                            }}
+                        >
+                            <CreateButton to="/nuevo-cliente">Nuevo Cliente</CreateButton>
+                        </div>
+                    </LowerActionButtons>
+                )}
             </ServiciosSelectContainer>
         </>
-    )
+    );
+};
 
-
-}
-
-export default Clientes
-
+export default Clientes;

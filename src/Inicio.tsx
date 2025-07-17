@@ -1,18 +1,14 @@
-import styled, { keyframes } from 'styled-components';
+import styled, { keyframes } from "styled-components";
 import { BsPersonSquare } from "react-icons/bs";
 import { FaHandshake } from "react-icons/fa";
-import pump from './assets/pumpicon.png'
+import pump from "./assets/pumpicon.png";
 import { FaRegCalendarAlt } from "react-icons/fa";
-import logoGrande from "./assets/logoGrande.png"
-import { Link, useLocation } from 'react-router-dom';
+import logoGrande from "./assets/logoGrande.png";
+import { Link, useLocation } from "react-router-dom";
 import { FaSprayCan } from "react-icons/fa";
 import { PiNotebookDuotone } from "react-icons/pi";
 
-
-
-
-
-const shineAnimation = keyframes /*style*/`
+const shineAnimation = keyframes /*style*/ `
     0% {
         background-position: -200%;
     }
@@ -21,26 +17,25 @@ const shineAnimation = keyframes /*style*/`
     }
 `;
 
-const DashboardContainer = styled.div /*style*/`
+const DashboardContainer = styled.div /*style*/ `
     display: flex;
     justify-content: space-evenly;
-    margin-top:2rem;
+    margin-top: 2rem;
     height: auto;
-    width:100%;
-    flex-wrap:wrap;
+    width: 100%;
+    flex-wrap: wrap;
     gap: 3rem;
 
-  @media (min-width: 300px) and (max-width: 644px) {
-    flex-direction:column;
-    flex-wrap:nowrap;
-    justify-content:unset;
-    gap:2rem;
-    align-items:center;
-  }
-
+    @media (min-width: 300px) and (max-width: 644px) {
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: unset;
+        gap: 2rem;
+        align-items: center;
+    }
 `;
 
-const Option = styled.div /*style*/`
+const Option = styled.div /*style*/ `
     text-align: center;
     padding: 20px;
     width: 10vw;
@@ -48,280 +43,250 @@ const Option = styled.div /*style*/`
     border-radius: 10px;
     cursor: pointer;
     animation: ${shineAnimation} 1s linear infinite;
-    -webkit-mask-image: linear-gradient(45deg,#000 25%,rgba(0,0,0,.2) 50%,#000 75%);
-    mask-image: linear-gradient(45deg,#000 25%,rgba(0,0,0,.2) 50%,#000 75%);
+    -webkit-mask-image: linear-gradient(45deg, #000 25%, rgba(0, 0, 0, 0.2) 50%, #000 75%);
+    mask-image: linear-gradient(45deg, #000 25%, rgba(0, 0, 0, 0.2) 50%, #000 75%);
     -webkit-mask-size: 800%;
     mask-size: 800%;
     -webkit-mask-position: 0;
     mask-position: 0;
-    color:white;
+    color: white;
 
     &:hover {
         transition: background-color 0.3s;
         transform: scale(1.2);
-        transition: mask-position 2s ease,-webkit-mask-position 2s ease;
-    -webkit-mask-position: 120%;
-    mask-position: 120%;
-    opacity: 1;
-       
+        transition:
+            mask-position 2s ease,
+            -webkit-mask-position 2s ease;
+        -webkit-mask-position: 120%;
+        mask-position: 120%;
+        opacity: 1;
     }
-
- 
 `;
 
-const OptionContainer = styled(Option) /*style*/`
-height: fit-content ;
-background: #0D4E80;
-border-radius: 20px;
+const OptionContainer = styled(Option) /*style*/ `
+    height: fit-content;
+    background: #0d4e80;
+    border-radius: 20px;
 
-
-&.calendario {
-  background-color:rgba(214,43,51);
-@media (min-width: 300px) and (max-width: 644px) {
-flex-direction:column;
-flex-wrap:nowrap;
-justify-content:unset;
-gap:2rem;
-align-items:center;
-  
-  }
-  }
-&.bitacoras {
-  background-color:rgba(9,38,87);
-@media (min-width: 300px) and (max-width: 644px) {
-flex-direction:column;
-flex-wrap:nowrap;
-justify-content:unset;
-gap:2rem;
-align-items:center;
-  
-  }
-  }
-
-    @media (min-width: 300px) and (max-width: 644px) {
-   flex-direction:column;
-   flex-wrap:nowrap;
-   justify-content:unset;
-   gap:2rem;
-    align-items:center;
-  }
-
-
-    &.clientes{
-    background-color:#A01F27;
-
-    @media (min-width: 300px) and (max-width: 644px) {
-   flex-direction:column;
-   flex-wrap:nowrap;
-   justify-content:unset;
-   gap:2rem;
-    align-items:center;
-  }
-
+    &.calendario {
+        background-color: rgba(214, 43, 51);
+        @media (min-width: 300px) and (max-width: 644px) {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: unset;
+            gap: 2rem;
+            align-items: center;
+        }
     }
-    &.empleados{
-      @media (min-width: 300px) and (max-width: 644px) {
-   flex-direction:column;
-   flex-wrap:nowrap;
-   justify-content:unset;
-   gap:2rem;
-    align-items:center;
-  }
-    background-color:#3D6B27;
-    
+    &.bitacoras {
+        background-color: rgba(9, 38, 87);
+        @media (min-width: 300px) and (max-width: 644px) {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: unset;
+            gap: 2rem;
+            align-items: center;
+        }
     }
 
     @media (min-width: 300px) and (max-width: 644px) {
-   display:flex;
-   flex-direction:column;
-  }
-
-  &.inventario {
-    background-color: hsl(102.08955223880596, 37.43016759776537%, 35.09803921568627%);
-
+        flex-direction: column;
+        flex-wrap: nowrap;
+        justify-content: unset;
+        gap: 2rem;
+        align-items: center;
     }
 
+    &.clientes {
+        background-color: #a01f27;
 
+        @media (min-width: 300px) and (max-width: 644px) {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: unset;
+            gap: 2rem;
+            align-items: center;
+        }
+    }
+    &.empleados {
+        @media (min-width: 300px) and (max-width: 644px) {
+            flex-direction: column;
+            flex-wrap: nowrap;
+            justify-content: unset;
+            gap: 2rem;
+            align-items: center;
+        }
+        background-color: #3d6b27;
+    }
 
+    @media (min-width: 300px) and (max-width: 644px) {
+        display: flex;
+        flex-direction: column;
+    }
+
+    &.inventario {
+        background-color: hsl(102.08955223880596, 37.43016759776537%, 35.09803921568627%);
+    }
 `;
 
-const Clientes = styled(Option) /*style*/`
+const Clientes = styled(Option) /*style*/ `
     background-color: #d62b33; /* Principal Color */
-    height: fit-content ;
+    height: fit-content;
 `;
 
-const Empleados = styled(Option) /*style*/`
+const Empleados = styled(Option) /*style*/ `
     background-color: #0e4e7f; /* Secondary Color */
-    height: fit-content ;
+    height: fit-content;
 `;
 
 export const PumpIcon = styled.img /*style*/ `
-width:70px;
-height:auto;
-filter: invert(100%);
-object-fit:cover;
-transform:scale(2);
-position:relative;
-right: .5rem;
+    width: 70px;
+    height: auto;
+    filter: invert(100%);
+    object-fit: cover;
+    transform: scale(2);
+    position: relative;
+    right: 0.5rem;
 
-@media (min-width: 300px) and (max-width: 644px) {
- width:50px;
- position:relative;
-left:.01rem;
+    @media (min-width: 300px) and (max-width: 644px) {
+        width: 50px;
+        position: relative;
+        left: 0.01rem;
 
-bottom:.5rem;
-  }
-
-`
+        bottom: 0.5rem;
+    }
+`;
 
 const InsectImage = styled.img /*style*/ `
-width:45%;
-height: auto;
-object-fit:cover;
-`
+    width: 45%;
+    height: auto;
+    object-fit: cover;
+`;
 const ImgCont = styled.div /*style*/ `
-position: relative;
-display:inline-flex;
-height: auto;
-align-items:center;
-border:  black .02rem;
-box-shadow: 0px 0px 11px 2px rgba(0,0,0,0.75);
--webkit-box-shadow: 0px 0px 11px 2px rgba(0,0,0,0.75);
--moz-box-shadow: 0px 0px 11px 2px rgba(0,0,0,0.75);
+    position: relative;
+    display: inline-flex;
+    height: auto;
+    align-items: center;
+    border: black 0.02rem;
+    box-shadow: 0px 0px 11px 2px rgba(0, 0, 0, 0.75);
+    -webkit-box-shadow: 0px 0px 11px 2px rgba(0, 0, 0, 0.75);
+    -moz-box-shadow: 0px 0px 11px 2px rgba(0, 0, 0, 0.75);
 
-
-@media (min-width: 300px) and (max-width: 900px) {
-   display:flex;
-   flex-direction:column;
-   height:auto;
-   
-
-   
-}
-`
+    @media (min-width: 300px) and (max-width: 900px) {
+        display: flex;
+        flex-direction: column;
+        height: auto;
+    }
+`;
 
 const InfoText = styled.div /*style*/ `
-width:50%;
-color:black;
-text-align:left;
-text-align:justify;
-font-weight:lighter;
-padding:2rem;
+    width: 50%;
+    color: black;
+    text-align: left;
+    text-align: justify;
+    font-weight: lighter;
+    padding: 2rem;
 
+    & p {
+        font-size: 2vw;
+    }
 
-& p{
-font-size:2vw;
-}
+    @media (min-width: 300px) and (max-width: 644px) {
+        padding: 0;
+        width: 70%;
+        & p {
+            font-size: 5vw;
+            margin: 0;
+            position: relative;
+            bottom: 1rem;
+        }
+    }
 
-@media (min-width: 300px) and (max-width: 644px) {
-padding:0;
-width: 70% ;
-  & p{
-font-size:5vw;
-margin:0;
-position:relative;
-bottom: 1rem;
-
-}
-
-}
-  
-  @media (min-width: 645px) and (max-width: 768px) {
-    & p{
-  font-size:3vw !important;
-}
-   
-    
-  }
-
-
-`
+    @media (min-width: 645px) and (max-width: 768px) {
+        & p {
+            font-size: 3vw !important;
+        }
+    }
+`;
 
 const OptionsCardsCont = styled.div /*style*/ `
-display:flex;
-flex-basis:100%;
-justify-content:space-evenly;
-gap:1rem;
+    display: flex;
+    flex-basis: 100%;
+    justify-content: space-evenly;
+    gap: 1rem;
 
-@media (min-width: 300px) and (max-width: 644px) {
-  flex-basis:initial;
-  flex-direction:row;
-  justify-content:center;
-  & h2{
-  display:none;
-  }
-  }
+    @media (min-width: 300px) and (max-width: 644px) {
+        flex-basis: initial;
+        flex-direction: row;
+        justify-content: center;
+        & h2 {
+            display: none;
+        }
+    }
 
-  @media (min-width: 645px) and (max-width: 768px) {
-   
-    
-  }
+    @media (min-width: 645px) and (max-width: 768px) {
+    }
 
-
-  @media (min-width: 769px) and (max-width: 900px) {
-
-    
-  }
-`
-
-
-
+    @media (min-width: 769px) and (max-width: 900px) {
+    }
+`;
 
 const Dashboard = () => {
-  return (
-    <>
-      <DashboardContainer>
-        <OptionsCardsCont>
-          <Link to="/Servicios">
-            <OptionContainer className='servicios'>
-              <FaSprayCan size={70} />
-              <h2>Servicios</h2>
-            </OptionContainer>
-          </Link>
-          <Link to="/Clientes ">
-            <OptionContainer className='clientes'>
-              <FaHandshake size={70}></FaHandshake>
-              <h2>Clientes</h2>
-            </OptionContainer>
-          </Link>
-          <Link to="/empleados ">
-          <OptionContainer className='empleados'>
-            <BsPersonSquare size={70}></BsPersonSquare>
-            <h2>Empleados</h2>
-          </OptionContainer>
-          </Link>
-          <Link to="/calendar ">
-          <OptionContainer className='calendario'>
-            <FaRegCalendarAlt size={70}></FaRegCalendarAlt>
-            <h2>Calendario</h2>
-          </OptionContainer>
-          </Link>
-          <Link to="/bitacoras ">
-          <OptionContainer className='bitacoras'>
-            <PiNotebookDuotone size={80}></PiNotebookDuotone>
-            <h2>Bitacoras</h2>
-          </OptionContainer>
-          </Link>
-          <Link to="/inventario ">
-          <OptionContainer className='inventario'>
-            <PiNotebookDuotone size={80}></PiNotebookDuotone>
-            <h2>Inventario</h2>
-          </OptionContainer>
-          </Link>
-        </OptionsCardsCont>
-        <ImgCont>
-          <InsectImage src={logoGrande} />
-          <InfoText>
-            <p >
-            Hola,
-            Esta herramienta nos ayudará a agilizar la operación de Insects Out. Ha sido desarrollada a la medida de la empresa, por lo que encontrarán que se ajusta fácilmente al ritmo de trabajo que manejamos. Todo esto con el objetivo de aligerar la carga laboral y brindar un mejor servicio y atención a nuestros clientes.
-            </p>
-          </InfoText>
-        </ImgCont>
-      </DashboardContainer>
-
-    </>
-  );
+    return (
+        <>
+            <DashboardContainer>
+                <OptionsCardsCont>
+                    <Link to="/Servicios">
+                        <OptionContainer className="servicios">
+                            <FaSprayCan size={70} />
+                            <h2>Servicios</h2>
+                        </OptionContainer>
+                    </Link>
+                    <Link to="/Clientes ">
+                        <OptionContainer className="clientes">
+                            <FaHandshake size={70}></FaHandshake>
+                            <h2>Clientes</h2>
+                        </OptionContainer>
+                    </Link>
+                    <Link to="/empleados ">
+                        <OptionContainer className="empleados">
+                            <BsPersonSquare size={70}></BsPersonSquare>
+                            <h2>Empleados</h2>
+                        </OptionContainer>
+                    </Link>
+                    <Link to="/calendar ">
+                        <OptionContainer className="calendario">
+                            <FaRegCalendarAlt size={70}></FaRegCalendarAlt>
+                            <h2>Calendario</h2>
+                        </OptionContainer>
+                    </Link>
+                    <Link to="/bitacoras ">
+                        <OptionContainer className="bitacoras">
+                            <PiNotebookDuotone size={80}></PiNotebookDuotone>
+                            <h2>Bitacoras</h2>
+                        </OptionContainer>
+                    </Link>
+                    <Link to="/inventario ">
+                        <OptionContainer className="inventario">
+                            <PiNotebookDuotone size={80}></PiNotebookDuotone>
+                            <h2>Inventario</h2>
+                        </OptionContainer>
+                    </Link>
+                </OptionsCardsCont>
+                <ImgCont>
+                    <InsectImage src={logoGrande} />
+                    <InfoText>
+                        <p>
+                            Hola, Esta herramienta nos ayudará a agilizar la operación de Insects Out. Ha sido
+                            desarrollada a la medida de la empresa, por lo que encontrarán que se ajusta fácilmente al
+                            ritmo de trabajo que manejamos. Todo esto con el objetivo de aligerar la carga laboral y
+                            brindar un mejor servicio y atención a nuestros clientes.
+                        </p>
+                    </InfoText>
+                </ImgCont>
+            </DashboardContainer>
+        </>
+    );
 };
 
 export default Dashboard;
