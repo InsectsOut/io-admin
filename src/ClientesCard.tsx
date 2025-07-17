@@ -1,14 +1,14 @@
 import { supabase } from "./utils/ClientSupabase";
-import { useEffect, useState } from "react"
-import styled from "styled-components"
+import { useEffect, useState } from "react";
+import styled from "styled-components";
 import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
-import { useParams } from 'react-router-dom';
+import { useParams } from "react-router-dom";
 import { servicioOptions } from "./tipo_servicios";
-import {  ReturnButton } from "./ServiciosCard";
+import { ReturnButton } from "./ServiciosCard";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { DetailsTitle } from "./ServiciosCard";
-import { CardInputs } from './rehusableComponents/CardInputs';
+import { CardInputs } from "./rehusableComponents/CardInputs";
 import { InputsContainer } from "./ServiciosCard";
 import { mainStyle } from "./ServiciosCard";
 import { DetallesTitulo } from "./ServiciosCard";
@@ -17,170 +17,159 @@ import { StyledButton } from "./ServiciosCard";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import DireccionCard from "./DireccionCard";
 
-type Cliente = Tables<"Clientes">
+type Cliente = Tables<"Clientes">;
 interface serviciosProps {
     organizacion?: string;
-  }
+}
 
-const ClientCardContainer = styled(CardContainer) /*style*/`
-height:fit-content;
-padding-bottom:2rem;
-`
+const ClientCardContainer = styled(CardContainer) /*style*/ `
+    height: fit-content;
+    padding-bottom: 2rem;
+`;
 export const BodyContainer = styled.div`
-display:flex;
-gap:2.94rem;
-`
+    display: flex;
+    gap: 2.94rem;
+`;
 const NumberInputs = styled(CardInputs)`
-&::-webkit-inner-spin-button,
-  &::-webkit-outer-spin-button {
-  appearance: none;
-    margin: 0;
-    opacity:.5;
-    cursor: pointer;
-    &::-webkit-inner-spin-button:hover,
-  &::-webkit-outer-spin-button:hover {
-    background-color: #ddd;
-  }
-}
-`
-
-const inputWidthStyle = {
-    width: "19.815rem"
-}
-
-export const AddResponsableCard = styled.div`
-  width: 24.625rem; 
-  height: 5.875rem; 
-  background: #FFFFFF;
-  border: 0.125rem solid #727272; 
-  border-radius: 0.7179rem; 
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  :hover{
-  cursor: pointer;
-  }
-`
-
-const TextoAddCard = styled.h1 /*style*/`
-  height:min-content;
-  margin:unset;
- 
-  font-style: normal;
-  font-weight: 500;
-  font-size: 1.125rem; /* 18px converted to rem */
-  line-height: 1.438rem; /* 23px converted to rem */
-  display: flex;
-  align-items: center;
-  text-align: center;
-  color: #727272;
+    &::-webkit-inner-spin-button,
+    &::-webkit-outer-spin-button {
+        appearance: none;
+        margin: 0;
+        opacity: 0.5;
+        cursor: pointer;
+        &::-webkit-inner-spin-button:hover,
+        &::-webkit-outer-spin-button:hover {
+            background-color: #ddd;
+        }
+    }
 `;
 
-const ClientesCard: React.FC<serviciosProps> = (props) => {
-    const [cliente, setCliente] = useState<Cliente[] | null>([])
-    const [nombre, setNombre] = useState<string>("")
-    const [telefono, setTelefono] = useState<string>("")
-    const [email, setEmail] = useState<string>("")
-    const [apellido, setApellido] = useState<any>("")
-    const { id } = useParams()
-    const [tipoCliente, setTipoCliente] = useState<string>("")
-    const [responsable, setResponsable] = useState<string>("")
-    const [isClicked, setClicked] = useState<boolean>(false);
-    const [responsableExists, setResponsableExists] = useState<boolean | null>(false)
-    const [, setResponsableId] = useState<number | null>()
-    const [updater, setUpdater] = useState(false)
+const inputWidthStyle = {
+    width: "19.815rem",
+};
 
-
-    const insertResponsable = async (elCliente:Cliente[]) => {
-        const  nombreCompleto = `${elCliente?.[0]?.nombre} ${elCliente?.[0]?.apellidos} `
-   
-        if (elCliente[0].responsable_id){
-            return
-        }
-        if (!elCliente[0].responsable_id){
-            if(elCliente){
-            
-            try {
-                const { data, error } = await supabase
-                    .from("Responsables")
-                    .insert([{
-                        cliente_id:id,
-                        email: elCliente[0]?.email ,
-                        nombre: nombreCompleto,
-                        puesto: "",
-                        telefono: elCliente[0]?.telefono
-
-                    },
-                    ] as any
-                    )
-                    .select()
-                if (error) {
-                    console.log("Error while trying to update ", error)
-                }
-                else {
-                    console.log("data updated succesfully ", data)
-                    const { data:response, error:err } = await supabase
-                    .from("Clientes")
-                    .update([{
-                        responsable_id:data?.[0]?.id
-                    }
-                    ,
-                    ] as any
-                    )
-                    .filter("id", "eq", `${id}`)
-                    .select()
-                }
-
-            }
-            catch (err) {
-                console.log("Error while fetching", err)
-            }
-        }
-        else {
-            return
-        }
-        }
-
-        else {
-            return
-        }
- 
+export const AddResponsableCard = styled.div`
+    width: 24.625rem;
+    height: 5.875rem;
+    background: #ffffff;
+    border: 0.125rem solid #727272;
+    border-radius: 0.7179rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    :hover {
+        cursor: pointer;
     }
+`;
+
+const TextoAddCard = styled.h1 /*style*/ `
+    height: min-content;
+    margin: unset;
+
+    font-style: normal;
+    font-weight: 500;
+    font-size: 1.125rem; /* 18px converted to rem */
+    line-height: 1.438rem; /* 23px converted to rem */
+    display: flex;
+    align-items: center;
+    text-align: center;
+    color: #727272;
+`;
+
+const ClientesCard: React.FC<serviciosProps> = props => {
+    const [cliente, setCliente] = useState<Cliente[] | null>([]);
+    const [nombre, setNombre] = useState<string>("");
+    const [telefono, setTelefono] = useState<string>("");
+    const [email, setEmail] = useState<string>("");
+    const [apellido, setApellido] = useState<any>("");
+    const { id } = useParams();
+    const [tipoCliente, setTipoCliente] = useState<string>("");
+    const [responsable, setResponsable] = useState<string>("");
+    const [isClicked, setClicked] = useState<boolean>(false);
+    const [responsableExists, setResponsableExists] = useState<boolean | null>(false);
+    const [, setResponsableId] = useState<number | null>();
+    const [updater, setUpdater] = useState(false);
+
+    const insertResponsable = async (elCliente: Cliente[]) => {
+        const nombreCompleto = `${elCliente?.[0]?.nombre} ${elCliente?.[0]?.apellidos} `;
+
+        if (elCliente[0].responsable_id) {
+            return;
+        }
+        if (!elCliente[0].responsable_id) {
+            if (elCliente) {
+                try {
+                    const { data, error } = await supabase
+                        .from("Responsables")
+                        .insert([
+                            {
+                                cliente_id: id,
+                                email: elCliente[0]?.email,
+                                nombre: nombreCompleto,
+                                puesto: "",
+                                telefono: elCliente[0]?.telefono,
+                            },
+                        ] as any)
+                        .select();
+                    if (error) {
+                        console.log("Error while trying to update ", error);
+                    } else {
+                        console.log("data updated succesfully ", data);
+                        const { data: response, error: err } = await supabase
+                            .from("Clientes")
+                            .update([
+                                {
+                                    responsable_id: data?.[0]?.id,
+                                },
+                            ] as any)
+                            .filter("id", "eq", `${id}`)
+                            .select();
+                    }
+                } catch (err) {
+                    console.log("Error while fetching", err);
+                }
+            } else {
+                return;
+            }
+        } else {
+            return;
+        }
+    };
 
     const handleChildStateChange = () => {
-        setClicked(true)
-    }
+        setClicked(true);
+    };
 
     const handleChildValue = (nuevoValor: string) => {
-        setResponsable(nuevoValor)
-    }
+        setResponsable(nuevoValor);
+    };
 
     const updateOrInsert = () => {
-        setUpdater(true)
-    }
+        setUpdater(true);
+    };
 
     const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = event.target.value
-        setNombre(cambio)
-    }
+        setClicked(true);
+        const cambio = event.target.value;
+        setNombre(cambio);
+    };
     const handleApellidoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = event.target.value
-        setApellido(cambio)
-    }
+        setClicked(true);
+        const cambio = event.target.value;
+        setApellido(cambio);
+    };
 
     const handleTelefonoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = event.target.value.replace(/\s/g, '')
-        setTelefono(cambio)
-    }
+        setClicked(true);
+        const cambio = event.target.value.replace(/\s/g, "");
+        setTelefono(cambio);
+    };
 
     const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        setClicked(true)
-        const cambio = event.target.value
-        setEmail(cambio)
-    }
+        setClicked(true);
+        const cambio = event.target.value;
+        setEmail(cambio);
+    };
 
     const fetchClientes = async () => {
         try {
@@ -188,14 +177,12 @@ const ClientesCard: React.FC<serviciosProps> = (props) => {
                 .from("Clientes")
                 .select("*")
                 .filter("id", "eq", `${id}`)
-                .filter("organizacion", "eq", props.organizacion)
-            const { data: cliente } = await query
-            
-          
+                .filter("organizacion", "eq", props.organizacion);
+            const { data: cliente } = await query;
+
             if (cliente) {
                 const { nombre, apellidos, telefono, email, tipo_cliente, responsable_id } = cliente[0];
 
-                
                 setCliente(cliente);
                 setNombre(nombre);
                 setApellido(apellidos);
@@ -203,64 +190,56 @@ const ClientesCard: React.FC<serviciosProps> = (props) => {
                 setEmail(email);
                 setTipoCliente(tipo_cliente || "");
                 setResponsableId(responsable_id);
-                
+
                 if (responsable_id) {
-                    setResponsableExists(true)
+                    setResponsableExists(true);
                     return;
                 }
-               
-                if (!responsable_id){
-                    setResponsableExists(false)
-                    insertResponsable(cliente);
-                    return
-                }
 
+                if (!responsable_id) {
+                    setResponsableExists(false);
+                    insertResponsable(cliente);
+                    return;
+                }
             }
+        } catch (error) {
+            console.log("Error consiguiendo los datos del cliente");
         }
-        catch (error) {
-            console.log("Error consiguiendo los datos del cliente")
-        }
-    }
+    };
 
     useEffect(() => {
-        fetchClientes()
+        fetchClientes();
     }, []);
     const handleTipoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        setClicked(true)
-        const cambio = event.target.value
-        setTipoCliente(cambio)
-
-    }
+        setClicked(true);
+        const cambio = event.target.value;
+        setTipoCliente(cambio);
+    };
 
     const updateCliente = async () => {
         try {
             const { data, error } = await supabase
                 .from("Clientes")
-                .update(
-                    [
-                        {
-                            nombre: nombre,
-                            apellidos: apellido,
-                            telefono: telefono,
-                            email: email,
-                            tipo_cliente: tipoCliente,
-
-
-                        },
-                    ] as any
-                )
-                .filter("id", "eq", `${id}`)
+                .update([
+                    {
+                        nombre: nombre,
+                        apellidos: apellido,
+                        telefono: telefono,
+                        email: email,
+                        tipo_cliente: tipoCliente,
+                    },
+                ] as any)
+                .filter("id", "eq", `${id}`);
             if (error) {
                 console.error("Error updating data:", error.message);
             } else {
                 console.log("Data updated successfully:", data);
             }
-            updateOrInsert()
+            updateOrInsert();
+        } catch (err) {
+            console.log("Error making the update request");
         }
-        catch (err) {
-            console.log("Error making the update request")
-        }
-    }
+    };
 
     return (
         <>
@@ -270,87 +249,76 @@ const ClientesCard: React.FC<serviciosProps> = (props) => {
                     <DetallesTitulo>Información del cliente</DetallesTitulo>
                     <InputsContainer>
                         <div style={{ display: "inline-flex", width: "26.124rem" }}>
-                            <div
-                                style={{ width: tipoCliente !=="Residencial" ? "20.44rem" : "11.728rem" }}
-                            >
+                            <div style={{ width: tipoCliente !== "Residencial" ? "20.44rem" : "11.728rem" }}>
                                 <DetailsTitle>Nombre</DetailsTitle>
-                                <CardInputs style={{ ...inputWidthStyle, width: tipoCliente ==="Residencial"? "85%": "19.815rem" }}
+                                <CardInputs
+                                    style={{
+                                        ...inputWidthStyle,
+                                        width: tipoCliente === "Residencial" ? "85%" : "19.815rem",
+                                    }}
                                     id="textInputs"
                                     className="textInputs"
                                     onChange={handleNameChange}
                                     value={nombre}
-                                >
-                                </CardInputs>
+                                ></CardInputs>
                             </div>
-                            {tipoCliente === "Residencial" &&
-                            <div
-                                style={{ width: "11.728rem" }}>
-                                <DetailsTitle>Apellido</DetailsTitle>
-                                <CardInputs style={{ ...inputWidthStyle, width: "85%" }}
-                                    id="textInputs"
-                                    className="textInputs"
-                                    onChange={handleApellidoChange}
-                                    value={apellido}
-                                >
-                                </CardInputs>
-                            </div>
-                            }
+                            {tipoCliente === "Residencial" && (
+                                <div style={{ width: "11.728rem" }}>
+                                    <DetailsTitle>Apellido</DetailsTitle>
+                                    <CardInputs
+                                        style={{ ...inputWidthStyle, width: "85%" }}
+                                        id="textInputs"
+                                        className="textInputs"
+                                        onChange={handleApellidoChange}
+                                        value={apellido}
+                                    ></CardInputs>
+                                </div>
+                            )}
                         </div>
                     </InputsContainer>
                     <InputsContainer>
-                        <DetailsTitle>
-                            Teléfono
-                        </DetailsTitle>
-                        <NumberInputs style={inputWidthStyle} id="textInputs" className="textInputs"
+                        <DetailsTitle>Teléfono</DetailsTitle>
+                        <NumberInputs
+                            style={inputWidthStyle}
+                            id="textInputs"
+                            className="textInputs"
                             type="tel"
                             onChange={handleTelefonoChange}
                             value={telefono}
-                        >
-                        </NumberInputs>
+                        ></NumberInputs>
                     </InputsContainer>
                     <InputsContainer>
-                        <DetailsTitle>
-                            E-mail
-                        </DetailsTitle>
+                        <DetailsTitle>E-mail</DetailsTitle>
                         <CardInputs
                             style={inputWidthStyle}
                             className="textInputs"
                             type="text"
                             onChange={handleEmailChange}
                             value={email}
-                        >
-                        </CardInputs>
+                        ></CardInputs>
                     </InputsContainer>
                     <InputsContainer>
-                        <DetailsTitle>
-                            Tipo de Cliente
-                        </DetailsTitle>
-                        <select
-                            value={tipoCliente}
-                            style={mainStyle}
-                            onChange={handleTipoChange}
-                        >
-                            {servicioOptions?.map((options) => (
-                                <option key={options.id} value={options.value}>{options.value}</option>
+                        <DetailsTitle>Tipo de Cliente</DetailsTitle>
+                        <select value={tipoCliente} style={mainStyle} onChange={handleTipoChange}>
+                            {servicioOptions?.map(options => (
+                                <option key={options.id} value={options.value}>
+                                    {options.value}
+                                </option>
                             ))}
-
                         </select>
                     </InputsContainer>
-                    {tipoCliente !== "Residencial" &&
-                    <InputsContainer>
-                        <DetailsTitle>
-                            Responsable
-                        </DetailsTitle>
-                        <CardInputs
-                            style={inputWidthStyle}
-                            className="textInputs"
-                            type="text"
-                            readOnly
-                            value={responsable}
-                        >
-                        </CardInputs>
-                    </InputsContainer>
-                    }
+                    {tipoCliente !== "Residencial" && (
+                        <InputsContainer>
+                            <DetailsTitle>Responsable</DetailsTitle>
+                            <CardInputs
+                                style={inputWidthStyle}
+                                className="textInputs"
+                                type="text"
+                                readOnly
+                                value={responsable}
+                            ></CardInputs>
+                        </InputsContainer>
+                    )}
                 </ClientCardContainer>
                 {responsableExists && tipoCliente !== "Residencial" && (
                     <>
@@ -359,12 +327,14 @@ const ClientesCard: React.FC<serviciosProps> = (props) => {
                             onValueChange={handleChildValue}
                             onStateChange={handleChildStateChange}
                         ></ResponsableCard>
-
                     </>
                 )}
-                {!responsableExists && tipoCliente !== "Residencial" &&(
-                    <AddResponsableCard style={{ alignSelf: "center" }}
-                        onClick={() => { setResponsableExists(true) }}
+                {!responsableExists && tipoCliente !== "Residencial" && (
+                    <AddResponsableCard
+                        style={{ alignSelf: "center" }}
+                        onClick={() => {
+                            setResponsableExists(true);
+                        }}
                     >
                         <div>
                             <IoIosAddCircleOutline size={30} style={{ color: "black" }} />
@@ -374,15 +344,19 @@ const ClientesCard: React.FC<serviciosProps> = (props) => {
                 )}
                 <DireccionCard></DireccionCard>
             </BodyContainer>
-            <ReturnButton
-             onClick={() => window.history.back()}
-            >Regresar</ReturnButton>
-            <StyledButton disabled={!isClicked} clicado={isClicked} onClick={() => { updateOrInsert(); updateCliente(); }}>
+            <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
+            <StyledButton
+                disabled={!isClicked}
+                clicado={isClicked}
+                onClick={() => {
+                    updateOrInsert();
+                    updateCliente();
+                }}
+            >
                 Guardar Cambios
             </StyledButton>
         </>
-    )
-}
+    );
+};
 
-
-export default ClientesCard
+export default ClientesCard;
