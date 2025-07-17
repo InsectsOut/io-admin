@@ -1,6 +1,11 @@
 import styled from "styled-components";
 
-export const StyledSelect = styled.select /*style*/`
+type StyledSelectProps = {
+  width?: string
+
+}
+
+export const StyledSelect = styled.select<StyledSelectProps> /*style*/`
   all: unset;
   appearance: revert; /* 👈 brings back the arrow */
 
@@ -13,6 +18,7 @@ export const StyledSelect = styled.select /*style*/`
   align-items: center;
   padding-left: 0.5rem;
   font-size: 0.9rem;
+  width:${props =>(props.width ? props.width : "100%")};
   
   /* Optional: Style for options if needed */
   option {

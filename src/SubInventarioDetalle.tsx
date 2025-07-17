@@ -2,7 +2,7 @@
 import { SetStateAction, useEffect, useState } from 'react';
 import styled from 'styled-components';
 import { FaPlus } from 'react-icons/fa';
-import { CardInputs } from './rehusableComponents/CardInputs';
+import { CardInputs as CardInputs2, TextAlign } from './rehusableComponents/CardInputs';
 import { CreateButton, ModalButton, ModalContent, ModalForm, ModalOverlay } from './rehusableComponents/CreateInventariosModal';
 import { StyledSelect } from './rehusableComponents/StyledSelect';
 import { Database, Tables } from './supabase/Database';
@@ -51,6 +51,21 @@ const SectionContainer = styled.div`
   font-family: 'Open Sans';
 `;
 
+const FormRow = styled.div`
+  display: flex;
+  align-items: center;
+  margin-bottom: 1rem;
+  gap: 0.75rem;
+`;
+
+const StyledLabel = styled.label`
+  min-width: 150px;
+  font-weight: 600;
+  color: #0D4E80;
+  font-size: 0.9rem;
+  text-align: left;
+`;
+
 const SectionTitle = styled.h2`
   color: #0D4E80;
   margin-bottom: 1rem;
@@ -74,14 +89,19 @@ const EntryItem = styled.li`
   align-items:center;
   gap: 1rem;
   font-family: 'Open Sans', sans-serif;
-  h3{
+  .h3{
     cursor: pointer;
   }
 `;
+
 const EntryText = styled.span`
   font-size: 1rem;
 `;
-
+const Icono = styled(FaEdit)`
+  &:hover {
+    color: #2395FF;
+  }
+`;
 const AddForm = styled.form`
   display: flex;
   gap: 0.5rem;
@@ -122,6 +142,11 @@ const EntryRow = styled.div`
   &.entryFifthElement{
     width: 15%;
   }
+  &.entrySixthElement{
+    cursor: pointer;
+    width: 8%;
+    justify-content: flex-end;
+  }
  
 `;
 
@@ -148,6 +173,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({
     const [inventarioEntry, setInventarioEntry] = useState<InventarioProducos[] | null>(null)
     const [editable, setEditable] = useState<boolean>(false)
     const [entryId,setEntryId] = useState<number | null>(null)
+    const [colorTrigger,setColorTrigger] = useState<boolean>(false)
 
     enum TipoDeGastoEnum {
         gramos = "g",
@@ -161,6 +187,15 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({
         mililitros = "ml",
         kilogramos = "kg",
         piezas = "pzs"
+    }
+
+    const nullAllParameters = () =>{
+       setProductoId(undefined);
+                setStock(undefined);
+                setUnidadDeGasto(undefined);
+                setPresentacionCantidad(null);
+                setPresentacionUnidad(undefined);
+                setPrecio(null);
     }
 
 
@@ -353,109 +388,144 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({
                             >
                                 <EntryText><strong>Precio:</strong> ${entry.precio}</EntryText>
                             </EntryRow>
-                            <h3 
+                            <EntryRow 
                             onClick={() => {fetchSingleEntry(entry.id);setEditable(true); setIsModalOpen(true); setEntryId(entry.id)}}
-                            style={{ alignSelf: "left" }} className="primerSector" id="iconSector" > <FaEdit size={20} /></h3>
+                            //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
+                            // onMouseEnter={() => setColorTrigger(true)} 
+                            // onMouseOut={() => setColorTrigger(false)}
+                            style={{ alignSelf: "left" }} className= "entrySixthElement" id="entrySixthElement" > <Icono 
+                            size={20} /></EntryRow>
                         </EntryItem>
                     ))}
                 </EntryList>
             }
 
 
-            <CreateButton onClick={() => setIsModalOpen(true)}>
+            <CreateButton onClick={() => {nullAllParameters();setIsModalOpen(true)}}>
                 <FaPlus />
             </CreateButton>
 
 
             {isModalOpen && (
                 <ModalOverlay>
-                    <ModalContent>
-                        <h2>Crear Nueva Entrada</h2>
-                        <ModalForm>
-                            <StyledSelect
-                                largo="100%"
-                                type="number"
-                                name="producto_id"
-                                required={true}
-                                defaultValue=""
-                                value={productoId}
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => { setProductoId(+e.target.value) }}
-                            >
-                                <option value="" disabled>
-                                    Selecciona un Producto
-                                </option>
-                                {productos.map((producto) => (
-                                    <option key={producto.id} value={producto.id}>
-                                        {producto.nombre}
-                                    </option>
-                                ))}
-                            </StyledSelect>
-                            <CardInputs
-                                largo="100%"
-                                placeholder="Stock"
-                                type="number"
-                                step="0.01"
-                                name="stock"
-                                required={true}
-                                value={stock}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setStock(parseFloat(e.target.value))}
-                            />
-                            <StyledSelect name="unidad_de_gasto" required defaultValue=""
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setUnidadDeGasto(e.target.value as TipoDeGasto)}
-                                value={unidadDeGasto}
-                            >
-                                <option value="" disabled>
-                                    Unidad de Gasto
-                                </option>
-                                {Object.entries(TipoDeGastoEnum).map(([key, value]) => (
-                                    <option key={key} value={value}>
-                                        {value}
-                                    </option>
-                                ))}
-                            </StyledSelect>
-                            <CardInputs
-                                largo="100%"
-                                placeholder="Presentación Cantidad"
-                                type="number"
-                                step="0.01"
-                                name="presentacion_cantidad"
-                                required={true}
-                                value={presentacionCantidad}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPresentacionCantidad(parseFloat(e.target.value))}
-                            />
-                            <StyledSelect name="presentacion_unidad" required defaultValue=""
-                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setPresentacionUnidad(e.target.value as PresentaciónUnidad)}
-                                value={presentacionUnidad}
-                            >
-                                <option value="" disabled>
-                                    Presentación Unidad
-                                </option>
-                                {Object.entries(PresentacionUnidadEnum).map(([key, value]) => (
-                                    <option key={key} value={value}>
-                                        {value}
-                                    </option>
-                                ))}
-                            </StyledSelect>
-                            <CardInputs
-                                largo="100%"
-                                placeholder="Precio"
-                                type="number"
-                                step="0.01"
-                                name="precio"
-                                required={true}
-                                value={precio}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPrecio(parseFloat(e.target.value))}
-                            />
-                            {editable && entryId &&
-                                <ModalButton onClick={() => editEntry(entryId)} type="button">Editar Entrada</ModalButton>
-                            }
-                            {!editable &&
-                                <ModalButton onClick={() => createEntry()} type="button">Crear Entrada</ModalButton>
-                            }
-                        </ModalForm>
-                        <ModalButton onClick={() => setIsModalOpen(false)}>Cerrar</ModalButton>
-                    </ModalContent>
-                </ModalOverlay>
+  <ModalContent>
+    <h2>{editable ? 'Editar Entrada' : 'Crear Nueva Entrada'}</h2>
+    <ModalForm>
+
+      <FormRow>
+        <StyledLabel htmlFor="producto_id">Producto</StyledLabel>
+        <StyledSelect
+          name="producto_id"
+          required
+          value={productoId}
+          defaultValue = ""
+          onChange={(e:React.ChangeEvent<HTMLSelectElement>) => setProductoId(+e.target.value)}
+        >
+          <option value="" disabled>Selecciona un Producto</option>
+          {productos.map((producto) => (
+            <option key={producto.id} value={producto.id}>
+              {producto.nombre}
+            </option>
+          ))}
+        </StyledSelect>
+      </FormRow>
+
+      <FormRow>
+        <StyledLabel htmlFor="stock">Stock</StyledLabel>
+        <CardInputs2
+        textAlign={TextAlign.Center}
+        largo="100%"
+          name="stock"
+          type="number"
+          step="0.01"
+          placeholder="Ej. 25.5"
+          value={stock}
+          onChange={(e:React.ChangeEvent<HTMLSelectElement>) => setStock(parseFloat(e.target.value))}
+        />
+      </FormRow>
+
+      <FormRow>
+        <StyledLabel htmlFor="unidad_de_gasto">Unidad de Gasto</StyledLabel>
+        <StyledSelect
+          name="unidad_de_gasto"
+          required
+          value={unidadDeGasto}
+           defaultValue = ""
+          onChange={(e:React.ChangeEvent<HTMLSelectElement>) => setUnidadDeGasto(e.target.value as TipoDeGasto)}
+        >
+          <option value="" disabled>Selecciona Unidad</option>
+          {Object.entries(TipoDeGastoEnum).map(([key, value]) => (
+            <option key={key} value={value}>
+              {value}
+            </option>
+          ))}
+        </StyledSelect>
+      </FormRow>
+
+      <FormRow>
+        <StyledLabel htmlFor="presentacion_cantidad">Presentación Cantidad</StyledLabel>
+        <CardInputs2
+        textAlign={TextAlign.Center}
+        largo ="100%"
+          name="presentacion_cantidad"
+          type="number"
+          step="0.01"
+          placeholder="Ej. 5"
+          value={presentacionCantidad}
+          onChange={(e:React.ChangeEvent<HTMLInputElement>) => setPresentacionCantidad(parseFloat(e.target.value))}
+        />
+      </FormRow>
+
+      <FormRow>
+        <StyledLabel htmlFor="presentacion_unidad">Presentación Unidad</StyledLabel>
+        <StyledSelect
+          name="presentacion_unidad"
+          required
+          value={presentacionUnidad}
+           defaultValue = ""
+          onChange={(e:React.ChangeEvent<HTMLSelectElement>) => setPresentacionUnidad(e.target.value as PresentaciónUnidad)}
+        >
+          <option value="" disabled>Selecciona Unidad</option>
+          {Object.entries(PresentacionUnidadEnum).map(([key, value]) => (
+            <option key={key} value={value}>
+              {value}
+            </option>
+          ))}
+        </StyledSelect>
+      </FormRow>
+
+      <FormRow>
+        <StyledLabel htmlFor="precio">Precio</StyledLabel>
+        <CardInputs2
+        textAlign={TextAlign.Center}
+        largo="100%"
+          name="precio"
+          type="number"
+          step="0.01"
+          placeholder="Ej. 149.99"
+          value={precio}
+          onChange={(e:React.ChangeEvent<HTMLInputElement>) => setPrecio(parseFloat(e.target.value))}
+        />
+      </FormRow>
+
+      <FormRow style={{ justifyContent: 'flex-end', gap: '1rem' }}>
+        {editable && entryId && (
+          <ModalButton onClick={() => editEntry(entryId)} type="button">
+            Editar Entrada
+          </ModalButton>
+        )}
+        {!editable && (
+          <ModalButton onClick={() => createEntry()} type="button">
+            Crear Entrada
+          </ModalButton>
+        )}
+        <ModalButton onClick={() => setIsModalOpen(false)}>Cerrar</ModalButton>
+      </FormRow>
+
+    </ModalForm>
+  </ModalContent>
+</ModalOverlay>
+
             )}
         </SectionContainer>
     );
