@@ -48,12 +48,12 @@ export const ModalInput = styled.input`
     border-radius: 0.5rem;
 `;
 
-export const ModalButton = styled.button`
+export const ModalButton = styled.button<{ margin: string }>`
     background: #0d4e80;
     color: white;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    margin-top: 1rem;
+    margin: ${(props) => props.margin ?? "1rem"};
 `;

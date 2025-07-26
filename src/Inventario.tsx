@@ -14,6 +14,14 @@ import {
 import { useState } from "react";
 import Inventario_Menu from "./Invetarios_Views";
 import useBodyClick from "./UseBodyClick";
+import { Database, Enums, Tables } from "./supabase/Database";
+import { FaPrescriptionBottle } from "react-icons/fa";
+import { ModalButton, ModalContent, ModalForm, ModalOverlay } from "./rehusableComponents/CreateInventariosModal";
+import { CardInputs } from "./rehusableComponents/CardInputs";
+import { StyledSelect } from "./rehusableComponents/StyledSelect";
+import { supabase } from "./utils/ClientSupabase";
+import ProductosMenu from "./Prductos";
+
 
 const WrapperContainer = styled.div`
     width: calc(100% - 2rem); /* Ajusta el ancho para que no ocupe todo el espacio */
@@ -49,8 +57,7 @@ const MenuButtons = styled.div`
     box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+    justify-content: space-around;
     &:hover {
         background: #6b8aac;
         color: white;
@@ -80,6 +87,7 @@ const MainContent = styled.div`
     display: flex;
     flex-direction: column;
     color: black;
+    overflow: scroll;
     .title {
         color: #0d4e80;
     }
@@ -126,10 +134,25 @@ const AlertasContainer = styled.div`
     }
 `;
 
+const StyledLabel = styled.label`
+    min-width: 150px;
+    font-weight: 600;
+    color: #0d4e80;
+    font-size: 0.9rem;
+    text-align: left;
+`;
+
+const FormRow = styled.div`
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+    gap: 0.75rem;
+`;
+
 interface inventarioProps {
     organizacion?: string;
 }
-enum InventarioFlag {
+export enum InventarioFlag {
     tecnicos = "tecnicos",
     principal = "principal",
     equipo = "equipo",
@@ -139,18 +162,17 @@ enum InventarioFlag {
 
 const Inventario: React.FC<inventarioProps> = props => {
     const [inventarioMenu, setInventarioMenu] = useState<boolean>(false);
-    const [inventarioFlag, setInventarioFlag] = useState<InventarioFlag>();
-
-    const handleMenuClick = (flag: InventarioFlag) => {
+    const [inventarioFlag, setInventarioFlag] = useState<Enums<"TipoInventario">>();
+    const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+    
+    const handleMenuClick = (flag: Enums<"TipoInventario">) => {
         setInventarioMenu(true);
         console.log(inventarioFlag);
         setInventarioFlag(flag);
     };
 
-    // const handleBackToMenu = () => {
-    //     setInventarioMenu(false);
-    //     setInventarioFlag(inventarioFlag.menu_Principal);
-    // }
+   
+
     return (
         <WrapperContainer>
             <InventarioMainContainer>
@@ -167,31 +189,39 @@ const Inventario: React.FC<inventarioProps> = props => {
                         <FaSignOutAlt style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
                         <p>Registrar salida</p>
                     </MenuButtons>
-                    <MenuButtons>
+                    {/* <MenuButtons>
                         <FaClipboardList style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
                         <p>Crear Inventario de técnico</p>
+                    </MenuButtons> */}
+                    <MenuButtons
+                        onClick={() => {
+                            setIsModalOpen(prev=>!prev);
+                        }}
+                    >
+                        <FaPrescriptionBottle style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
+                        <p>Productos</p>
                     </MenuButtons>
                 </LeftMenu>
 
                 <MainContent>
-                    <button onClick={() => setInventarioMenu(false)}>regresar</button>
-                    {!inventarioMenu && (
+                    <button onClick={() => {setInventarioMenu(false); setIsModalOpen(false)}}>regresar</button>
+                    {!inventarioMenu && !isModalOpen && (
                         <>
                             <h1 className="title">Inventario</h1>
                             <div className="dashboardMenu">
-                                <DashbboardButton onClick={() => handleMenuClick(InventarioFlag.tecnicos)}>
+                                <DashbboardButton onClick={() => handleMenuClick("empleado")}>
                                     <FaUserCog style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
                                     <p>Inventarios de técnicos</p>
                                 </DashbboardButton>
-                                <DashbboardButton onClick={() => handleMenuClick(InventarioFlag.principal)}>
+                                <DashbboardButton onClick={() => handleMenuClick("principal")}>
                                     <FaWarehouse style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
                                     <p>Inventario Principal</p>
                                 </DashbboardButton>
-                                <DashbboardButton onClick={() => handleMenuClick(InventarioFlag.equipo)}>
+                                <DashbboardButton onClick={() => handleMenuClick("equipo")}>
                                     <FaLaptop style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
                                     <p>Inventario de Equipo</p>
                                 </DashbboardButton>
-                                <DashbboardButton onClick={() => handleMenuClick(InventarioFlag.vehiculos)}>
+                                <DashbboardButton onClick={() => handleMenuClick("vehiculo")}>
                                     <FaCar style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
                                     <p>Inventario de Vehículos</p>
                                 </DashbboardButton>
@@ -237,9 +267,14 @@ const Inventario: React.FC<inventarioProps> = props => {
                     {inventarioMenu && (
                         <Inventario_Menu
                             organizacion={props.organizacion ? props.organizacion : ""}
-                            flag={inventarioFlag}
+                            flag={inventarioFlag!}
                         />
                     )}
+                    {isModalOpen && !inventarioMenu &&(
+             <ProductosMenu
+             organizacion={props.organizacion!}
+             ></ProductosMenu>
+             )}
                 </MainContent>
             </InventarioMainContainer>
         </WrapperContainer>

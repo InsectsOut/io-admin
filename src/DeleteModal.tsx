@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useParams } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { TextAlign } from "./rehusableComponents/CardInputs";
 
 const DeleteModal = styled.div /*style*/ `
     position: fixed;
@@ -35,6 +36,7 @@ const ModalContent = styled.div /*style*/ `
     align-items: center;
     padding-top: 1.75rem;
     gap: 1rem;
+    color: white;
 `;
 const CloseButton = styled.div /*style*/ `
     width: 9.46px;
@@ -72,11 +74,23 @@ const ServicioInfo = styled.div /*style*/ `
     .fecha {
         display: flex;
     }
+    .inve {
+        justify-content: center;
+    }
     .nombre {
         display: flex;
     }
     .folio {
         display: flex;
+    }
+    .inventario {
+        flex-direction: column;
+        align-items: center;
+    }
+    .menu {
+        margin-top: 0.5rem;
+        justify-content: space-between;
+        gap: 0.5rem;
     }
 `;
 
@@ -118,16 +132,18 @@ const DeleteButton = styled.button /*style*/ `
     }
 `;
 interface cardProps {
-    closeModal?: () => void;
+    closeModal: () => void;
     folio?: string;
     nombre?: string;
     fecha?: string;
     apellido?: string;
-    del?: (event?: React.MouseEvent<HTMLButtonElement>) => void;
-    titulo?: string;
-    btnText?: string;
+    del: (event?: React.MouseEvent<HTMLButtonElement>) => void;
+    titulo: string;
+    btnText: string;
     puesto?: string;
     tipo?: string;
+    stock?: number;
+    invNombre?: string;
 }
 const DelModal: React.FC<cardProps> = ({
     closeModal,
@@ -140,8 +156,11 @@ const DelModal: React.FC<cardProps> = ({
     btnText,
     puesto,
     tipo,
+    stock,
+    invNombre,
 }) => {
     const [registro, setRegistro] = useState<string>("");
+    const params = new URLSearchParams(window.location.search);
 
     const getRegistroFromQuery = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -203,6 +222,37 @@ const DelModal: React.FC<cardProps> = ({
                         </div>
                     </ServicioInfo>
                 )}
+                {window.location.pathname === `/inventario` &&
+                    params.get("inventarioId") &&
+                    params.get("flag") === "principal" && (
+                        <ServicioInfo>
+                            <div className="folio inventario">
+                                <SubTitles>¿Está seguro de querer eliminar el producto del inventario?</SubTitles>
+
+                                <div className="folio menu">
+                                    <div className="folio">
+                                        <SubTitles>
+                                            <strong>Producto: </strong> {tipo}
+                                        </SubTitles>
+                                    </div>
+                                    {stock && (
+                                        <div className="nombre">
+                                            <SubTitles>
+                                                <strong>Stock: </strong> {stock}
+                                            </SubTitles>
+                                        </div>
+                                    )}
+                                    {invNombre && (
+                                        <div className="inve">
+                                            <SubTitles>
+                                                <strong>Inventario: </strong> {invNombre}
+                                            </SubTitles>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </ServicioInfo>
+                    )}
                 {getRegistroFromQuery() && (
                     <ServicioInfo>
                         <div

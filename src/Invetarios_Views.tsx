@@ -2,18 +2,11 @@ import { useState } from "react";
 import { FaUserCog, FaWarehouse, FaLaptop, FaCar } from "react-icons/fa";
 import SubInventarioList from "./SubInventarioList";
 import SubInventarioDetalle from "./SubInventarioDetalle";
+import { Enums } from "./supabase/Database";
 
 interface inventario_Views_Props {
     organizacion: string;
-    flag: string | undefined;
-}
-
-enum InventarioFlag {
-    tecnicos = "tecnicos",
-    principal = "principal",
-    equipo = "equipo",
-    vehiculos = "vehiculos",
-    menu_Principal = "menu_principal",
+    flag: Enums<"TipoInventario">;
 }
 
 const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion }) => {
@@ -84,20 +77,20 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
 
     const getIcon = () => {
         switch (flag) {
-            case InventarioFlag.tecnicos:
+            case "empleado":
                 return <FaUserCog />;
-            case InventarioFlag.principal:
+            case "principal":
                 return <FaWarehouse />;
-            case InventarioFlag.equipo:
+            case  "equipo":
                 return <FaLaptop />;
-            case InventarioFlag.vehiculos:
+            case "vehiculo":
                 return <FaCar />;
             default:
                 return null;
         }
     };
 
-    if (!flag || flag === InventarioFlag.menu_Principal) {
+    if (!flag) {
         return <h1 className="title">Selecciona una categoría del inventario</h1>;
     }
 
