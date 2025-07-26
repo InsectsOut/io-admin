@@ -427,7 +427,6 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                 </StyledSelect>
                             </FormRow>
 
-                            {tipoProducto === "plaguicida" && (
                                 <>
                                     <FormRow className="productoModalRows">
                                         <StyledLabel htmlFor="dosisMinima">Dosis mínima</StyledLabel>
@@ -454,6 +453,8 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                                 <option value="ML/LITRO">ml/litro</option>
                                                 <option value="G/LITRO">g/litro</option>
                                                 <option value="L/LITRO">l/litro</option>
+                                                <option value="L/LITRO">l/litro</option>
+                                                <option value="G">gramos</option>
                                             </StyledSelect>
                                         </div>
                                     </FormRow>
@@ -482,11 +483,12 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                                 <option value="ML/LITRO">ml/litro</option>
                                                 <option value="G/LITRO">g/litro</option>
                                                 <option value="L/LITRO">l/litro</option>
+                                                <option value="G">gramos</option>
                                             </StyledSelect>
                                         </div>
                                     </FormRow>
                                 </>
-                            )}
+                            
 
                             <FormRow className="productoModalRows">
                                 <StyledLabel htmlFor="unidadGasto">Unidad de gasto</StyledLabel>
