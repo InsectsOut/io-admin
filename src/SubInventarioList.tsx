@@ -9,6 +9,8 @@ import { co } from "@fullcalendar/core/internal-common";
 import { set } from "ts-pattern/dist/patterns";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import useBodyClick from "./UseBodyClick";
+import { Enums } from "./supabase/Database";
+
 import {
     CreateButton,
     ModalButton,
@@ -22,7 +24,7 @@ interface SubInventarioListProps {
     subinventarios: string[];
     onSelect: (id: number) => void;
     onAdd: (newName: string) => void;
-    flag?: string;
+    flag: Enums<"TipoInventario">;
     organizacion: string;
 }
 
@@ -113,10 +115,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                 {
                     tecnico_id: tecnicoId,
                     organizacion: organizacion,
-                    inv_principal: InventarioFlag.principal === flag,
-                    inv_empleado: InventarioFlag.tecnicos === flag,
-                    inv_equipo: InventarioFlag.equipo === flag,
-                    inv_vehiculo: InventarioFlag.vehiculos === flag,
+                    tipo_inventario: flag,
                     inv_nombre: inventarioNombre,
                 },
             ] as Inventarios[]);
@@ -134,13 +133,13 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
     };
 
     const fetchEmpleados = async () => {
-        if (flag === InventarioFlag.tecnicos) {
+        if (flag === "empleado") {
             try {
                 const { data, error } = await supabase.from("Empleados").select("*").eq("organizacion", organizacion);
                 if (error) {
                     console.error("Error fetching empleados:", error);
                 }
-                if (data) {
+                if (data) {  
                     console.log("Empleados fetched:", data);
                     setEmpleados(data);
                 }
@@ -159,10 +158,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                 .from("Inventario")
                 .select("*")
                 .eq("organizacion", organizacion)
-                .eq("inv_principal", InventarioFlag.principal === flag)
-                .eq("inv_empleado", InventarioFlag.tecnicos === flag)
-                .eq("inv_equipo", InventarioFlag.equipo === flag)
-                .eq("inv_vehiculo", InventarioFlag.vehiculos === flag);
+                .eq("tipo_inventario", flag!)
 
             if (error) {
                 console.error("Error fetching inventarios:", error);
@@ -180,10 +176,14 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
         setTecnicoId(camabios);
     };
 
-    const pushToQueryParams = (tecnicoNombre: string, inventarioId: number) => {
+    const pushToQueryParams = (tecnicoNombre: string, inventarioId: number,invNombre:string) => {
         const url = new URL(window.location.href);
-        url.searchParams.set("tecnico", tecnicoNombre);
+        if(flag === "empleado"){
+            url.searchParams.set("tecnico", tecnicoNombre)
+        }
         url.searchParams.set("inventarioId", inventarioId.toString());
+        url.searchParams.set("invNombre",invNombre );
+        url.searchParams.set("flag", flag);
         window.history.replaceState(null, "", url.toString());
     };
 
@@ -205,20 +205,20 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                             onSelect(inv.id);
                             pushToQueryParams(
                                 empleados.find(emp => emp.id === inv.tecnico_id)?.nombre || "Técnico Desconocido",
-                                inv.id
+                                inv.id,inv.inv_nombre || ""
                             );
                         }}
                     >
-                        {flag === InventarioFlag.tecnicos && (
+                        {flag === "empleado" && (
                             <EntryText>{empleados.find(emp => emp.id === inv.tecnico_id)?.nombre}</EntryText>
                         )}
-                        {flag === InventarioFlag.principal && (
+                        {flag === "principal" && (
                             <EntryText>{inv.inv_nombre || "Inventario Principal"}</EntryText>
                         )}
-                        {flag === InventarioFlag.vehiculos && (
+                        {flag === "vehiculo" && (
                             <EntryText>{inv.inv_nombre || "Inventario vehícular"}</EntryText>
                         )}
-                        {flag === InventarioFlag.equipo && (
+                        {flag === "equipo" && (
                             <EntryText>{inv.inv_nombre || "Inventario de equipo"}</EntryText>
                         )}
                         <EntryIcon>{icon}</EntryIcon>
@@ -229,9 +229,10 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
             {isModalOpen && (
                 <ModalOverlay>
                     <ModalContent>
-                        <h2>Crear Nuevo Inventario</h2>
+                        <h2
+                        >Crear Nuevo Inventario</h2>
                         <ModalForm>
-                            {flag === InventarioFlag.tecnicos && (
+                            {flag === "empleado" && (
                                 <StyledSelect value={tecnicoId ? tecnicoId : ""} onChange={handleEmpleadoChange}>
                                     <option value={""} disabled>
                                         Selecciona un técnico

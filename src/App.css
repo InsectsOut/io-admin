@@ -55,6 +55,22 @@ html {
     font-family: "Open Sans";
 }
 
+#borrarServicio {
+        all: unset;
+        width: 1.5rem;
+        height: 1.5rem;
+        background: #c1716e;
+        border-radius: 50%;
+        color:white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        &:hover {
+            cursor: pointer;
+            transform: scale(1.15);
+        }
+    }
+
 @keyframes logo-spin {
     from {
         transform: rotate(0deg);

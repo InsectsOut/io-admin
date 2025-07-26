@@ -1,5 +1,5 @@
 // ✅ SubInventarioDetalle.tsx
-import { SetStateAction, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FaPlus } from "react-icons/fa";
 import { CardInputs as CardInputs2, TextAlign } from "./rehusableComponents/CardInputs";
@@ -13,14 +13,15 @@ import {
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import { Database, Tables } from "./supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
-import { set } from "ts-pattern/dist/patterns";
-import { eq } from "@fullcalendar/core/internal-common";
 import { FaEdit } from "react-icons/fa";
+import { Enums } from "./supabase/Database";
+import DelModal from "./DeleteModal";
+
 interface SubInventarioDetalleProps {
     name?: string;
     items: InventarioItem[];
     onAddItem: (item: string) => void;
-    flag: string;
+    flag: Enums<"TipoInventario">;
 }
 
 type TipoDeGasto = Database["public"]["Enums"]["UnidadDeGasto"];
@@ -46,7 +47,7 @@ enum InventarioFlag {
     menu_Principal = "menu_principal",
 }
 
-const SectionContainer = styled.div`
+export const SectionContainer = styled.div`
     width: 95%;
     background-color: #f7f9fb;
     border-radius: 0.5rem;
@@ -56,14 +57,14 @@ const SectionContainer = styled.div`
     font-family: "Open Sans";
 `;
 
-const FormRow = styled.div`
+export const FormRow = styled.div`
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
     gap: 0.75rem;
 `;
 
-const StyledLabel = styled.label`
+export const StyledLabel = styled.label`
     min-width: 150px;
     font-weight: 600;
     color: #0d4e80;
@@ -71,18 +72,18 @@ const StyledLabel = styled.label`
     text-align: left;
 `;
 
-const SectionTitle = styled.h2`
+export const SectionTitle = styled.h2`
     color: #0d4e80;
     margin-bottom: 1rem;
 `;
 
-const EntryList = styled.ul`
+export const EntryList = styled.ul`
     list-style: none;
     padding: 0;
     margin: 0;
 `;
 
-const EntryItem = styled.li`
+export const EntryItem = styled.li`
     background: white;
     margin-bottom: 0.75rem;
     padding: 1rem;
@@ -99,10 +100,10 @@ const EntryItem = styled.li`
     }
 `;
 
-const EntryText = styled.span`
+export const EntryText = styled.span`
     font-size: 1rem;
 `;
-const Icono = styled(FaEdit)`
+export const Icono = styled(FaEdit)`
     &:hover {
         color: #2395ff;
     }
@@ -127,27 +128,45 @@ const AddButton = styled.button`
     cursor: pointer;
 `;
 
-const EntryRow = styled.div`
-    width: 20%;
+export const EntryRow = styled.div /*style*/`
+text-transform: lowercase;
+
+ &.entryFirstElement{
+ justify-content:left;
   }
+    width: 20%;
+    display:flex;
   &.entrySecondElement{
     width: 15%;
+    justify-content:left;
   }
   &.entryThirdElement{
     width: 15%;
+    justify-content:left;
   }
   &.entryFourthElement{
     width: 15%;
+    justify-content:left;
   }
   &.entryFifthElement{
     width: 15%;
+    justify-content:left;
   }
   &.entrySixthElement{
     cursor: pointer;
-    width: 8%;
+    width: 5%;
     justify-content: flex-end;
   }
- 
+    justify-content:left;
+ &.prod1,
+&.prod2,
+&.prod3,
+&.prod4,
+&.prod5,
+&.prod6 {
+  
+
+}
 `;
 
 const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag }) => {
@@ -168,6 +187,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [editable, setEditable] = useState<boolean>(false);
     const [entryId, setEntryId] = useState<number | null>(null);
     const [colorTrigger, setColorTrigger] = useState<boolean>(false);
+    const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const params = new URLSearchParams(window.location.search);
 
     enum TipoDeGastoEnum {
         gramos = "g",
@@ -330,8 +351,22 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         }
     };
 
+    const deleteInventarioEntry = async (entryId: number) => {
+        try {
+            const { error, data } = await supabase.from("Inventario_productos").delete().eq("id", entryId);
+            if (error) {
+                console.error("Error trying to delete the entry", error);
+            } else {
+                console.log("Deleted entry", data);
+                fetchInventarioProductos();
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
     useEffect(() => {
-        if (InventarioFlag.tecnicos === flag) {
+        if (flag === "principal") {
             fetchInventarioProductos();
             fetchproductos();
         }
@@ -340,7 +375,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     return (
         <SectionContainer>
             <SectionTitle>Contenido de {flag}</SectionTitle>
-            {flag === InventarioFlag.tecnicos && (
+            {flag === "principal" && (
                 <EntryList>
                     {inventarioEntries?.map((entry, index) => (
                         <EntryItem key={index}>
@@ -388,14 +423,42 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 {" "}
                                 <Icono size={20} />
                             </EntryRow>
+                            <button
+                                onClick={() => {
+                                    setDeleteModalOpen(true);
+                                     fetchSingleEntry(entry.id);
+                                  //  deleteInventarioEntry(entry.id);
+                                }}
+                                id="borrarServicio"
+                                style={{ fontWeight: "bold", fontSize: "105%" }}
+                            >
+                                X
+                            </button>
+                            
                         </EntryItem>
                     ))}
                 </EntryList>
+                
             )}
+      {deleteModalOpen && 
+      <DelModal
+      closeModal={() => {setDeleteModalOpen(false)}}
+        titulo="¿Seguro quiere eliminar los productos?"
+        btnText="Eliminar productos"
+        del={() => {deleteInventarioEntry(entryId!)}}
+        tipo={productos.find(item => item.id === inventarioEntry?.[0]?.producto_id)?.nombre!}
+        stock={inventarioEntry?.[0].stock}
+        invNombre={params.get("Nombre" ) || "Inventario Principal"}
 
+      >
+
+      </DelModal>
+
+      }
             <CreateButton
                 onClick={() => {
                     nullAllParameters();
+                    setEditable(false);
                     setIsModalOpen(true);
                 }}
             >
