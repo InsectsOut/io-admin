@@ -53,6 +53,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
     const [productoNombre, setProductoNombre] = useState<string>("");
     const [singleProduct, setSingleProduct] = useState<Productos[]>();
     const [editable, setEditable] = useState<boolean>(false);
+    const [precio,setPrecio] = useState<number | null> ()
 
     const handleNombreProductoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNombreProducto(e.target.value);
@@ -101,6 +102,10 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         setUnidadGasto(e.target.value as Enums<"UnidadDeGasto">);
     };
 
+    const handlePrecioChange = (e: React.ChangeEvent<HTMLInputElement>)  => {
+        setPrecio(+e.target.value)
+    }
+
     const handleCantidadPresentacionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
 
@@ -141,7 +146,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     dosis_min: `${dosisMinima}${unidadDosisMinima}`,
                     ingrediente_activo: ingredienteActivo || null,
                     nombre: nombreProducto || null,
-                    presentacion: `${cantidadPresentacion}/${unidadPresentacion}`,
+                    presentacion: `${cantidadPresentacion} ${unidadPresentacion?.toUpperCase()}`,
                     presentacion_cantidad: cantidadPresentacion ?? null,
                     presentacion_unidad: unidadPresentacion ?? null,
                     registro: registroCofepris || null,
@@ -170,13 +175,14 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     nombre: nombreProducto || null,
                     presentacion:
                         cantidadPresentacion !== undefined && unidadPresentacion
-                            ? `${cantidadPresentacion}/${unidadPresentacion}`
+                            ? `${cantidadPresentacion} ${unidadPresentacion.toUpperCase()}`
                             : null,
                     presentacion_cantidad: cantidadPresentacion ?? null,
                     presentacion_unidad: unidadPresentacion ?? null,
                     registro: registroCofepris || null,
                     tipo_de_producto: tipoProducto ?? null,
                     unidad_de_gasto: unidadGasto ?? null,
+                    precio:precio
                 })
                 .eq("id", productoId)
                 .select();
@@ -238,6 +244,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 setUnidadGasto(productos.unidad_de_gasto ?? undefined);
                 setCantidadPresentacion(productos.presentacion_cantidad ?? 0);
                 setUnidadPresentacion(productos.presentacion_unidad ?? undefined);
+                setPrecio(productos.precio)
                 if (productos.dosis_max){
                     const dosisMaxDestructured = splitNumberAndUnit(productos?.dosis_max );
                     console.log(dosisMaxDestructured)
@@ -325,9 +332,15 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                             </EntryText>
                         </EntryRow>
                         <EntryRow className="entryThirdElement prod3">
-                            <EntryText>
-                                <strong>Presentación:</strong> {entry.presentacion}
-                            </EntryText>
+                            <EntryText
+                            
+                                >
+                                    <strong>Presentación:</strong>
+                                    <h4 style={{all:"unset",textTransform:"uppercase"}}>
+                                    {entry.presentacion}{" "}
+                                    </h4>
+                                   
+                                </EntryText>
                         </EntryRow>
                         <EntryRow className="entryFourthElement prod4">
                             <EntryText>
@@ -570,6 +583,20 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                         </option>
                                     ))}
                                 </StyledSelect>
+                            </FormRow>
+                            <FormRow className="productoModalRows">
+                                <StyledLabel htmlFor="unidadPrecio">Precio por unidad</StyledLabel>
+                                <CardInputs
+                                    largo="100%"
+                                    placeholder="Precio del producto"
+                                    id="unidadPrecio"
+                                    name="unidadPrecio"
+                                    type="number"
+                                    required
+                                    value={precio}
+                                    onChange={handlePrecioChange}
+                                >
+                                </CardInputs>
                             </FormRow>
                         </ModalForm>
                         {!editable && (

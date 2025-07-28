@@ -10,6 +10,9 @@ import { set } from "ts-pattern/dist/patterns";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import useBodyClick from "./UseBodyClick";
 import { Enums } from "./supabase/Database";
+import DelModal from "./DeleteModal";
+import { EntryRow } from "./SubInventarioDetalle";
+import { useRef } from "react";
 
 import {
     CreateButton,
@@ -74,6 +77,12 @@ const EntryItem = styled.li`
     &:hover {
         background-color: #e0e6ed;
     }
+    .iconsContainer {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 2rem;
+    }
 `;
 
 const EntryText = styled.span`
@@ -100,6 +109,9 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
     const [empleados, setEmpleados] = useState<Empleados[]>([]);
     const [inventarios, setInventarios] = useState<Inventarios[]>([]);
     const [inventarioNombre, setInventarioNombre] = useState("");
+    const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const deleteRef = useRef<HTMLButtonElement>(null);
+    const [inventarioId, setInventarioId] = useState<number>();
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
@@ -139,7 +151,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                 if (error) {
                     console.error("Error fetching empleados:", error);
                 }
-                if (data) {  
+                if (data) {
                     console.log("Empleados fetched:", data);
                     setEmpleados(data);
                 }
@@ -158,7 +170,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                 .from("Inventario")
                 .select("*")
                 .eq("organizacion", organizacion)
-                .eq("tipo_inventario", flag!)
+                .eq("tipo_inventario", flag!);
 
             if (error) {
                 console.error("Error fetching inventarios:", error);
@@ -176,13 +188,13 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
         setTecnicoId(camabios);
     };
 
-    const pushToQueryParams = (tecnicoNombre: string, inventarioId: number,invNombre:string) => {
+    const pushToQueryParams = (tecnicoNombre: string, inventarioId: number, invNombre: string) => {
         const url = new URL(window.location.href);
-        if(flag === "empleado"){
-            url.searchParams.set("tecnico", tecnicoNombre)
+        if (flag === "empleado") {
+            url.searchParams.set("tecnico", tecnicoNombre);
         }
         url.searchParams.set("inventarioId", inventarioId.toString());
-        url.searchParams.set("invNombre",invNombre );
+        url.searchParams.set("invNombre", invNombre);
         url.searchParams.set("flag", flag);
         window.history.replaceState(null, "", url.toString());
     };
@@ -193,6 +205,20 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
     useEffect(() => {
         fetchInventarios();
     }, []);
+
+    const deleteInventario = async (inventarioId: number) => {
+        try {
+            const { error, data } = await supabase.from("Inventario").delete().eq("id", inventarioId);
+            if (error) {
+                console.error("Error trying to delete the inventory", error);
+            } else {
+                console.log("Deleted inventory", data);
+                fetchInventarios();
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
     return (
         <SectionContainer>
@@ -205,7 +231,8 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                             onSelect(inv.id);
                             pushToQueryParams(
                                 empleados.find(emp => emp.id === inv.tecnico_id)?.nombre || "Técnico Desconocido",
-                                inv.id,inv.inv_nombre || ""
+                                inv.id,
+                                inv.inv_nombre || ""
                             );
                         }}
                     >
@@ -213,24 +240,63 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                             <EntryText>{empleados.find(emp => emp.id === inv.tecnico_id)?.nombre}</EntryText>
                         )}
                         {flag === "principal" && (
-                            <EntryText>{inv.inv_nombre || "Inventario Principal"}</EntryText>
+                            <>
+                                <EntryRow>
+                                    <EntryText>{inv.inv_nombre || "Inventario Principal"}</EntryText>
+                                </EntryRow>
+                            </>
                         )}
-                        {flag === "vehiculo" && (
-                            <EntryText>{inv.inv_nombre || "Inventario vehícular"}</EntryText>
-                        )}
-                        {flag === "equipo" && (
-                            <EntryText>{inv.inv_nombre || "Inventario de equipo"}</EntryText>
-                        )}
-                        <EntryIcon>{icon}</EntryIcon>
+                        {flag === "vehiculo" && <EntryText>{inv.inv_nombre || "Inventario vehícular"}</EntryText>}
+                        {flag === "equipo" && <EntryText>{inv.inv_nombre || "Inventario de equipo"}</EntryText>}
+                        <div className="iconsContainer">
+                            <button
+                                ref={deleteRef}
+                                onClick={async e => {
+                                    e.stopPropagation();
+
+                                  
+                                    const url = new URL(window.location.href);
+                                    url.searchParams.set("flag", flag);
+                                    url.searchParams.set("invNombre", inv.inv_nombre ?? "");
+                                    await window.history.replaceState(null, "", url.toString());
+
+                                   
+                                    setDeleteModalOpen(true);
+
+                                   
+                                    setInventarioId(inv?.id);
+
+                                }}
+                                id="borrarServicio"
+                                style={{ fontWeight: "bold", fontSize: "105%" }}
+                            >
+                                X
+                            </button>
+
+                            <EntryIcon>{icon}</EntryIcon>
+                        </div>
                     </EntryItem>
                 ))}
             </EntryList>
+            {deleteModalOpen && (
+                <DelModal
+                    closeModal={() => {
+                        setDeleteModalOpen(false);
+                    }}
+                    btnText="Eliminar inventario"
+                    titulo="¿Seguro quiere eliminar el inventario?"
+                    del={() => {
+                        deleteInventario(inventarioId ?? -1);
+                    }}
+                    principal={["menu"]}
+                    invNombre={ new URL(window.location.href).searchParams.get("invNombre")! }
+                ></DelModal>
+            )}
             <CreateButton onClick={() => setIsModalOpen(true)}>Nuevo Inventario</CreateButton>
             {isModalOpen && (
                 <ModalOverlay>
                     <ModalContent>
-                        <h2
-                        >Crear Nuevo Inventario</h2>
+                        <h2>Crear Nuevo Inventario</h2>
                         <ModalForm>
                             {flag === "empleado" && (
                                 <StyledSelect value={tecnicoId ? tecnicoId : ""} onChange={handleEmpleadoChange}>

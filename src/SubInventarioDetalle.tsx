@@ -16,6 +16,9 @@ import { supabase } from "./utils/ClientSupabase";
 import { FaEdit } from "react-icons/fa";
 import { Enums } from "./supabase/Database";
 import DelModal from "./DeleteModal";
+import { DateInput } from "./CreateServiceForm";
+import ReactDatePicker from "react-datepicker";
+import PaginationComponent from "./PaginationComponent";
 
 interface SubInventarioDetalleProps {
     name?: string;
@@ -28,6 +31,10 @@ type TipoDeGasto = Database["public"]["Enums"]["UnidadDeGasto"];
 type PresentaciónUnidad = Database["public"]["Enums"]["PresentacionUnidad"];
 type Productos = Tables<"Productos">;
 type InventarioProducos = Tables<"Inventario_productos">;
+
+type InventarioProductoEntradas = InventarioProducos & {
+    Productos: Productos | null;
+};
 
 interface InventarioItem {
     inventario_id: number;
@@ -128,45 +135,42 @@ const AddButton = styled.button`
     cursor: pointer;
 `;
 
-export const EntryRow = styled.div /*style*/`
-text-transform: lowercase;
-
- &.entryFirstElement{
- justify-content:left;
-  }
+export const EntryRow = styled.div`
+    text-transform: lowercase;
+    &.entryFirstElement {
+        justify-content: left;
+    }
     width: 20%;
-    display:flex;
-  &.entrySecondElement{
-    width: 15%;
-    justify-content:left;
-  }
-  &.entryThirdElement{
-    width: 15%;
-    justify-content:left;
-  }
-  &.entryFourthElement{
-    width: 15%;
-    justify-content:left;
-  }
-  &.entryFifthElement{
-    width: 15%;
-    justify-content:left;
-  }
-  &.entrySixthElement{
-    cursor: pointer;
-    width: 5%;
-    justify-content: flex-end;
-  }
-    justify-content:left;
- &.prod1,
-&.prod2,
-&.prod3,
-&.prod4,
-&.prod5,
-&.prod6 {
-  
-
-}
+    display: flex;
+    &.entrySecondElement {
+        width: 15%;
+        justify-content: left;
+    }
+    &.entryThirdElement {
+        width: 15%;
+        justify-content: left;
+    }
+    &.entryFourthElement {
+        width: 15%;
+        justify-content: left;
+    }
+    &.entryFifthElement {
+        width: 15%;
+        justify-content: left;
+    }
+    &.entrySixthElement {
+        cursor: pointer;
+        width: 5%;
+        justify-content: flex-end;
+    }
+    justify-content: left;
+    &.prod1,
+    &.prod2,
+    &.prod3,
+    &.prod4,
+    &.prod5,
+    &.prod6 {
+    }
 `;
 
 const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag }) => {
@@ -188,6 +192,13 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [entryId, setEntryId] = useState<number | null>(null);
     const [colorTrigger, setColorTrigger] = useState<boolean>(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const [entradasConProductos, setEntradasConProductos] = useState<InventarioProductoEntradas[]>([]);
+    const [lote, setLote] = useState<string>("");
+    const [fechaDeCaducidad, setFechaDeCaducidad] = useState<Date | null>(new Date());
+    const [totalPages, setTotalPages] = useState<number>(1);
+    const [currentPage, setCurrentPage] = useState<number>(1);
+    const itemsPerPage: number = 10;
+
     const params = new URLSearchParams(window.location.search);
 
     enum TipoDeGastoEnum {
@@ -242,6 +253,28 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             console.error("Error fetching inventario productos:", error);
         }
     };
+    const fetchInventarioProductosConEntradas = async () => {
+        try {
+            const { data, error, count } = await supabase
+                .from("Inventario_productos")
+                .select("*, Productos!inner(*)", { count: "exact" })
+                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+            const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+            setTotalPages(totalPages);
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+                console.log("Inventario productos fetched successfully:", data);
+                setEntradasConProductos(data);
+            } else {
+                console.log("No inventario productos found.");
+            }
+        } catch (error) {
+            console.error("Error fetching inventario productos:", error);
+        }
+    };
     const fetchSingleEntry = async (entryId: number) => {
         try {
             const { data, error } = await supabase.from("Inventario_productos").select("*").eq("id", entryId);
@@ -259,6 +292,14 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 setPresentacionCantidad(data[0].presentacion_cantidad);
                 setPresentacionUnidad(data[0].presentacion_unidad);
                 setPrecio(data[0].precio);
+                setLote(data[0]?.Lote ?? "");
+                setFechaDeCaducidad(null);
+                if (data[0]?.fecha_de_caducidad) {
+                    const [year, month, day] = data[0]?.fecha_de_caducidad.split("-").map(Number);
+                    const formattedDob = new Date(year, month - 1, day);
+                    setFechaDeCaducidad(formattedDob);
+                }
+
                 // setIsModalOpen(false);
                 fetchInventarioProductos();
             } else {
@@ -269,17 +310,18 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         }
     };
 
+    const handleFechaDeCaducidadChange = (date: Date | null) => {
+        setFechaDeCaducidad(date);
+    };
+
     const createEntry = async () => {
         try {
             const { data, error } = await supabase.from("Inventario_productos").insert([
                 {
-                    inventario_id: inventarioId, // Assuming you have a fixed inventario_id for this example
+                    inventario_id: inventarioId,
                     producto_id: productoId,
                     stock: stock,
-                    unidad_de_gasto: unidadDeGasto,
-                    presentacion_cantidad: presentacionCantidad,
-                    presentacion_unidad: presentacionUnidad,
-                    precio: precio,
+                    fecha_de_caducidad: fechaDeCaducidad,
                 },
             ] as InventarioProducos[]);
 
@@ -292,6 +334,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 setUnidadDeGasto(undefined);
                 setPresentacionCantidad(null);
                 setPresentacionUnidad(undefined);
+                setLote("");
+                setFechaDeCaducidad(null);
                 setPrecio(null);
                 setIsModalOpen(false);
                 fetchInventarioProductos();
@@ -304,14 +348,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         try {
             const { data, error } = await supabase
                 .from("Inventario_productos")
-                .update<Partial<InventarioProducos>>({
+                .update({
                     producto_id: productoId,
                     stock: stock,
-                    unidad_de_gasto: unidadDeGasto,
-                    presentacion_cantidad: presentacionCantidad ?? 0,
-                    presentacion_unidad: presentacionUnidad,
-                    precio: precio ?? 0,
-                })
+                    Lote: lote,
+                    fecha_de_caducidad: fechaDeCaducidad,
+                } as Partial<InventarioProducos>)
                 .eq("id", entryId);
 
             if (error) {
@@ -325,7 +367,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 setPresentacionUnidad(undefined);
                 setPrecio(null);
                 setIsModalOpen(false);
-                fetchInventarioProductos();
+                fetchInventarioProductosConEntradas();
             }
         } catch (err) {
             console.error("Error creating inventario:", err);
@@ -364,97 +406,123 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             console.log(err);
         }
     };
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
 
     useEffect(() => {
         if (flag === "principal") {
-            fetchInventarioProductos();
+            //fetchInventarioProductos();
+            fetchInventarioProductosConEntradas();
             fetchproductos();
         }
     }, []);
+
+    useEffect(() => {
+        fetchInventarioProductosConEntradas();
+    }, [currentPage]);
 
     return (
         <SectionContainer>
             <SectionTitle>Contenido de {flag}</SectionTitle>
             {flag === "principal" && (
-                <EntryList>
-                    {inventarioEntries?.map((entry, index) => (
-                        <EntryItem key={index}>
-                            <EntryRow className="entryFirstElement">
-                                <EntryText>
-                                    <strong>Producto:</strong>{" "}
-                                    {productos.find(item => item.id === entry?.producto_id)?.nombre}
-                                </EntryText>
-                            </EntryRow>
-                            <EntryRow className="entrySecondElement">
-                                <EntryText>
-                                    <strong>Stock:</strong> {entry.stock}
-                                </EntryText>
-                            </EntryRow>
-                            <EntryRow className="entryThirdElement">
-                                <EntryText>
-                                    <strong>Unidad de Gasto:</strong> {entry.unidad_de_gasto}
-                                </EntryText>
-                            </EntryRow>
-                            <EntryRow className="entryFourthElement">
-                                <EntryText>
-                                    <strong>Presentación:</strong> {entry.presentacion_cantidad}{" "}
-                                    {entry.presentacion_unidad}
-                                </EntryText>
-                            </EntryRow>
-                            <EntryRow className="entryFifthElement">
-                                <EntryText>
-                                    <strong>Precio:</strong> ${entry.precio}
-                                </EntryText>
-                            </EntryRow>
-                            <EntryRow
-                                onClick={() => {
-                                    fetchSingleEntry(entry.id);
-                                    setEditable(true);
-                                    setIsModalOpen(true);
-                                    setEntryId(entry.id);
-                                }}
-                                //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
-                                // onMouseEnter={() => setColorTrigger(true)}
-                                // onMouseOut={() => setColorTrigger(false)}
-                                style={{ alignSelf: "left" }}
-                                className="entrySixthElement"
-                                id="entrySixthElement"
-                            >
-                                {" "}
-                                <Icono size={20} />
-                            </EntryRow>
-                            <button
-                                onClick={() => {
-                                    setDeleteModalOpen(true);
-                                     fetchSingleEntry(entry.id);
-                                  //  deleteInventarioEntry(entry.id);
-                                }}
-                                id="borrarServicio"
-                                style={{ fontWeight: "bold", fontSize: "105%" }}
-                            >
-                                X
-                            </button>
-                            
-                        </EntryItem>
-                    ))}
-                </EntryList>
-                
+                <>
+                    <div
+                        style={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "right",
+                            marginBottom: "1rem",
+                            alignItems: "center",
+                        }}
+                    >
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        ></PaginationComponent>
+                    </div>
+                    <EntryList>
+                        {entradasConProductos?.map((entry, index) => (
+                            <EntryItem key={index}>
+                                <EntryRow className="entryFirstElement">
+                                    <EntryText>
+                                        <strong>Producto:</strong>{" "}
+                                        {productos.find(item => item.id === entry?.producto_id)?.nombre}
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entrySecondElement">
+                                    <EntryText>
+                                        <strong>Stock:</strong> {entry.stock}
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entryThirdElement">
+                                    <EntryText>
+                                        <strong>Lote:</strong> {entry.Lote}
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entryFourthElement">
+                                    <EntryText>
+                                        <strong>Caducidad: </strong>
+                                        <h4 style={{ all: "unset", textTransform: "uppercase" }}>
+                                            {entry.fecha_de_caducidad}
+                                        </h4>
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entryFifthElement">
+                                    <EntryText>
+                                        <strong>Valor:</strong> ${entry.stock * (entry?.Productos?.precio ?? 0)}
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow
+                                    onClick={() => {
+                                        fetchSingleEntry(entry.id);
+                                        setEditable(true);
+                                        setIsModalOpen(true);
+                                        setEntryId(entry.id);
+                                    }}
+                                    //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
+                                    // onMouseEnter={() => setColorTrigger(true)}
+                                    // onMouseOut={() => setColorTrigger(false)}
+                                    style={{ alignSelf: "left" }}
+                                    className="entrySixthElement"
+                                    id="entrySixthElement"
+                                >
+                                    {" "}
+                                    <Icono size={20} />
+                                </EntryRow>
+                                <button
+                                    onClick={() => {
+                                        setDeleteModalOpen(true);
+                                        fetchSingleEntry(entry.id);
+                                        //  deleteInventarioEntry(entry.id);
+                                    }}
+                                    id="borrarServicio"
+                                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                                >
+                                    X
+                                </button>
+                            </EntryItem>
+                        ))}
+                    </EntryList>
+                </>
             )}
-      {deleteModalOpen && 
-      <DelModal
-      closeModal={() => {setDeleteModalOpen(false)}}
-        titulo="¿Seguro quiere eliminar los productos?"
-        btnText="Eliminar productos"
-        del={() => {deleteInventarioEntry(entryId!)}}
-        tipo={productos.find(item => item.id === inventarioEntry?.[0]?.producto_id)?.nombre!}
-        stock={inventarioEntry?.[0].stock}
-        invNombre={params.get("Nombre" ) || "Inventario Principal"}
-
-      >
-
-      </DelModal>
-
-      }
+            {deleteModalOpen && (
+                <DelModal
+                    closeModal={() => {
+                        setDeleteModalOpen(false);
+                    }}
+                    titulo="¿Seguro quiere eliminar los productos?"
+                    btnText="Eliminar productos"
+                    del={() => {
+                        deleteInventarioEntry(entryId!);
+                    }}
+                    tipo={productos.find(item => item.id === inventarioEntry?.[0]?.producto_id)?.nombre!}
+                    stock={inventarioEntry?.[0].stock}
+                    invNombre={params.get("Nombre") || "Inventario Principal"}
+                    principal={["entradas"]}
+                ></DelModal>
+            )}
             <CreateButton
                 onClick={() => {
                     nullAllParameters();
@@ -508,7 +576,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 />
                             </FormRow>
 
-                            <FormRow>
+                            {/* <FormRow>
                                 <StyledLabel htmlFor="unidad_de_gasto">Unidad de Gasto</StyledLabel>
                                 <StyledSelect
                                     name="unidad_de_gasto"
@@ -528,9 +596,9 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         </option>
                                     ))}
                                 </StyledSelect>
-                            </FormRow>
+                            </FormRow> */}
 
-                            <FormRow>
+                            {/* <FormRow>
                                 <StyledLabel htmlFor="presentacion_cantidad">Presentación Cantidad</StyledLabel>
                                 <CardInputs2
                                     textAlign={TextAlign.Center}
@@ -544,9 +612,37 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         setPresentacionCantidad(parseFloat(e.target.value))
                                     }
                                 />
+                            </FormRow> */}
+
+                            <FormRow>
+                                <StyledLabel htmlFor="presentacion_cantidad">Fecha de Caducidad</StyledLabel>
+
+                                <ReactDatePicker
+                                    //@ts-ignore
+                                    wrapperClassName="datepicker-wrapper"
+                                    className="my-custom-datepicker"
+                                    dateFormat="YYYY-MM-dd"
+                                    onChange={date => {
+                                        handleFechaDeCaducidadChange(date);
+                                    }}
+                                    selected={fechaDeCaducidad}
+                                ></ReactDatePicker>
                             </FormRow>
 
                             <FormRow>
+                                <StyledLabel htmlFor="presentacion_cantidad">Lote</StyledLabel>
+                                <CardInputs2
+                                    textAlign={TextAlign.Center}
+                                    largo="100%"
+                                    name="presentacion_cantidad"
+                                    type="text"
+                                    placeholder="Lote del producto"
+                                    value={lote}
+                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLote(e.target.value)}
+                                />
+                            </FormRow>
+
+                            {/* <FormRow>
                                 <StyledLabel htmlFor="presentacion_unidad">Presentación Unidad</StyledLabel>
                                 <StyledSelect
                                     name="presentacion_unidad"
@@ -566,9 +662,9 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         </option>
                                     ))}
                                 </StyledSelect>
-                            </FormRow>
+                            </FormRow> */}
 
-                            <FormRow>
+                            {/* <FormRow>
                                 <StyledLabel htmlFor="precio">Precio</StyledLabel>
                                 <CardInputs2
                                     textAlign={TextAlign.Center}
@@ -582,7 +678,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         setPrecio(parseFloat(e.target.value))
                                     }
                                 />
-                            </FormRow>
+                            </FormRow> */}
 
                             <FormRow style={{ justifyContent: "flex-end", gap: "1rem" }}>
                                 {editable && entryId && (

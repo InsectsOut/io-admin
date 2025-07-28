@@ -144,6 +144,7 @@ interface cardProps {
     tipo?: string;
     stock?: number;
     invNombre?: string;
+    principal?: ("entradas" | "menu")[];
 }
 const DelModal: React.FC<cardProps> = ({
     closeModal,
@@ -158,6 +159,7 @@ const DelModal: React.FC<cardProps> = ({
     tipo,
     stock,
     invNombre,
+    principal,
 }) => {
     const [registro, setRegistro] = useState<string>("");
     const params = new URLSearchParams(window.location.search);
@@ -227,13 +229,21 @@ const DelModal: React.FC<cardProps> = ({
                     params.get("flag") === "principal" && (
                         <ServicioInfo>
                             <div className="folio inventario">
-                                <SubTitles>¿Está seguro de querer eliminar el producto del inventario?</SubTitles>
+                                {principal?.includes("entradas") && (
+                                    <SubTitles>¿Está seguro de querer eliminar el producto del inventario?</SubTitles>
+                                )}
+
+                                {principal?.includes("menu") && (
+                                    <SubTitles>¿Está seguro de querer eliminar el inventario?</SubTitles>
+                                )}
 
                                 <div className="folio menu">
                                     <div className="folio">
-                                        <SubTitles>
-                                            <strong>Producto: </strong> {tipo}
-                                        </SubTitles>
+                                        {tipo && (
+                                            <SubTitles>
+                                                <strong>Producto: </strong> {tipo}
+                                            </SubTitles>
+                                        )}
                                     </div>
                                     {stock && (
                                         <div className="nombre">
@@ -250,6 +260,17 @@ const DelModal: React.FC<cardProps> = ({
                                         </div>
                                     )}
                                 </div>
+                            </div>
+                        </ServicioInfo>
+                    )}
+                {window.location.pathname === `/inventario` &&
+                    params.get("flag") === "principal" && (
+                        <ServicioInfo>
+                            <div className="folio inventario">
+                              
+                                {principal?.includes("menu") && (
+                                    <SubTitles>Se eliminará el inventario : <strong> {invNombre}</strong></SubTitles>
+                                )}
                             </div>
                         </ServicioInfo>
                     )}

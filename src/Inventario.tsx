@@ -22,7 +22,6 @@ import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import { supabase } from "./utils/ClientSupabase";
 import ProductosMenu from "./Prductos";
 
-
 const WrapperContainer = styled.div`
     width: calc(100% - 2rem); /* Ajusta el ancho para que no ocupe todo el espacio */
     height: calc(100% - 6.2rem);
@@ -164,14 +163,19 @@ const Inventario: React.FC<inventarioProps> = props => {
     const [inventarioMenu, setInventarioMenu] = useState<boolean>(false);
     const [inventarioFlag, setInventarioFlag] = useState<Enums<"TipoInventario">>();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-    
+
     const handleMenuClick = (flag: Enums<"TipoInventario">) => {
         setInventarioMenu(true);
         console.log(inventarioFlag);
         setInventarioFlag(flag);
     };
 
-   
+     const clearParams = () => {
+        const url = new URL(window.location.href);
+                            url.search = ""; // this removes all search params
+                            window.history.replaceState(null, "", url.toString());
+
+    }
 
     return (
         <WrapperContainer>
@@ -195,7 +199,7 @@ const Inventario: React.FC<inventarioProps> = props => {
                     </MenuButtons> */}
                     <MenuButtons
                         onClick={() => {
-                            setIsModalOpen(prev=>!prev);
+                            setIsModalOpen(prev => !prev);
                         }}
                     >
                         <FaPrescriptionBottle style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
@@ -204,7 +208,17 @@ const Inventario: React.FC<inventarioProps> = props => {
                 </LeftMenu>
 
                 <MainContent>
-                    <button onClick={() => {setInventarioMenu(false); setIsModalOpen(false)}}>regresar</button>
+                    <button
+                        onClick={() => {
+                            // Clear all query params
+                            clearParams()
+                            // Close modals or UI state
+                            setInventarioMenu(false);
+                            setIsModalOpen(false);
+                        }}
+                    >
+                        regresar
+                    </button>
                     {!inventarioMenu && !isModalOpen && (
                         <>
                             <h1 className="title">Inventario</h1>
@@ -270,11 +284,9 @@ const Inventario: React.FC<inventarioProps> = props => {
                             flag={inventarioFlag!}
                         />
                     )}
-                    {isModalOpen && !inventarioMenu &&(
-             <ProductosMenu
-             organizacion={props.organizacion!}
-             ></ProductosMenu>
-             )}
+                    {isModalOpen && !inventarioMenu && (
+                        <ProductosMenu organizacion={props.organizacion!}></ProductosMenu>
+                    )}
                 </MainContent>
             </InventarioMainContainer>
         </WrapperContainer>
