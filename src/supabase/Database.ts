@@ -407,8 +407,10 @@ export type Database = {
       }
       Inventario_productos: {
         Row: {
+          fecha_de_caducidad: string | null
           id: number
           inventario_id: number | null
+          Lote: string | null
           precio: number
           presentacion_cantidad: number
           presentacion_unidad: Database["public"]["Enums"]["PresentacionUnidad"]
@@ -417,8 +419,10 @@ export type Database = {
           unidad_de_gasto: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Insert: {
+          fecha_de_caducidad?: string | null
           id?: number
           inventario_id?: number | null
+          Lote?: string | null
           precio: number
           presentacion_cantidad: number
           presentacion_unidad: Database["public"]["Enums"]["PresentacionUnidad"]
@@ -427,8 +431,10 @@ export type Database = {
           unidad_de_gasto: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Update: {
+          fecha_de_caducidad?: string | null
           id?: number
           inventario_id?: number | null
+          Lote?: string | null
           precio?: number
           presentacion_cantidad?: number
           presentacion_unidad?: Database["public"]["Enums"]["PresentacionUnidad"]
@@ -612,6 +618,7 @@ export type Database = {
           ingrediente_activo: string | null
           nombre: string | null
           organizacion: string | null
+          precio: number | null
           presentacion: string | null
           presentacion_cantidad: number | null
           presentacion_unidad:
@@ -628,6 +635,7 @@ export type Database = {
           ingrediente_activo?: string | null
           nombre?: string | null
           organizacion?: string | null
+          precio?: number | null
           presentacion?: string | null
           presentacion_cantidad?: number | null
           presentacion_unidad?:
@@ -644,6 +652,7 @@ export type Database = {
           ingrediente_activo?: string | null
           nombre?: string | null
           organizacion?: string | null
+          precio?: number | null
           presentacion?: string | null
           presentacion_cantidad?: number | null
           presentacion_unidad?:

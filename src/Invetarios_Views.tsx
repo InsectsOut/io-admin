@@ -94,9 +94,16 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
         return <h1 className="title">Selecciona una categoría del inventario</h1>;
     }
 
+     const clearParams = () => {
+        const url = new URL(window.location.href);
+                            url.search = ""; // this removes all search params
+                            window.history.replaceState(null, "", url.toString());
+
+    }
+
     return (
         <>
-            {selectedSub && <button onClick={() => setSelectedSub(null)}>← Volver a subinventarios</button>}
+            {selectedSub && <button onClick={() => {clearParams();setSelectedSub(null)}}>← Volver a subinventarios</button>}
             {!selectedSub ? (
                 <SubInventarioList
                     organizacion={organizacion}
