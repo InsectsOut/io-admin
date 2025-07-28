@@ -129,14 +129,16 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         setUnidadGasto(undefined);
         setCantidadPresentacion(undefined);
         setUnidadPresentacion(undefined);
+        setUnidadDosisMaxima("");
+        setUnidadDosisMinima("");
     };
 
     const createProducto = async () => {
         try {
             const { error, data } = await supabase.from("Productos").insert([
                 {
-                    dosis_max: `${dosisMaxima}/${unidadDosisMaxima}`,
-                    dosis_min: `${dosisMinima}/${unidadDosisMinima}`,
+                    dosis_max: `${dosisMaxima}${unidadDosisMaxima}`,
+                    dosis_min: `${dosisMinima}${unidadDosisMinima}`,
                     ingrediente_activo: ingredienteActivo || null,
                     nombre: nombreProducto || null,
                     presentacion: `${cantidadPresentacion}/${unidadPresentacion}`,
@@ -155,25 +157,29 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             fetchproductos();
         } catch (error) {}
     };
-    const updateProduct = async () => {
+    const updateProduct = async (productoId: number) => {
         try {
-            const { error, data } = await supabase.from("Productos").update({
-                dosis_max:
-                    dosisMaxima !== undefined && unidadDosisMaxima ? `${dosisMaxima}/${unidadDosisMaxima}` : null,
-                dosis_min:
-                    dosisMinima !== undefined && unidadDosisMinima ? `${dosisMinima}/${unidadDosisMinima}` : null,
-                ingrediente_activo: ingredienteActivo || null,
-                nombre: nombreProducto || null,
-                presentacion:
-                    cantidadPresentacion !== undefined && unidadPresentacion
-                        ? `${cantidadPresentacion}/${unidadPresentacion}`
-                        : null,
-                presentacion_cantidad: cantidadPresentacion ?? null,
-                presentacion_unidad: unidadPresentacion ?? null,
-                registro: registroCofepris || null,
-                tipo_de_producto: tipoProducto ?? null,
-                unidad_de_gasto: unidadGasto ?? null,
-            });
+            const { error, data } = await supabase
+                .from("Productos")
+                .update({
+                    dosis_max:
+                        dosisMaxima !== undefined && unidadDosisMaxima ? `${dosisMaxima}${unidadDosisMaxima}` : null,
+                    dosis_min:
+                        dosisMinima !== undefined && unidadDosisMinima ? `${dosisMinima}${unidadDosisMinima}` : null,
+                    ingrediente_activo: ingredienteActivo || null,
+                    nombre: nombreProducto || null,
+                    presentacion:
+                        cantidadPresentacion !== undefined && unidadPresentacion
+                            ? `${cantidadPresentacion}/${unidadPresentacion}`
+                            : null,
+                    presentacion_cantidad: cantidadPresentacion ?? null,
+                    presentacion_unidad: unidadPresentacion ?? null,
+                    registro: registroCofepris || null,
+                    tipo_de_producto: tipoProducto ?? null,
+                    unidad_de_gasto: unidadGasto ?? null,
+                })
+                .eq("id", productoId)
+                .select();
             if (error) {
                 console.log("Error updating a product", error);
             }
@@ -205,6 +211,15 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         }
     };
 
+    function splitNumberAndUnit(value: string): [string, string] {
+        const match = value.match(/^(\d+(?:\.\d+)?)(.*)$/);
+        if (match) {
+            const [, numberPart, unitPart] = match;
+            return [numberPart, unitPart];
+        }
+        return [value, ""];
+    }
+
     const fetchSingleProduct = async (productoId: number) => {
         try {
             const { data, error, count } = await supabase.from("Productos").select("*").eq("id", productoId);
@@ -219,12 +234,24 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 setNombreProducto(productos.nombre ?? "");
                 setRegistroCofepris(productos.registro ?? "");
                 setIngredienteActivo(productos.ingrediente_activo ?? "");
-                // setDosisMinima(productos.dosis_min ?? 0);
-                // setDosisMaxima(productos.dosis_max ?? 0);
                 setTipoProducto(productos.tipo_de_producto ?? undefined);
                 setUnidadGasto(productos.unidad_de_gasto ?? undefined);
                 setCantidadPresentacion(productos.presentacion_cantidad ?? 0);
                 setUnidadPresentacion(productos.presentacion_unidad ?? undefined);
+                if (productos.dosis_max){
+                    const dosisMaxDestructured = splitNumberAndUnit(productos?.dosis_max );
+                    console.log(dosisMaxDestructured)
+                    setDosisMaxima(Number(dosisMaxDestructured [0]))
+                    setUnidadDosisMaxima(dosisMaxDestructured [1].toUpperCase())
+                }
+                if (productos.dosis_min){
+                    const dosisMinDestructured = splitNumberAndUnit(productos?.dosis_min );
+                    console.log(dosisMinDestructured)
+                    setDosisMinima(Number(dosisMinDestructured[0]))
+                    setUnidadDosisMinima(dosisMinDestructured [1].toUpperCase())
+                }
+                
+
             } else {
                 console.log("No products found.");
             }
@@ -318,6 +345,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                 fetchSingleProduct(entry.id);
                                 setEditable(true);
                                 setIsModalOpen(true);
+                                setProductoId(entry.id);
                                 // setEntryId(entry.id);
                             }}
                             //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
@@ -427,68 +455,69 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                 </StyledSelect>
                             </FormRow>
 
-                                <>
-                                    <FormRow className="productoModalRows">
-                                        <StyledLabel htmlFor="dosisMinima">Dosis mínima</StyledLabel>
-                                        <div style={{ display: "flex", gap: "8px", width: "100%" }}>
-                                            <CardInputs
-                                                largo="100%"
-                                                placeholder="dosis mínima"
-                                                type="number"
-                                                min={0}
-                                                required
-                                                name="dosisMinima"
-                                                id="dosisMinima"
-                                                autoComplete="off"
-                                                value={dosisMinima}
-                                                onChange={handleDosisMinimaChange}
-                                            />
-                                            <StyledSelect
-                                                value={unidadDosisMinima}
-                                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                                    setUnidadDosisMinima(e.target.value.toUpperCase() as any)
-                                                }
-                                                style={{ padding: "0.5rem", borderRadius: "4px" }}
-                                            >
-                                                <option value="ML/LITRO">ml/litro</option>
-                                                <option value="G/LITRO">g/litro</option>
-                                                <option value="L/LITRO">l/litro</option>
-                                                <option value="L/LITRO">l/litro</option>
-                                                <option value="G">gramos</option>
-                                            </StyledSelect>
-                                        </div>
-                                    </FormRow>
-                                    <FormRow className="productoModalRows">
-                                        <StyledLabel htmlFor="dosisMaxima">Dosis máxima</StyledLabel>
-                                        <div style={{ display: "flex", gap: "8px", width: "100%" }}>
-                                            <CardInputs
-                                                largo="100%"
-                                                placeholder="dosis máxima"
-                                                type="number"
-                                                min={0}
-                                                required
-                                                name="dosisMaxima"
-                                                id="dosisMaxima"
-                                                autoComplete="off"
-                                                value={dosisMaxima}
-                                                onChange={handleDosisMaximaChange}
-                                            />
-                                            <StyledSelect
-                                                value={unidadDosisMaxima}
-                                                onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                                    setUnidadDosisMaxima(e.target.value.toUpperCase() as any)
-                                                }
-                                                style={{ padding: "0.5rem", borderRadius: "4px" }}
-                                            >
-                                                <option value="ML/LITRO">ml/litro</option>
-                                                <option value="G/LITRO">g/litro</option>
-                                                <option value="L/LITRO">l/litro</option>
-                                                <option value="G">gramos</option>
-                                            </StyledSelect>
-                                        </div>
-                                    </FormRow>
-                                </>
-                            
+                            <>
+                                <FormRow className="productoModalRows">
+                                    <StyledLabel htmlFor="dosisMinima">Dosis mínima</StyledLabel>
+                                    <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+                                        <CardInputs
+                                            largo="100%"
+                                            placeholder="dosis mínima"
+                                            type="number"
+                                            min={0}
+                                            required
+                                            name="dosisMinima"
+                                            id="dosisMinima"
+                                            autoComplete="off"
+                                            value={dosisMinima}
+                                            onChange={handleDosisMinimaChange}
+                                        />
+                                        <StyledSelect
+                                            value={unidadDosisMinima}
+                                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                                setUnidadDosisMinima(e.target.value.toUpperCase() as any)
+                                            }
+                                            style={{ padding: "0.5rem", borderRadius: "4px" }}
+                                        >
+                                            <option value="">Elija la unidad</option>
+                                            <option value="ML/LITRO">ml/litro</option>
+                                            <option value="G/LITRO">g/litro</option>
+                                            <option value="L/LITRO">l/litro</option>
+                                            <option value="L/LITRO">l/litro</option>
+                                            <option value="/G">gramos</option>
+                                        </StyledSelect>
+                                    </div>
+                                </FormRow>
+                                <FormRow className="productoModalRows">
+                                    <StyledLabel htmlFor="dosisMaxima">Dosis máxima</StyledLabel>
+                                    <div style={{ display: "flex", gap: "8px", width: "100%" }}>
+                                        <CardInputs
+                                            largo="100%"
+                                            placeholder="dosis máxima"
+                                            type="number"
+                                            min={0}
+                                            required
+                                            name="dosisMaxima"
+                                            id="dosisMaxima"
+                                            autoComplete="off"
+                                            value={dosisMaxima}
+                                            onChange={handleDosisMaximaChange}
+                                        />
+                                        <StyledSelect
+                                            value={unidadDosisMaxima}
+                                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                                setUnidadDosisMaxima(e.target.value.toUpperCase() as any)
+                                            }
+                                            style={{ padding: "0.5rem", borderRadius: "4px" }}
+                                        >
+                                            <option value="">Elija la unidad</option>
+                                            <option value="ML/LITRO">ml/litro</option>
+                                            <option value="G/LITRO">g/litro</option>
+                                            <option value="L/LITRO">l/litro</option>
+                                            <option value="/G">gramos</option>
+                                        </StyledSelect>
+                                    </div>
+                                </FormRow>
+                            </>
 
                             <FormRow className="productoModalRows">
                                 <StyledLabel htmlFor="unidadGasto">Unidad de gasto</StyledLabel>
@@ -556,8 +585,8 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                         {editable && (
                             <ModalButton
                                 onClick={() => {
-                                    updateProduct();
-                                    resetForm()
+                                    updateProduct(productoId!);
+                                    resetForm();
                                 }}
                                 margin="0"
                             >
@@ -568,7 +597,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                             onClick={() => {
                                 resetForm();
                                 setIsModalOpen(false);
-                                resetForm()
+                                resetForm();
                             }}
                         >
                             Cerrar
