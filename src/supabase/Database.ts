@@ -355,7 +355,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inventario_tecnico_id_fkey"
+            foreignKeyName: "Inventario_tecnico_id_fkey"
             columns: ["tecnico_id"]
             isOneToOne: false
             referencedRelation: "Empleados"
@@ -397,7 +397,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "inventario_equipos_inventario_id_fkey"
+            foreignKeyName: "Inventario_equipos_inventario_id_fkey"
             columns: ["inventario_id"]
             isOneToOne: false
             referencedRelation: "Inventario"
@@ -410,41 +410,32 @@ export type Database = {
           fecha_de_caducidad: string | null
           id: number
           inventario_id: number | null
+          item_de_origen: number | null
           Lote: string | null
-          precio: number
-          presentacion_cantidad: number
-          presentacion_unidad: Database["public"]["Enums"]["PresentacionUnidad"]
           producto_id: number | null
           stock: number
-          unidad_de_gasto: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Insert: {
           fecha_de_caducidad?: string | null
           id?: number
           inventario_id?: number | null
+          item_de_origen?: number | null
           Lote?: string | null
-          precio: number
-          presentacion_cantidad: number
-          presentacion_unidad: Database["public"]["Enums"]["PresentacionUnidad"]
           producto_id?: number | null
           stock: number
-          unidad_de_gasto: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Update: {
           fecha_de_caducidad?: string | null
           id?: number
           inventario_id?: number | null
+          item_de_origen?: number | null
           Lote?: string | null
-          precio?: number
-          presentacion_cantidad?: number
-          presentacion_unidad?: Database["public"]["Enums"]["PresentacionUnidad"]
           producto_id?: number | null
           stock?: number
-          unidad_de_gasto?: Database["public"]["Enums"]["UnidadDeGasto"]
         }
         Relationships: [
           {
-            foreignKeyName: "inventario_productos_inventario_id_fkey"
+            foreignKeyName: "Inventario_productos_inventario_id_fkey"
             columns: ["inventario_id"]
             isOneToOne: false
             referencedRelation: "Inventario"
@@ -486,7 +477,7 @@ export type Database = {
         }
         Relationships: [
           {
-            foreignKeyName: "inventario_vehículos_inventario_id_fkey"
+            foreignKeyName: "Inventario_vehiculos_inventario_id_fkey"
             columns: ["inventario_id"]
             isOneToOne: false
             referencedRelation: "Inventario"
