@@ -19,6 +19,7 @@ import DelModal from "./DeleteModal";
 import { DateInput } from "./CreateServiceForm";
 import ReactDatePicker from "react-datepicker";
 import PaginationComponent from "./PaginationComponent";
+import { StyledInput } from "./FormComponents";
 
 interface SubInventarioDetalleProps {
     name?: string;
@@ -31,6 +32,8 @@ type TipoDeGasto = Database["public"]["Enums"]["UnidadDeGasto"];
 type PresentaciónUnidad = Database["public"]["Enums"]["PresentacionUnidad"];
 type Productos = Tables<"Productos">;
 type InventarioProducos = Tables<"Inventario_productos">;
+type Inventarios = Tables<"Inventario">;
+type Movimientos = Tables<"Movimientos">;
 
 type InventarioProductoEntradas = InventarioProducos & {
     Productos: Productos | null;
@@ -115,6 +118,11 @@ export const Icono = styled(FaEdit)`
         color: #2395ff;
     }
 `;
+export const Plus = styled(FaPlus)`
+    &:hover {
+        color: #2395ff;
+    }
+`;
 const AddForm = styled.form`
     display: flex;
     gap: 0.5rem;
@@ -178,10 +186,6 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [productoId, setProductoId] = useState<number>();
     const [stock, setStock] = useState<number>();
-    const [unidadDeGasto, setUnidadDeGasto] = useState<TipoDeGasto>();
-    const [presentacionCantidad, setPresentacionCantidad] = useState<number | null>(null);
-    const [presentacionUnidad, setPresentacionUnidad] = useState<PresentaciónUnidad>();
-    const [precio, setPrecio] = useState<number | null>(null);
     const [productos, setProductos] = useState<Productos[]>([]);
     const [inventarioId, setInventarioId] = useState<number>(
         Number(new URLSearchParams(window.location.search).get("inventarioId"))
@@ -193,11 +197,25 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [colorTrigger, setColorTrigger] = useState<boolean>(false);
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const [entradasConProductos, setEntradasConProductos] = useState<InventarioProductoEntradas[]>([]);
+    const [entradasConProductosPrincipal, setEntradasConProductosPrincipal] = useState<InventarioProductoEntradas[]>(
+        []
+    );
     const [lote, setLote] = useState<string>("");
     const [fechaDeCaducidad, setFechaDeCaducidad] = useState<Date | null>(new Date());
     const [totalPages, setTotalPages] = useState<number>(1);
     const [currentPage, setCurrentPage] = useState<number>(1);
     const itemsPerPage: number = 10;
+    const [inventariosPrincipales, setInventariosPrincipales] = useState<Inventarios[] | null>();
+    const [inventarioPrincipalId, setInventarioPrincipalId] = useState<number | null>(-1);
+    const [invPrincipalesProductos, setInvPrincipalesproductos] = useState<number | null>();
+    const [itemType, setItemType] = useState<Enums<"TipoItem">>();
+    const [cantidad, setCantidad] = useState<number>(1);
+    const [itemId, setItemId] = useState<number | null>(-1);
+    const productoSeleccionado = entradasConProductosPrincipal?.find(inv => inv.id === itemId);
+    const inventario = inventariosPrincipales?.find(i => i.id === inventarioPrincipalId) ?? null;
+    const [selectedInventario, setSelectedInventario] = useState<InventarioProducos | null>(null);
+
+    const [tecnicoId, setTecnicoId] = useState<number>();
 
     const params = new URLSearchParams(window.location.search);
 
@@ -218,10 +236,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const nullAllParameters = () => {
         setProductoId(undefined);
         setStock(undefined);
-        setUnidadDeGasto(undefined);
-        setPresentacionCantidad(null);
-        setPresentacionUnidad(undefined);
-        setPrecio(null);
+        setInventarioPrincipalId(-1)
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -232,32 +247,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         }
     };
 
-    const fetchInventarioProductos = async () => {
-        try {
-            const { data, error } = await supabase
-                .from("Inventario_productos")
-                .select("*")
-                .eq("inventario_id", inventarioId);
-
-            if (error) {
-                throw error;
-            }
-
-            if (data) {
-                console.log("Inventario productos fetched successfully:", data);
-                setInventarioEntries(data);
-            } else {
-                console.log("No inventario productos found.");
-            }
-        } catch (error) {
-            console.error("Error fetching inventario productos:", error);
-        }
-    };
     const fetchInventarioProductosConEntradas = async () => {
         try {
             const { data, error, count } = await supabase
                 .from("Inventario_productos")
                 .select("*, Productos!inner(*)", { count: "exact" })
+                .eq("inventario_id", inventarioId)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
             const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
             setTotalPages(totalPages);
@@ -268,6 +263,52 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             if (data) {
                 console.log("Inventario productos fetched successfully:", data);
                 setEntradasConProductos(data);
+            } else {
+                console.log("No inventario productos found.");
+            }
+        } catch (error) {
+            console.error("Error fetching inventario productos:", error);
+        }
+    };
+    const fetchInventarioProductosConEntradasPorPrincipal = async (singleEntryId: number | null) => {
+        try {
+            let query = supabase
+                .from("Inventario_productos")
+                .select("*, Productos!inner(*)")
+                .eq("inventario_id", inventarioPrincipalId!);
+
+            if (singleEntryId !==null) {
+              console.log("cricoso",singleEntryId)
+                query = query.eq("id", singleEntryId,);
+            }
+            const { data, error } = await query;
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+                console.log("Entradas de productos fetched successfully:", data);
+                setEntradasConProductosPrincipal(data);
+            } else {
+                console.log("No inventario productos found.");
+            }
+        } catch (error) {
+            console.error("Error fetching inventario productos:", error);
+        }
+    };
+    const fetchSingleInventarioID = async (itemId: number | null) => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .select("inventario_id")
+                .eq("item_de_origen", itemId ?? -1);
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+                console.log("Inventario productos fetched successfully:", data);
+                setInventarioPrincipalId(data[0].inventario_id);
             } else {
                 console.log("No inventario productos found.");
             }
@@ -286,12 +327,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             if (data) {
                 console.log("Inventario productos fetched successfully:", data);
                 setInventarioEntry(data);
-                setProductoId(data[0]?.producto_id ?? productoId);
-                setStock(data[0].stock);
-                setUnidadDeGasto(data[0].unidad_de_gasto);
-                setPresentacionCantidad(data[0].presentacion_cantidad);
-                setPresentacionUnidad(data[0].presentacion_unidad);
-                setPrecio(data[0].precio);
+                setProductoId(data?.[0]?.producto_id ?? productoId);
+                setStock(data[0]?.stock);
                 setLote(data[0]?.Lote ?? "");
                 setFechaDeCaducidad(null);
                 if (data[0]?.fecha_de_caducidad) {
@@ -299,9 +336,6 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     const formattedDob = new Date(year, month - 1, day);
                     setFechaDeCaducidad(formattedDob);
                 }
-
-                // setIsModalOpen(false);
-                fetchInventarioProductos();
             } else {
                 console.log("No inventario productos found.");
             }
@@ -314,14 +348,23 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         setFechaDeCaducidad(date);
     };
 
-    const createEntry = async () => {
+    const createEntry = async (
+        inventarioID: number,
+        productoID: number,
+        stock: number,
+        fechaCad: Date,
+        itemDeOrigen: number | null,
+        lote: string | null
+    ) => {
         try {
             const { data, error } = await supabase.from("Inventario_productos").insert([
                 {
-                    inventario_id: inventarioId,
-                    producto_id: productoId,
+                    inventario_id: inventarioID,
+                    producto_id: productoID,
                     stock: stock,
-                    fecha_de_caducidad: fechaDeCaducidad,
+                    fecha_de_caducidad: fechaCad.toISOString(),
+                    item_de_origen: itemDeOrigen ?? null,
+                    Lote: lote,
                 },
             ] as InventarioProducos[]);
 
@@ -331,46 +374,48 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 console.log("Inventario creado:", data);
                 setProductoId(undefined);
                 setStock(undefined);
-                setUnidadDeGasto(undefined);
-                setPresentacionCantidad(null);
-                setPresentacionUnidad(undefined);
                 setLote("");
                 setFechaDeCaducidad(null);
-                setPrecio(null);
-                setIsModalOpen(false);
-                fetchInventarioProductos();
-            }
-        } catch (err) {
-            console.error("Error creating inventario:", err);
-        }
-    };
-    const editEntry = async (entryId: number) => {
-        try {
-            const { data, error } = await supabase
-                .from("Inventario_productos")
-                .update({
-                    producto_id: productoId,
-                    stock: stock,
-                    Lote: lote,
-                    fecha_de_caducidad: fechaDeCaducidad,
-                } as Partial<InventarioProducos>)
-                .eq("id", entryId);
-
-            if (error) {
-                console.error("Error creando inventario:", error);
-            } else {
-                console.log("Inventario creado:", data);
-                setProductoId(undefined);
-                setStock(undefined);
-                setUnidadDeGasto(undefined);
-                setPresentacionCantidad(null);
-                setPresentacionUnidad(undefined);
-                setPrecio(null);
                 setIsModalOpen(false);
                 fetchInventarioProductosConEntradas();
             }
         } catch (err) {
             console.error("Error creating inventario:", err);
+        }
+    };
+    const editEntry = async (
+        entryId: number,
+        {
+            productoId,
+            stock,
+            lote,
+            fechaDeCaducidad,
+        }: {
+            productoId?: number;
+            stock?: number;
+            lote?: string;
+            fechaDeCaducidad?: string;
+        }
+    ) => {
+        try {
+            const updateData: Partial<InventarioProducos> = {};
+            if (productoId !== undefined) updateData.producto_id = productoId;
+            if (stock !== undefined) updateData.stock = stock;
+            if (lote !== undefined) updateData.Lote = lote;
+            if (fechaDeCaducidad !== undefined) updateData.fecha_de_caducidad = fechaDeCaducidad;
+
+            const { data, error } = await supabase.from("Inventario_productos").update(updateData).eq("id", entryId);
+
+            if (error) {
+                console.error("Error editando inventario:", error);
+            } else {
+                console.log("Inventario editado:", data);
+                setProductoId(undefined);
+                setStock(undefined);
+                setIsModalOpen(false);
+            }
+        } catch (err) {
+            console.error("Error editing inventario:", err);
         }
     };
 
@@ -392,6 +437,30 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             console.error("Error fetching productos:", error);
         }
     };
+    const fetchInventariosPrincipales = async () => {
+        if (inventariosPrincipales) {
+            if (inventariosPrincipales?.length > 0) {
+                return;
+            }
+        }
+
+        try {
+            const { data, error } = await supabase.from("Inventario").select("*").eq("tipo_inventario", "principal");
+
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+                console.log("Inventarios principales fetched successfully:", data);
+                setInventariosPrincipales(data);
+            } else {
+                console.log("No products found.");
+            }
+        } catch (error) {
+            console.error("Error fetching productos:", error);
+        }
+    };
 
     const deleteInventarioEntry = async (entryId: number) => {
         try {
@@ -400,7 +469,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 console.error("Error trying to delete the entry", error);
             } else {
                 console.log("Deleted entry", data);
-                fetchInventarioProductos();
+                fetchInventarioProductosConEntradas();
             }
         } catch (err) {
             console.log(err);
@@ -412,20 +481,75 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
     useEffect(() => {
         if (flag === "principal") {
-            //fetchInventarioProductos();
-            fetchInventarioProductosConEntradas();
             fetchproductos();
+        }
+        if (flag === "empleado") {
+            fetchproductos();
+            fetchInventariosPrincipales();
         }
     }, []);
 
+    const createMovimiento = async (
+        inventarioID: Number,
+        itemType: Enums<"TipoItem">,
+        fecha: Date,
+        ItemID: number,
+        type: Enums<"TipoMovimiento">,
+        quanity: number,
+        tecnicoID: number
+    ) => {
+        try {
+            const { data, error } = await supabase.from("Movimientos").insert([
+                {
+                    // inventario_id: inventarioId,
+                    // item_type: itemType,
+                    // date:new Date().toISOString(),
+                    // item_id:itemId,
+                    // type:"traspaso",
+                    // quantity:cantidad,
+                    // tecnico_id:0,
+                    inventario_id: inventarioID,
+                    item_type: itemType,
+                    date: fecha.toISOString(),
+                    item_id: ItemID,
+                    type: type,
+                    quantity: quanity,
+                    tecnico_id: tecnicoID,
+                },
+            ] as Movimientos[]);
+
+            if (error) {
+                console.error("Error creando inventario:", error);
+            } else {
+                console.log("Inventario creado:", data);
+                setProductoId(undefined);
+                setStock(undefined);
+                setLote("");
+                setFechaDeCaducidad(null);
+                setIsModalOpen(false);
+            }
+        } catch (err) {
+            console.error("Error creating inventario:", err);
+        }
+    };
+
+    const consumirDeInventarioPrincipal = async () => {};
+
     useEffect(() => {
-        fetchInventarioProductosConEntradas();
+        if (flag === "principal") fetchInventarioProductosConEntradas();
+        if (flag === "empleado") {
+            fetchInventarioProductosConEntradas();
+        }
     }, [currentPage]);
+
+    useEffect(() => {
+        if (flag === "empleado" && inventarioPrincipalId) fetchInventarioProductosConEntradasPorPrincipal(null);
+    }, [inventarioPrincipalId]);
 
     return (
         <SectionContainer>
             <SectionTitle>Contenido de {flag}</SectionTitle>
-            {flag === "principal" && (
+            {(flag === "principal" || flag === "empleado") && (
                 <>
                     <div
                         style={{
@@ -451,6 +575,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         {productos.find(item => item.id === entry?.producto_id)?.nombre}
                                     </EntryText>
                                 </EntryRow>
+
                                 <EntryRow className="entrySecondElement">
                                     <EntryText>
                                         <strong>Stock:</strong> {entry.stock}
@@ -474,26 +599,51 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         <strong>Valor:</strong> ${entry.stock * (entry?.Productos?.precio ?? 0)}
                                     </EntryText>
                                 </EntryRow>
-                                <EntryRow
-                                    onClick={() => {
-                                        fetchSingleEntry(entry.id);
-                                        setEditable(true);
-                                        setIsModalOpen(true);
-                                        setEntryId(entry.id);
-                                    }}
-                                    //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
-                                    // onMouseEnter={() => setColorTrigger(true)}
-                                    // onMouseOut={() => setColorTrigger(false)}
-                                    style={{ alignSelf: "left" }}
-                                    className="entrySixthElement"
-                                    id="entrySixthElement"
-                                >
-                                    {" "}
-                                    <Icono size={20} />
-                                </EntryRow>
+                                {flag === "principal" && (
+                                    <EntryRow
+                                        onClick={() => {
+                                            fetchSingleEntry(entry.id);
+                                            setEditable(true);
+                                            setIsModalOpen(true);
+                                            setEntryId(entry.id);
+                                        }}
+                                        //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
+                                        // onMouseEnter={() => setColorTrigger(true)}
+                                        // onMouseOut={() => setColorTrigger(false)}
+                                        style={{ alignSelf: "left" }}
+                                        className="entrySixthElement"
+                                        id="entrySixthElement"
+                                    >
+                                        {" "}
+                                        <Icono size={20} />
+                                    </EntryRow>
+                                )}
+                                {flag === "empleado" && (
+                                    <EntryRow
+                                        onClick={() => {
+                                            if (entry) setEditable(true);
+                                            setIsModalOpen(true);
+                                            setEntryId(entry.id);
+                                            fetchSingleEntry(entry.item_de_origen!);
+                                            fetchSingleInventarioID(entry.item_de_origen);
+                                            fetchInventarioProductosConEntradasPorPrincipal(entry?.item_de_origen)
+                                            setItemId(inventarioEntry?.[0].id ?? -1)
+                                        }}
+                                        //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
+                                        // onMouseEnter={() => setColorTrigger(true)}
+                                        // onMouseOut={() => setColorTrigger(false)}
+                                        style={{ alignSelf: "left" }}
+                                        className="entrySixthElement"
+                                        id="entrySixthElement"
+                                    >
+                                        {" "}
+                                        <Plus size={20} />
+                                    </EntryRow>
+                                )}
                                 <button
                                     onClick={() => {
                                         setDeleteModalOpen(true);
+                                        setEntryId(entry.id);
                                         fetchSingleEntry(entry.id);
                                         //  deleteInventarioEntry(entry.id);
                                     }}
@@ -538,159 +688,250 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     <ModalContent>
                         <h2>{editable ? "Editar Entrada" : "Crear Nueva Entrada"}</h2>
                         <ModalForm>
-                            <FormRow>
-                                <StyledLabel htmlFor="producto_id">Producto</StyledLabel>
-                                <StyledSelect
-                                    name="producto_id"
-                                    required
-                                    value={productoId}
-                                    defaultValue=""
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                        setProductoId(+e.target.value)
-                                    }
-                                >
-                                    <option value="" disabled>
-                                        Selecciona un Producto
-                                    </option>
-                                    {productos.map(producto => (
-                                        <option key={producto.id} value={producto.id}>
-                                            {producto.nombre}
+                            {flag === "empleado" && (
+                                <FormRow>
+                                    <StyledLabel htmlFor="inventario_id">Inventario Principal</StyledLabel>
+                                    <StyledSelect
+                                        name="inventario_id"
+                                        required
+                                        disabled={editable}
+                                        value={inventarioPrincipalId}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                            setInventarioPrincipalId(+e.target.value);
+                                        }}
+                                    >
+                                        <option value={-1} disabled>
+                                            Selecciona un Inventario
                                         </option>
-                                    ))}
-                                </StyledSelect>
-                            </FormRow>
-
-                            <FormRow>
-                                <StyledLabel htmlFor="stock">Stock</StyledLabel>
-                                <CardInputs2
-                                    textAlign={TextAlign.Center}
-                                    largo="100%"
-                                    name="stock"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Ej. 25.5"
-                                    value={stock}
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                        setStock(parseFloat(e.target.value))
-                                    }
-                                />
-                            </FormRow>
-
-                            {/* <FormRow>
-                                <StyledLabel htmlFor="unidad_de_gasto">Unidad de Gasto</StyledLabel>
-                                <StyledSelect
-                                    name="unidad_de_gasto"
-                                    required
-                                    value={unidadDeGasto}
-                                    defaultValue=""
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                        setUnidadDeGasto(e.target.value as TipoDeGasto)
-                                    }
-                                >
-                                    <option value="" disabled>
-                                        Selecciona Unidad
-                                    </option>
-                                    {Object.entries(TipoDeGastoEnum).map(([key, value]) => (
-                                        <option key={key} value={value}>
-                                            {value}
+                                        {inventariosPrincipales?.map(inventario => (
+                                            <option key={inventario.id} value={inventario.id}>
+                                                {inventario.inv_nombre ?? "Inventario Principal"}
+                                            </option>
+                                        ))}
+                                    </StyledSelect>
+                                </FormRow>
+                            )}
+                            {flag === "principal" && (
+                                <FormRow>
+                                    <StyledLabel htmlFor="producto_id">Producto</StyledLabel>
+                                    <StyledSelect
+                                        name="producto_id"
+                                        required
+                                        value={productoId}
+                                        defaultValue=""
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                            setProductoId(+e.target.value)
+                                        }
+                                    >
+                                        <option value="" disabled>
+                                            Selecciona un Producto
                                         </option>
-                                    ))}
-                                </StyledSelect>
-                            </FormRow> */}
-
-                            {/* <FormRow>
-                                <StyledLabel htmlFor="presentacion_cantidad">Presentación Cantidad</StyledLabel>
-                                <CardInputs2
-                                    textAlign={TextAlign.Center}
-                                    largo="100%"
-                                    name="presentacion_cantidad"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Ej. 5"
-                                    value={presentacionCantidad}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setPresentacionCantidad(parseFloat(e.target.value))
-                                    }
-                                />
-                            </FormRow> */}
-
-                            <FormRow>
-                                <StyledLabel htmlFor="presentacion_cantidad">Fecha de Caducidad</StyledLabel>
-
-                                <ReactDatePicker
-                                    //@ts-ignore
-                                    wrapperClassName="datepicker-wrapper"
-                                    className="my-custom-datepicker"
-                                    dateFormat="YYYY-MM-dd"
-                                    onChange={date => {
-                                        handleFechaDeCaducidadChange(date);
-                                    }}
-                                    selected={fechaDeCaducidad}
-                                ></ReactDatePicker>
-                            </FormRow>
-
-                            <FormRow>
-                                <StyledLabel htmlFor="presentacion_cantidad">Lote</StyledLabel>
-                                <CardInputs2
-                                    textAlign={TextAlign.Center}
-                                    largo="100%"
-                                    name="presentacion_cantidad"
-                                    type="text"
-                                    placeholder="Lote del producto"
-                                    value={lote}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setLote(e.target.value)}
-                                />
-                            </FormRow>
-
-                            {/* <FormRow>
-                                <StyledLabel htmlFor="presentacion_unidad">Presentación Unidad</StyledLabel>
-                                <StyledSelect
-                                    name="presentacion_unidad"
-                                    required
-                                    value={presentacionUnidad}
-                                    defaultValue=""
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
-                                        setPresentacionUnidad(e.target.value as PresentaciónUnidad)
-                                    }
-                                >
-                                    <option value="" disabled>
-                                        Selecciona Unidad
-                                    </option>
-                                    {Object.entries(PresentacionUnidadEnum).map(([key, value]) => (
-                                        <option key={key} value={value}>
-                                            {value}
+                                        {productos.map(producto => (
+                                            <option key={producto.id} value={producto.id}>
+                                                {producto.nombre}
+                                            </option>
+                                        ))}
+                                    </StyledSelect>
+                                </FormRow>
+                            )}
+                            {flag === "empleado" && (
+                                <FormRow>
+                                    <StyledLabel htmlFor="producto_id">Producto</StyledLabel>
+                                    <StyledSelect
+                                        name="producto_id"
+                                        required
+                                        value={itemId}
+                                        onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                                            setItemId(+e.target.value);
+                                            if (!itemType) setItemType("producto");
+                                            fetchSingleEntry(+e.target.value);
+                                            setCantidad(1); // reset quantity when product changes
+                                        }}
+                                    >
+                                        <option value={-1} disabled>
+                                            Producto | Lote | Stock
                                         </option>
-                                    ))}
-                                </StyledSelect>
-                            </FormRow> */}
+                                        {entradasConProductosPrincipal?.map(inventario => (
+                                            <option key={inventario.id} value={inventario.id as number}>
+                                                Producto: {inventario.Productos?.nombre} | Lote: {inventario.Lote} |
+                                                Stock: {inventario.stock}
+                                            </option>
+                                        ))}
+                                    </StyledSelect>
+                                </FormRow>
+                            )}
 
-                            {/* <FormRow>
-                                <StyledLabel htmlFor="precio">Precio</StyledLabel>
-                                <CardInputs2
-                                    textAlign={TextAlign.Center}
-                                    largo="100%"
-                                    name="precio"
-                                    type="number"
-                                    step="0.01"
-                                    placeholder="Ej. 149.99"
-                                    value={precio}
-                                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
-                                        setPrecio(parseFloat(e.target.value))
-                                    }
-                                />
-                            </FormRow> */}
+                            {/* Conditionally show the quantity input if a product is selected */}
+                            {productoSeleccionado && (
+                                <FormRow>
+                                    <StyledLabel htmlFor="cantidad">
+                                        Cantidad (max: {productoSeleccionado.stock})
+                                    </StyledLabel>
+                                    <CardInputs2
+                                        type="number"
+                                        largo="100%"
+                                        // @ts-ignore
+                                        textAlign="center"
+                                        name="cantidad"
+                                        min={1}
+                                        max={productoSeleccionado.stock}
+                                        value={cantidad}
+                                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                                            const value = Number(e.target.value);
+                                            const max = productoSeleccionado.stock;
+                                            setCantidad(Math.min(value, max));
+                                        }}
+                                    />
+                                </FormRow>
+                            )}
+                            {flag === "principal" && (
+                                <>
+                                    <FormRow>
+                                        <StyledLabel htmlFor="stock">Stock</StyledLabel>
+                                        <CardInputs2
+                                            textAlign={TextAlign.Center}
+                                            largo="100%"
+                                            name="stock"
+                                            type="number"
+                                            step="0.01"
+                                            placeholder="Ej. 25.5"
+                                            value={stock}
+                                            onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                                setStock(parseFloat(e.target.value))
+                                            }
+                                        />
+                                    </FormRow>
+                                    <>
+                                        <FormRow>
+                                            <StyledLabel htmlFor="presentacion_cantidad">
+                                                Fecha de Caducidad
+                                            </StyledLabel>
 
+                                            <ReactDatePicker
+                                                //@ts-ignore
+                                                wrapperClassName="datepicker-wrapper"
+                                                className="my-custom-datepicker"
+                                                dateFormat="YYYY-MM-dd"
+                                                onChange={date => {
+                                                    handleFechaDeCaducidadChange(date);
+                                                }}
+                                                selected={fechaDeCaducidad}
+                                            ></ReactDatePicker>
+                                        </FormRow>
+                                        <FormRow>
+                                            <StyledLabel htmlFor="presentacion_cantidad">Lote</StyledLabel>
+                                            <CardInputs2
+                                                textAlign={TextAlign.Center}
+                                                largo="100%"
+                                                name="presentacion_cantidad"
+                                                type="text"
+                                                placeholder="Lote del producto"
+                                                value={lote}
+                                                onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                                                    setLote(e.target.value)
+                                                }
+                                            />
+                                        </FormRow>
+                                    </>
+                                </>
+                            )}
                             <FormRow style={{ justifyContent: "flex-end", gap: "1rem" }}>
                                 {editable && entryId && (
-                                    <ModalButton onClick={() => editEntry(entryId)} type="button">
+                                    <ModalButton
+                                        onClick={() => {
+                                            editEntry(entryId, {
+                                                stock: stock,
+                                                lote: lote,
+                                                fechaDeCaducidad: fechaDeCaducidad?.toISOString(),
+                                            });
+                                            fetchInventarioProductosConEntradas();
+                                        }}
+                                        type="button"
+                                    >
                                         Editar Entrada
                                     </ModalButton>
                                 )}
-                                {!editable && (
-                                    <ModalButton onClick={() => createEntry()} type="button">
+                                {!editable && flag === "principal" && (
+                                    <ModalButton
+                                        onClick={() =>
+                                            createEntry(
+                                                inventarioId,
+                                                productoId!,
+                                                stock!,
+                                                fechaDeCaducidad!,
+                                                null,
+                                                lote
+                                            )
+                                        }
+                                        type="button"
+                                    >
                                         Crear Entrada
                                     </ModalButton>
                                 )}
+                                {!editable && flag === "empleado" && (
+                                    <ModalButton
+                                        onClick={async () => {
+                                            try {
+                                                if (!inventarioId) return window.alert("Falta el Inventario destino");
+                                                if (!productoId) return window.alert("Falta el Producto");
+                                                if (!stock) return window.alert("Falta el Stock");
+                                                if (!fechaDeCaducidad)
+                                                    return window.alert("Falta la Fecha de caducidad");
+
+                                                // 1. CREAR MOVIMIENTO DE SALIDA
+                                                await createMovimiento(
+                                                    inventarioPrincipalId!,
+                                                    "producto",
+                                                    new Date(),
+                                                    itemId!,
+                                                    "salida",
+                                                    cantidad,
+                                                    tecnicoId!
+                                                );
+
+                                                // 2. CREAR MOVIMIENTO DE ENTRADA
+                                                await createMovimiento(
+                                                    inventarioId!,
+                                                    "producto",
+                                                    new Date(),
+                                                    itemId!,
+                                                    "traspaso",
+                                                    cantidad,
+                                                    tecnicoId!
+                                                );
+
+                                                // 3. CREAR ENTRADA
+
+                                                // 4. ACTUALIZAR STOCK DE LA ENTRADA ORIGINAL
+                                                if (inventarioEntry?.[0]) {
+                                                    await createEntry(
+                                                        inventarioId,
+                                                        productoId,
+                                                        cantidad,
+                                                        fechaDeCaducidad,
+                                                        itemId,
+                                                        inventarioEntry?.[0].Lote
+                                                    );
+                                                    if (inventarioEntry[0].stock - cantidad === 0) {
+                                                        await deleteInventarioEntry(inventarioEntry[0].id);
+                                                        return;
+                                                    }
+                                                    await editEntry(inventarioEntry[0].id, {
+                                                        stock: inventarioEntry[0].stock - cantidad,
+                                                    });
+                                                }
+                                            } catch (error) {
+                                                console.error("Error durante la operación secuencial:", error);
+                                                window.alert(
+                                                    "Ocurrió un error durante la operación. Revisa la consola."
+                                                );
+                                            }
+                                        }}
+                                    >
+                                        Confirmar Traspaso
+                                    </ModalButton>
+                                )}
+
                                 <ModalButton onClick={() => setIsModalOpen(false)}>Cerrar</ModalButton>
                             </FormRow>
                         </ModalForm>
