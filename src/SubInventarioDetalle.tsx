@@ -20,6 +20,7 @@ import { DateInput } from "./CreateServiceForm";
 import ReactDatePicker from "react-datepicker";
 import PaginationComponent from "./PaginationComponent";
 import { StyledInput } from "./FormComponents";
+import { set } from "ts-pattern/dist/patterns";
 
 interface SubInventarioDetalleProps {
     name?: string;
@@ -184,7 +185,7 @@ export const EntryRow = styled.div`
 const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag }) => {
     const [newItem, setNewItem] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [productoId, setProductoId] = useState<number>();
+    const [productoId, setProductoId] = useState<number>(-1);
     const [stock, setStock] = useState<number>();
     const [productos, setProductos] = useState<Productos[]>([]);
     const [inventarioId, setInventarioId] = useState<number>(
@@ -214,6 +215,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const productoSeleccionado = entradasConProductosPrincipal?.find(inv => inv.id === itemId);
     const inventario = inventariosPrincipales?.find(i => i.id === inventarioPrincipalId) ?? null;
     const [selectedInventario, setSelectedInventario] = useState<InventarioProducos | null>(null);
+    const [singleEntry,setSingleEntry] = useState<InventarioProducos | null>(null);
+    const[stockFromEmpleados,setStockFromEmpleados] = useState<number | null>(null);
 
     const [tecnicoId, setTecnicoId] = useState<number>();
 
@@ -234,9 +237,14 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     }
 
     const nullAllParameters = () => {
-        setProductoId(undefined);
+      // setEntradasConProductos([]);
+      // setEntradasConProductosPrincipal([]);
+        setProductoId(-1);
         setStock(undefined);
-        setInventarioPrincipalId(-1)
+        setInventarioPrincipalId(-1);
+        setInventarioEntry(null)
+        setFechaDeCaducidad(null);
+        setLote("");
     };
 
     const handleSubmit = (e: React.FormEvent) => {
@@ -277,9 +285,9 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 .select("*, Productos!inner(*)")
                 .eq("inventario_id", inventarioPrincipalId!);
 
-            if (singleEntryId !==null) {
-              console.log("cricoso",singleEntryId)
-                query = query.eq("id", singleEntryId,);
+            if (singleEntryId !== null) {
+                console.log("cricoso", singleEntryId);
+                query = query.eq("id", singleEntryId);
             }
             const { data, error } = await query;
             if (error) {
@@ -319,18 +327,22 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const fetchSingleEntry = async (entryId: number) => {
         try {
             const { data, error } = await supabase.from("Inventario_productos").select("*").eq("id", entryId);
+            nullAllParameters()
 
             if (error) {
                 throw error;
             }
 
             if (data) {
-                console.log("Inventario productos fetched successfully:", data);
+                console.log("Inventario prod entradas fetched successfully:", data);
+                setItemId(data[0]?.id ?? -1);
                 setInventarioEntry(data);
                 setProductoId(data?.[0]?.producto_id ?? productoId);
                 setStock(data[0]?.stock);
                 setLote(data[0]?.Lote ?? "");
                 setFechaDeCaducidad(null);
+                setInventarioPrincipalId(data[0]?.inventario_id ?? -1);
+
                 if (data[0]?.fecha_de_caducidad) {
                     const [year, month, day] = data[0]?.fecha_de_caducidad.split("-").map(Number);
                     const formattedDob = new Date(year, month - 1, day);
@@ -372,7 +384,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 console.error("Error creando inventario:", error);
             } else {
                 console.log("Inventario creado:", data);
-                setProductoId(undefined);
+                setProductoId(-1);
                 setStock(undefined);
                 setLote("");
                 setFechaDeCaducidad(null);
@@ -410,7 +422,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 console.error("Error editando inventario:", error);
             } else {
                 console.log("Inventario editado:", data);
-                setProductoId(undefined);
+                setProductoId(-1);
                 setStock(undefined);
                 setIsModalOpen(false);
             }
@@ -481,10 +493,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
     useEffect(() => {
         if (flag === "principal") {
+          nullAllParameters()
             fetchproductos();
         }
         if (flag === "empleado") {
             fetchproductos();
+            nullAllParameters()
             fetchInventariosPrincipales();
         }
     }, []);
@@ -522,7 +536,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 console.error("Error creando inventario:", error);
             } else {
                 console.log("Inventario creado:", data);
-                setProductoId(undefined);
+                setProductoId(-1);
                 setStock(undefined);
                 setLote("");
                 setFechaDeCaducidad(null);
@@ -620,14 +634,20 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 )}
                                 {flag === "empleado" && (
                                     <EntryRow
-                                        onClick={() => {
-                                            if (entry) setEditable(true);
-                                            setIsModalOpen(true);
-                                            setEntryId(entry.id);
-                                            fetchSingleEntry(entry.item_de_origen!);
-                                            fetchSingleInventarioID(entry.item_de_origen);
-                                            fetchInventarioProductosConEntradasPorPrincipal(entry?.item_de_origen)
-                                            setItemId(inventarioEntry?.[0].id ?? -1)
+                                        onClick={async () => {
+                                            if (entry) {
+                                                setEditable(true);
+
+                                                try {
+                                                    await fetchSingleEntry(entry.item_de_origen!);
+                                                    setIsModalOpen(true);
+                                                    setEntryId(entry.id);
+                                                    setStockFromEmpleados(entry.stock);
+                                                    setCantidad(1)
+                                                } catch (error) {
+                                                    console.error("Error fetching data:", error);
+                                                }
+                                            }
                                         }}
                                         //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
                                         // onMouseEnter={() => setColorTrigger(true)}
@@ -716,14 +736,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                     <StyledLabel htmlFor="producto_id">Producto</StyledLabel>
                                     <StyledSelect
                                         name="producto_id"
-                                        required
                                         value={productoId}
-                                        defaultValue=""
                                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                                             setProductoId(+e.target.value)
                                         }
                                     >
-                                        <option value="" disabled>
+                                        <option value={-1} disabled>
                                             Selecciona un Producto
                                         </option>
                                         {productos.map(producto => (
@@ -741,6 +759,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         name="producto_id"
                                         required
                                         value={itemId}
+                                        disabled={editable}
                                         onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                             setItemId(+e.target.value);
                                             if (!itemType) setItemType("producto");
@@ -773,7 +792,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         // @ts-ignore
                                         textAlign="center"
                                         name="cantidad"
-                                        min={1}
+                                          min={-stockFromEmpleados!}
+                                        step="1"
                                         max={productoSeleccionado.stock}
                                         value={cantidad}
                                         onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
@@ -793,7 +813,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                             largo="100%"
                                             name="stock"
                                             type="number"
-                                            step="0.01"
+                                            step="1"
                                             placeholder="Ej. 25.5"
                                             value={stock}
                                             onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
@@ -836,7 +856,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 </>
                             )}
                             <FormRow style={{ justifyContent: "flex-end", gap: "1rem" }}>
-                                {editable && entryId && (
+                                {editable && entryId && flag === "principal" && (
                                     <ModalButton
                                         onClick={() => {
                                             editEntry(entryId, {
@@ -845,6 +865,80 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                                 fechaDeCaducidad: fechaDeCaducidad?.toISOString(),
                                             });
                                             fetchInventarioProductosConEntradas();
+                                            
+                                        }}
+                                        type="button"
+                                    >
+                                        Editar Entrada
+                                    </ModalButton>
+                                )}
+                                {editable && entryId && flag === "empleado" && (
+                                    <ModalButton
+                                        onClick={async () => {
+                                            try {
+                                                if (!inventarioId) return window.alert("Falta el Inventario destino");
+                                                if (!productoId) return window.alert("Falta el Producto");
+                                                if (!stock) return window.alert("Falta el Stock");
+                                              
+                                                await createMovimiento(
+                                                    inventarioPrincipalId!,
+                                                    "producto",
+                                                    new Date(),
+                                                    itemId!,
+                                                   cantidad > 1  ? "salida" : "traspaso",
+                                                    cantidad < 1 ? cantidad * -1 : cantidad,
+                                                    tecnicoId!
+                                                );
+                                                await createMovimiento(
+                                                    inventarioId!,
+                                                    "producto",
+                                                    new Date(),
+                                                    entryId!,
+                                                     cantidad > 1  ? "traspaso" : "salida",
+                                                     cantidad < 1 ? cantidad * -1 : cantidad,
+                                                    tecnicoId!
+                                                );
+
+                                                 if (inventarioEntry?.[0]) {
+                                                    
+                                                
+
+                                                 await editEntry(inventarioEntry[0].id, {
+                                                        stock: inventarioEntry[0].stock - cantidad,
+                                                    });
+
+                                                    if (inventarioEntry[0].stock - cantidad === 0) {
+                                                        await deleteInventarioEntry(inventarioEntry[0].id);
+                                                        return;
+                                                    }
+
+                                                  
+
+                                                     await editEntry(entryId, {
+                                                    stock: stockFromEmpleados! + cantidad,
+                                                    });
+
+                                                    if (stockFromEmpleados! + cantidad === 0) {
+                                                    
+                                                        await deleteInventarioEntry(entryId);
+                                                        return;
+                                                    }
+
+                                                   
+                                                fetchInventarioProductosConEntradasPorPrincipal(null);
+                                                fetchInventarioProductosConEntradas();
+
+                                                }
+
+                                                 
+                                                
+                                                
+                                            } catch (error) {
+                                                console.error("Error during the operation:", error);
+                                                window.alert(
+                                                    "Ocurrió un error durante la operación. Revisa la consola."
+                                                );
+                                            }
                                         }}
                                         type="button"
                                     >
