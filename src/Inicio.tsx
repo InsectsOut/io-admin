@@ -274,7 +274,7 @@ const Dashboard = () => {
                     </Link>
                 </OptionsCardsCont>
                 <ImgCont>
-                    <InsectImage src={logoGrande} />
+                    <InsectImage   loading="lazy" src={logoGrande} />
                     <InfoText>
                         <p>
                             Hola, Esta herramienta nos ayudará a agilizar la operación de Insects Out. Ha sido

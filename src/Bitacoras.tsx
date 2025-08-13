@@ -19,7 +19,7 @@ export const Bitacoras: React.FC<serviciosProps> = props => {
                     flexDirection: "column",
                 }}
             >
-                <img src={mantenimiento} alt="Logo" style={{ width: "85%" }} />
+                <img src={mantenimiento}  loading="lazy" alt="Logo" style={{ width: "85%" }} />
             </div>
         </>
     );

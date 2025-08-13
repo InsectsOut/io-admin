@@ -82,7 +82,7 @@ function NavBar() {
             {window.location.pathname !== "/" && (
                 <>
                     <NavContainer>
-                        <Logo onClick={() => navigate("/inicio")} src={icon} />
+                        <Logo onClick={() => navigate("/inicio")}  loading="lazy" src={icon} />
                         <IconsContainer className="iconosContainer">
                             <Li
                                 onClick={() => {
