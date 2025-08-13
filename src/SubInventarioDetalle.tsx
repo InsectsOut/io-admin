@@ -96,7 +96,7 @@ export const Icono = styled(FaEdit)`
         color: #2395ff;
     }
 `;
-export const Plus = styled(FaPlus)`
+export const Edit = styled(FaEdit)`
     &:hover {
         color: #2395ff;
     }
@@ -552,7 +552,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         id="entrySixthElement"
                                     >
                                         {" "}
-                                        <Plus size={20} />
+                                        <Edit size={20} />
                                     </EntryRow>
                                 )}
                                 <button

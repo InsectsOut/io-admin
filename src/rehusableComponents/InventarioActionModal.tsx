@@ -442,7 +442,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
     };
 
     useEffect(() => {
-        if (props.flag === "empleado" && inventarioPrincipalId) {
+        if (props.flag === "empleado" && inventarioPrincipalId  ) {
 
         const fetchData = async () => {
             const entradasDeEmpleado = await fetchInventarioProductosConEntradas();
@@ -456,7 +456,11 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
 
             const updated = invEntradasDePrincipal.filter(item => !lotesAEliminar.has(item.Lote));
 
-            setEntradasConProductosPrincipal(updated);
+            if (props.editable){
+            return
+            }else{
+              setEntradasConProductosPrincipal(updated);
+            }
         };
 
         fetchData();
