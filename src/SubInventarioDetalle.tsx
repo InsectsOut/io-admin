@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { FaPlus, FaMinus } from "react-icons/fa";
-import {
-    CreateButton,
-} from "./rehusableComponents/CreateInventariosModal";
+import { CreateButton } from "./rehusableComponents/CreateInventariosModal";
 import { Tables } from "./supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
 import { FaEdit } from "react-icons/fa";
@@ -11,7 +9,8 @@ import { Enums } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import PaginationComponent from "./PaginationComponent";
 import InventarioActionModal from "./rehusableComponents/InventarioActionModal";
-
+import { set } from "ts-pattern/dist/patterns";
+type Movimientos = Tables<"Movimientos">;
 
 interface SubInventarioDetalleProps {
     name?: string;
@@ -192,19 +191,26 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [cantidad, setCantidad] = useState<number>(1);
     const [itemId, setItemId] = useState<number | null>(-1);
     const [stockFromEmpleados, setStockFromEmpleados] = useState<number | null>(null);
+    const [entryOrigen, setEntryOrigen] = useState<number | null>(null);
     const params = new URLSearchParams(window.location.search);
 
- 
     const nullAllParameters = () => {
         setProductoId(-1);
         setStock(undefined);
         setInventarioPrincipalId(-1);
         setInventarioEntry(null);
         setFechaDeCaducidad(null);
+        setEntryOrigen(-1);
         setLote("");
+        setEntryId(null);
     };
 
-     const fetchInventarioProductosConEntradas = async () => {
+    const handleActionModalClose = () => {
+        nullAllParameters();
+        setIsModalOpen(false);
+    };
+
+    const fetchInventarioProductosConEntradas = async () => {
         try {
             const { data, error, count } = await supabase
                 .from("Inventario_productos")
@@ -272,12 +278,16 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 setLote(data[0]?.Lote ?? "");
                 setFechaDeCaducidad(null);
                 setInventarioPrincipalId(data[0]?.inventario_id!);
-                console.log("la data", data);
+                setEntryId(data[0]?.id ?? null);
+                console.log("la data que se borrará", data);
 
                 if (data[0]?.fecha_de_caducidad) {
                     const [year, month, day] = data[0]?.fecha_de_caducidad.split("-").map(Number);
                     const formattedDob = new Date(year, month - 1, day);
                     setFechaDeCaducidad(formattedDob);
+                }
+                if (flag === "empleado") {
+                    return data[0];
                 }
             } else {
                 console.log("No inventario productos found.");
@@ -330,14 +340,62 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         }
     };
 
+    const regresarProductoAlnventarioPrincipal = async (
+        stockFromEmpleados: number,
+        stockPrincipal: number,
+        entryId: number
+    ) => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .update({ stock: stockFromEmpleados! + stockPrincipal })
+                .eq("id", entryId);
+            if (!error) {
+                console.log("Producto regresado al inventario principal:", data);
+                fetchInventarioProductosConEntradas();
+            }
+        } catch (error) {
+            console.error("Error regresando producto al inventario principal:", error);
+        }
+    };
+
     const deleteInventarioEntry = async (entryId: number) => {
+        console.log("Deleting entry with ID:", entryId);
         try {
             const { error, data } = await supabase.from("Inventario_productos").delete().eq("id", entryId);
             if (error) {
                 console.error("Error trying to delete the entry", error);
             } else {
+                if (flag === "empleado") {
+                    const itemDeOrigen = (await inventarioEntry?.[0]?.item_de_origen) ?? -1;
+                    createMovimiento(
+                        inventarioPrincipalId!,
+                        "producto",
+                        new Date(),
+                        entryId,
+                        "salida",
+                        stockFromEmpleados!,
+                        null
+                    );
+                    const newEntry = await fetchSingleEntry(itemDeOrigen);
+                    const stockOrigen = newEntry?.stock ?? 0;
+                    const entradaNuevaId = newEntry?.id ?? -1;
+                    const nuevoInventarioPrincipalId = newEntry?.inventario_id ?? -1;
+
+                    await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
+                    await createMovimiento(
+                        nuevoInventarioPrincipalId!,
+                        "producto",
+                        new Date(),
+                        entradaNuevaId!,
+                        "traspaso",
+                        stockFromEmpleados!,
+                        null
+                    );
+                }
                 console.log("Deleted entry", data);
-                fetchInventarioProductosConEntradas();
+                await fetchInventarioProductosConEntradas();
+                await nullAllParameters();
             }
         } catch (err) {
             console.log(err);
@@ -345,6 +403,38 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     };
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
+    };
+
+    const createMovimiento = async (
+        inventarioID: Number,
+        itemType: Enums<"TipoItem">,
+        fecha: Date,
+        ItemID: number,
+        type: Enums<"TipoMovimiento">,
+        quanity: number,
+        tecnicoID: number | null = null
+    ) => {
+        try {
+            const { data, error } = await supabase.from("Movimientos").insert([
+                {
+                    inventario_id: inventarioID,
+                    item_type: itemType,
+                    date: fecha.toISOString(),
+                    item_id: ItemID,
+                    type: type,
+                    quantity: quanity,
+                    tecnico_id: tecnicoID,
+                },
+            ] as Movimientos[]);
+
+            if (error) {
+                console.error("Error creando inventario:", error);
+            } else {
+                console.log("Inventario creado:", data);
+            }
+        } catch (err) {
+            console.error("Error creating inventario:", err);
+        }
     };
 
     useEffect(() => {
@@ -358,7 +448,6 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             fetchInventariosPrincipales();
         }
     }, []);
-
 
     useEffect(() => {
         if (flag === "principal") fetchInventarioProductosConEntradas();
@@ -445,13 +534,13 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         onClick={async () => {
                                             if (entry) {
                                                 await fetchSingleEntry(entry.item_de_origen!);
-                                               await  setEditable(true);
+                                                await setEditable(true);
 
                                                 try {
-                                                  
                                                     await setIsModalOpen(true);
                                                     await setEntryId(entry.id);
                                                     await setStockFromEmpleados(entry.stock);
+                                                    await setEntryOrigen(entry.item_de_origen);
                                                     await setCantidad(1);
                                                 } catch (error) {
                                                     console.error("Error fetching data:", error);
@@ -467,11 +556,11 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                     </EntryRow>
                                 )}
                                 <button
-                                    onClick={() => {
-                                        setDeleteModalOpen(true);
-                                        setEntryId(entry.id);
-                                        fetchSingleEntry(entry.id);
-                                        //  deleteInventarioEntry(entry.id);
+                                    onClick={async () => {
+                                        await setDeleteModalOpen(true);
+                                        await setEntryId(entry.id);
+                                        await fetchSingleEntry(entry.id);
+                                        await setStockFromEmpleados(entry.stock);
                                     }}
                                     id="borrarServicio"
                                     style={{ fontWeight: "bold", fontSize: "105%" }}
@@ -511,19 +600,27 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
             {isModalOpen && (
                 <InventarioActionModal
-                flag={flag}
-                editable={editable}
-                entryId={entryId}
-                stockFromEmpleados={stockFromEmpleados}
-                itemId={itemId}
-                inventarioEntry={inventarioEntry}
-                stock={inventarioEntry?.[0]?.stock || -1}
-                lote={inventarioEntry?.[0]?.Lote || ""}
-                fechaDeCaducidad={inventarioEntry?.[0]?.fecha_de_caducidad ? new Date(inventarioEntry?.[0]?.fecha_de_caducidad) : null}
-                inventarioPrincipalId={inventarioPrincipalId}
-                closeModal={() => setIsModalOpen(false)}
-                fetchInventarioProductosConEntradas={()=>{fetchInventarioProductosConEntradas()}}
-                fetchInventarioProductosConEntradasPorPrincipal={(singleEntryId: number | null) => {fetchInventarioProductosConEntradasPorPrincipal(singleEntryId)}}
+                    flag={flag}
+                    editable={editable}
+                    entryId={entryId}
+                    stockFromEmpleados={stockFromEmpleados}
+                    itemId={entryOrigen}
+                    inventarioEntry={inventarioEntry}
+                    stock={inventarioEntry?.[0]?.stock || -1}
+                    lote={inventarioEntry?.[0]?.Lote || ""}
+                    fechaDeCaducidad={
+                        inventarioEntry?.[0]?.fecha_de_caducidad
+                            ? new Date(inventarioEntry?.[0]?.fecha_de_caducidad)
+                            : null
+                    }
+                    inventarioPrincipalId={inventarioPrincipalId}
+                    closeModal={() => setIsModalOpen(false)}
+                    fetchInventarioProductosConEntradas={() => {
+                        fetchInventarioProductosConEntradas();
+                    }}
+                    fetchInventarioProductosConEntradasPorPrincipal={(singleEntryId: number | null) => {
+                        fetchInventarioProductosConEntradasPorPrincipal(singleEntryId);
+                    }}
                 ></InventarioActionModal>
             )}
         </SectionContainer>

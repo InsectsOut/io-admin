@@ -17,6 +17,8 @@ type InventarioProductoEntradas = InventarioProducos & {
 };
 
 import { TextAlign } from "./CardInputs";
+import { set } from "ts-pattern/dist/patterns";
+import { MdOutlineDataExploration } from "react-icons/md";
 
 interface InventarioActionModalProps {
     editable: boolean;
@@ -63,13 +65,13 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
     const [stockFromEmpleados, setStockFromEmpleados] = useState<number | null>(props.stockFromEmpleados ?? null);
     const [tecnicoId, setTecnicoId] = useState<number>();
 
-
     const nullAllParameters = () => {
         setProductoId(-1);
         setStock(0);
         setInventarioPrincipalId(-1);
         setInventarioEntry(null);
         setFechaDeCaducidad(null);
+        setItemId(-1);
         setLote("");
     };
     const handleFechaDeCaducidadChange = (date: Date | null) => {
@@ -102,10 +104,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             if (error) {
                 console.error("Error editando inventario:", error);
             } else {
-                console.log("Inventario editado:", data);
                 setProductoId(-1);
                 setStock(0);
-                props.closeModal()
+                props.closeModal();
             }
         } catch (err) {
             console.error("Error editing inventario:", err);
@@ -122,19 +123,18 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             }
 
             if (data) {
-                console.log("Inventario prod entradas fetched successfully:", data);
                 setItemId(data[0]?.id ?? -1);
                 setInventarioEntry(data);
                 setProductoId(data?.[0]?.producto_id ?? productoId);
                 setStock(data[0]?.stock);
                 setLote(data[0]?.Lote ?? "");
-                setFechaDeCaducidad(null);
                 setInventarioPrincipalId(data[0]?.inventario_id ?? -1);
 
-                if (data[0]?.fecha_de_caducidad) {
-                    const [year, month, day] = data[0]?.fecha_de_caducidad.split("-").map(Number);
-                    const formattedDob = new Date(year, month - 1, day);
-                    setFechaDeCaducidad(formattedDob);
+                const [year, month, day] = data[0]?.fecha_de_caducidad!.split("-").map(Number);
+                const formattedDob = new Date(year, month - 1, day);
+                setFechaDeCaducidad(formattedDob);
+                if (props.flag === "empleado") {
+                    return data[0];
                 }
             } else {
                 console.log("No inventario productos found.");
@@ -158,8 +158,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             }
 
             if (data) {
-                console.log("Inventario productos fetched successfully:", data);
                 setEntradasConProductos(data);
+                return data
             } else {
                 console.log("No inventario productos found.");
             }
@@ -209,11 +209,13 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
 
                 if (stockFromEmpleados! + cantidad === 0) {
                     await deleteInventarioEntry(entryId);
+                    //regresarProductoAlnventarioPrincipal(stockFromEmpleados!,stock!,entryId);
                     return;
                 }
 
                 await props.fetchInventarioProductosConEntradasPorPrincipal(null);
                 await props.fetchInventarioProductosConEntradas();
+                await nullAllParameters();
                 await props.closeModal();
             }
         } catch (error) {
@@ -231,27 +233,31 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         lote: string | null
     ) => {
         try {
-            const { data, error } = await supabase.from("Inventario_productos").insert([
-                {
-                    inventario_id: inventarioID,
-                    producto_id: productoID,
-                    stock: stock,
-                    fecha_de_caducidad: fechaCad.toISOString(),
-                    item_de_origen: itemDeOrigen ?? null,
-                    Lote: lote,
-                },
-            ] as InventarioProducos[]);
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .insert([
+                    {
+                        inventario_id: inventarioID,
+                        producto_id: productoID,
+                        stock: stock,
+                        fecha_de_caducidad: fechaCad.toISOString(),
+                        item_de_origen: itemDeOrigen ?? null,
+                        Lote: lote,
+                    },
+                ] as InventarioProducos[])
+                .select("*");
 
             if (error) {
                 console.error("Error creando inventario:", error);
             } else {
-                console.log("Inventario creado:", data);
+                await setEntryId(data?.[0]?.id ?? null);
                 setProductoId(-1);
                 setStock(0);
                 setLote("");
                 setFechaDeCaducidad(null);
                 props.closeModal();
                 props.fetchInventarioProductosConEntradas();
+                return data?.[0];
             }
         } catch (err) {
             console.error("Error creating inventario:", err);
@@ -265,7 +271,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         ItemID: number,
         type: Enums<"TipoMovimiento">,
         quanity: number,
-        tecnicoID: number
+        tecnicoID: number | null = null
     ) => {
         try {
             const { data, error } = await supabase.from("Movimientos").insert([
@@ -281,9 +287,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             ] as Movimientos[]);
 
             if (error) {
-                console.error("Error creando inventario:", error);
+                console.error("Error creando movimiento:", error);
             } else {
-                console.log("Inventario creado:", data);
                 setProductoId(-1);
                 setStock(0);
                 setLote("");
@@ -295,14 +300,55 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         }
     };
 
+    const fetchLotes = async (lotePrincipal: string) => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .select("Lote")
+                .eq("Lote", lotePrincipal)
+                .eq("inventario_id", inventarioId);
+            if (data) {
+                return true;
+            }
+        } catch (err) {
+            console.error("Error fetching lotes:", err);
+        }
+    };
     const deleteInventarioEntry = async (entryId: number) => {
         try {
             const { error, data } = await supabase.from("Inventario_productos").delete().eq("id", entryId);
             if (error) {
                 console.error("Error trying to delete the entry", error);
             } else {
-                console.log("Deleted entry", data);
-                props.fetchInventarioProductosConEntradas();
+                if (props.flag === "empleado") {
+                    const itemDeOrigen = (await props.itemId) ?? -1;
+                    createMovimiento(
+                        inventarioPrincipalId!,
+                        "producto",
+                        new Date(),
+                        entryId,
+                        "salida",
+                        stockFromEmpleados!,
+                        null
+                    );
+                    const newEntry = await fetchSingleEntry(itemDeOrigen);
+                    const stockOrigen = newEntry?.stock ?? 0;
+                    const entradaNuevaId = newEntry?.id ?? -1;
+                    const nuevoInventarioPrincipalId = newEntry?.inventario_id ?? -1;
+
+                    await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
+                    await createMovimiento(
+                        nuevoInventarioPrincipalId!,
+                        "producto",
+                        new Date(),
+                        entradaNuevaId!,
+                        "traspaso",
+                        stockFromEmpleados!,
+                        null
+                    );
+                }
+                await fetchInventarioProductosConEntradas();
+                await nullAllParameters();
             }
         } catch (err) {
             console.log(err);
@@ -317,7 +363,6 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 .eq("inventario_id", inventarioPrincipalId!);
 
             if (singleEntryId !== null) {
-                console.log("cricoso", singleEntryId);
                 query = query.eq("id", singleEntryId);
             }
             const { data, error } = await query;
@@ -326,8 +371,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             }
 
             if (data) {
-                console.log("Entradas de productos fetched successfully:", data);
                 setEntradasConProductosPrincipal(data);
+                return data;
             } else {
                 console.log("No inventario productos found.");
             }
@@ -345,7 +390,6 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             }
 
             if (data) {
-                console.log("Productos fetched successfully:", data);
                 setProductos(data);
             } else {
                 console.log("No products found.");
@@ -369,7 +413,6 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             }
 
             if (data) {
-                console.log("Inventarios principales fetched successfully:", data);
                 setInventariosPrincipales(data);
             } else {
                 console.log("No products found.");
@@ -379,8 +422,45 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         }
     };
 
+    const regresarProductoAlnventarioPrincipal = async (
+        stockFromEmpleados: number,
+        stockPrincipal: number,
+        entryId: number
+    ) => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .update({ stock: stockFromEmpleados! + stockPrincipal })
+                .eq("id", entryId);
+            if (!error) {
+                props.fetchInventarioProductosConEntradasPorPrincipal(null);
+                props.fetchInventarioProductosConEntradas();
+            }
+        } catch (error) {
+            console.error("Error regresando producto al inventario principal:", error);
+        }
+    };
+
     useEffect(() => {
-        if (props.flag === "empleado" && inventarioPrincipalId) fetchInventarioProductosConEntradasPorPrincipal(null);
+        if (props.flag === "empleado" && inventarioPrincipalId) {
+
+        const fetchData = async () => {
+            const entradasDeEmpleado = await fetchInventarioProductosConEntradas();
+            console.log(entradasConProductos)
+            const invEntradasDePrincipal = await fetchInventarioProductosConEntradasPorPrincipal(null);
+            console.log(invEntradasDePrincipal)
+
+            if (!Array.isArray(invEntradasDePrincipal) || !Array.isArray(entradasDeEmpleado)) return;
+
+            const lotesAEliminar = new Set(entradasDeEmpleado.map(item => item.Lote));
+
+            const updated = invEntradasDePrincipal.filter(item => !lotesAEliminar.has(item.Lote));
+
+            setEntradasConProductosPrincipal(updated);
+        };
+
+        fetchData();
+    }
     }, [inventarioPrincipalId]);
 
     useEffect(() => {
@@ -393,6 +473,10 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             fetchInventariosPrincipales();
         }
     }, []);
+
+    // useEffect(()=>{
+
+    // },[])
 
     return (
         <ModalOverlay>
@@ -448,6 +532,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                 name="producto_id"
                                 required
                                 value={itemId}
+                                defaultValue={-1}
                                 disabled={props.editable}
                                 onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
                                     setItemId(+e.target.value);
@@ -594,22 +679,11 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                             tecnicoId!
                                         );
 
-                                        // 2. CREAR MOVIMIENTO DE ENTRADA
-                                        await createMovimiento(
-                                            inventarioId!,
-                                            "producto",
-                                            new Date(),
-                                            itemId!,
-                                            "traspaso",
-                                            cantidad,
-                                            tecnicoId!
-                                        );
-
                                         // 3. CREAR ENTRADA
 
                                         // 4. ACTUALIZAR STOCK DE LA ENTRADA ORIGINAL
                                         if (inventarioEntry?.[0]) {
-                                            await createEntry(
+                                            const newEntry = await createEntry(
                                                 inventarioId,
                                                 productoId,
                                                 cantidad,
@@ -617,10 +691,17 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                                 itemId,
                                                 inventarioEntry?.[0].Lote
                                             );
-                                            // if (inventarioEntry[0].stock - cantidad === 0) {
-                                            //     await deleteInventarioEntry(inventarioEntry[0].id);
-                                            //     return;
-                                            // }
+
+                                            // 2. CREAR MOVIMIENTO DE ENTRADA
+                                            await createMovimiento(
+                                                inventarioId!,
+                                                "producto",
+                                                new Date(),
+                                                newEntry?.id!,
+                                                "traspaso",
+                                                cantidad,
+                                                tecnicoId!
+                                            );
                                             await editEntry(inventarioEntry[0].id, {
                                                 stock: inventarioEntry[0].stock - cantidad,
                                             });
@@ -645,3 +726,4 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
 };
 
 export default InventarioActionModal;
+
