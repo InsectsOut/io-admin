@@ -149,7 +149,7 @@ const Login: React.FC<loginProps> = ({ setToken }) => {
         >
             <LoginCard>
                 <LoginTitle>Accede con tu cuenta</LoginTitle>
-                <LoginLogo src={logo1} alt="Logo" />
+                <LoginLogo src={logo1}  loading="lazy" alt="Logo" />
                 <StyledForm onSubmit={handleSubmit}>
                     <StyledInput placeholder="Usuario" type="text" value={username} onChange={usernameEntered} />
                     <StyledInput placeholder="Contraseña" type="password" value={password} onChange={passwordEntered} />
