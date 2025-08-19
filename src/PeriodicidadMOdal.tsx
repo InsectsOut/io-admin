@@ -182,7 +182,7 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
     const [startDate, setStartDate] = useState<Date | null>(startDateProp);
     const [selectedDays, setSelectedDays] = useState<number | null>();
     const days = [
-        { name: "D", number_of_day: 0 as number },
+        { name: "D", number_of_day: 0  },
         { name: "L", number_of_day: 1 },
         { name: "M", number_of_day: 2 },
         { name: "M", number_of_day: 3 },

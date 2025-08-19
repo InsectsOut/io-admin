@@ -674,59 +674,74 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         }
     };
 
-    const createSuggestedDates = (
-        cantidadServicios: number | null,
-        startDate: Date | null,
-        frecuencia: Enums<"FrecuenciaServicio">,
-        selectedDays: number // 0: Sunday, 1: Monday, ...
-    ) => {
-        if (!cantidadServicios || cantidadServicios <= 0) {
-            window.alert("Por favor defina la cantidad de servicios a crear");
-            return;
-        }
-        if (!startDate) {
-            window.alert("Por favor defina la fecha de inicio de creación de servicios");
-            return;
-        }
+  const createSuggestedDates = (
+    cantidadServicios: number | null,
+    startDate: Date | null,
+    frecuencia: Enums<"FrecuenciaServicio">,
+    selectedDay: number // 0: Sunday, 1: Monday, ...
+) => {
+    if (!cantidadServicios || cantidadServicios <= 0) {
+        window.alert("Por favor defina la cantidad de servicios a crear");
+        return;
+    }
+    if (!startDate) {
+        window.alert("Por favor defina la fecha de inicio de creación de servicios");
+        return;
+    }
 
-        const getNextWeekday = (base: Date, targetDay: number): Date => {
-            const date = new Date(base);
-            const day = date.getDay();
-            const diff = (targetDay + 7 - day) % 7;
-            date.setDate(date.getDate() + diff);
-            return date;
-        };
-
-        const frequency_number =
-            frecuencia === "Anual"
-                ? 365
-                : frecuencia === "Semestral"
-                  ? 168
-                  : frecuencia === "Trimestral"
-                    ? 84
-                    : frecuencia === "Bimestral"
-                      ? 56
-                      : frecuencia === "Mensual"
-                        ? 28
-                        : frecuencia === "Quincenal"
-                          ? 14
-                          : frecuencia === "Semanal"
-                            ? 7
-                            : 0;
-
-        let currentDate = getNextWeekday(startDate, selectedDays);
-        const generatedDates: Date[] = [];
-
-        for (let i = 0; i < cantidadServicios; i++) {
-            const nextDate = new Date(currentDate);
-            nextDate.setDate(currentDate.getDate() + i * frequency_number);
-            const adjustedDate = getNextWeekday(nextDate, selectedDays);
-            generatedDates.push(nextDate);
-        }
-
-        console.log(generatedDates);
-        set_fechas_recomendadas(generatedDates);
+    const getNextWeekday = (base: Date, targetDay: number): Date => {
+        const date = new Date(base);
+        const day = date.getDay();
+        const diff = (targetDay + 7 - day) % 7;
+        date.setDate(date.getDate() + diff);
+        return date;
     };
+
+    // use calendar math instead of "days"
+    const addFrequency = (date: Date, step: number): Date => {
+        const d = new Date(date);
+
+        switch (frecuencia) {
+            case "Anual":
+                d.setFullYear(d.getFullYear() + step);
+                break;
+            case "Semestral": // every 6 months
+                d.setMonth(d.getMonth() + step * 6);
+                break;
+            case "Trimestral": // every 3 months
+                d.setMonth(d.getMonth() + step * 3);
+                break;
+            case "Bimestral": // every 2 months
+                d.setMonth(d.getMonth() + step * 2);
+                break;
+            case "Mensual":
+                d.setMonth(d.getMonth() + step);
+                break;
+            case "Quincenal":
+                d.setDate(d.getDate() + step * 14);
+                break;
+            case "Semanal":
+                d.setDate(d.getDate() + step * 7);
+                break;
+            default:
+                break;
+        }
+        return d;
+    };
+
+    let currentDate = getNextWeekday(startDate, selectedDay);
+    const generatedDates: Date[] = [];
+
+    for (let i = 0; i < cantidadServicios; i++) {
+        const nextDate = addFrequency(currentDate, i);
+        const adjustedDate = getNextWeekday(nextDate, selectedDay);
+        generatedDates.push(adjustedDate);
+    }
+
+    console.log(generatedDates);
+    set_fechas_recomendadas(generatedDates);
+};
+
 
     const handleTagClicks = (event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation();
@@ -867,7 +882,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                                                 numDeServicios,
                                                 startDate,
                                                 frecuencia,
-                                                selectedDays ? selectedDays : 1
+                                                selectedDays!
                                             )
                                         }
                                         ModalCloser={handleCloseFromChild}
