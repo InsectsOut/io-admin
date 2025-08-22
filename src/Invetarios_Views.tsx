@@ -119,7 +119,7 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
                 />
             ) : (
                 <SubInventarioDetalle
-                    // name={selectedSub}
+                    organizacion={organizacion}
                     flag={flag}
                     items={fakeItems || []}
                     onAddItem={handleAddItem}

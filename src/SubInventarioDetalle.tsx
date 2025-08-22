@@ -9,18 +9,22 @@ import { Enums } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import PaginationComponent from "./PaginationComponent";
 import InventarioActionModal from "./rehusableComponents/InventarioActionModal";
-import { set } from "ts-pattern/dist/patterns";
-type Movimientos = Tables<"Movimientos">;
+
+
+
 
 interface SubInventarioDetalleProps {
     name?: string;
     items: InventarioItem[];
     onAddItem: (item: string) => void;
     flag: Enums<"TipoInventario">;
+    organizacion:string | null
 }
 type Productos = Tables<"Productos">;
 type InventarioProducos = Tables<"Inventario_productos">;
 type Inventarios = Tables<"Inventario">;
+type GrupoDeMovimientos = Tables<"GrupoDeMovimientos">;
+type Movimientos = Tables<"Movimientos">;
 
 type InventarioProductoEntradas = InventarioProducos & {
     Productos: Productos | null;
@@ -164,7 +168,7 @@ export const EntryRow = styled.div`
     }
 `;
 
-const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag }) => {
+const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag,organizacion}) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [productoId, setProductoId] = useState<number>(-1);
     const [stock, setStock] = useState<number>();
@@ -340,6 +344,55 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         }
     };
 
+    const createGrupoDeMovimientos = async (movimientoIds?: number[] | null, grupoId?: number | null) => {
+            try {
+                let existingIds: number[] = [];
+    
+                // If we already have a group, fetch its current movimientos_id
+                if (grupoId) {
+                    const { data: existing, error: fetchError } = await supabase
+                        .from("GrupoDeMovimientos")
+                        .select("movimientos_id")
+                        .eq("id", grupoId)
+                        .single();
+    
+                    if (fetchError) {
+                        console.error("Error fetching existing group:", fetchError);
+                        return null;
+                    }
+    
+                    if (existing?.movimientos_id) {
+                        existingIds = existing.movimientos_id;
+                    }
+                }
+    
+                // Merge old + new (avoid duplicates)
+                const mergedIds = [...new Set([...(existingIds || []), ...(movimientoIds || [])])];
+    
+                // Upsert with merged IDs
+                const { data, error } = await supabase
+                    .from("GrupoDeMovimientos")
+                    .upsert([
+                        {
+                            ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
+                            movimientos_id: mergedIds,
+                            organizacion: organizacion,
+                        },
+                    ] as GrupoDeMovimientos[])
+                    .select("id");
+    
+                if (error) {
+                    console.error("Error in upsert:", error);
+                    return null;
+                }
+    
+                return data?.[0]?.id ?? null;
+            } catch (err) {
+                console.error("Exception:", err);
+                return null;
+            }
+        };
+
     const regresarProductoAlnventarioPrincipal = async (
         stockFromEmpleados: number,
         stockPrincipal: number,
@@ -368,7 +421,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             } else {
                 if (flag === "empleado") {
                     const itemDeOrigen = (await inventarioEntry?.[0]?.item_de_origen) ?? -1;
-                    createMovimiento(
+                    const grupoMovId = await createGrupoDeMovimientos([], null);
+                  const firstMovId =  await createMovimiento(
                         inventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -377,13 +431,17 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                         stockFromEmpleados!,
                         null
                     );
+                     if (!firstMovId){
+                       return window.alert("Error al crear el movimiento de salida");
+                     }
+                    await createGrupoDeMovimientos([firstMovId], grupoMovId);
                     const newEntry = await fetchSingleEntry(itemDeOrigen);
                     const stockOrigen = newEntry?.stock ?? 0;
                     const entradaNuevaId = newEntry?.id ?? -1;
                     const nuevoInventarioPrincipalId = newEntry?.inventario_id ?? -1;
 
                     await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
-                    await createMovimiento(
+                    const secondMovId = await createMovimiento(
                         nuevoInventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -392,6 +450,10 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                         stockFromEmpleados!,
                         null
                     );
+                    if (!secondMovId) {
+                        return window.alert("Error al crear el movimiento de entrada");
+                    }
+                    await createGrupoDeMovimientos([secondMovId], grupoMovId);
                 }
                 console.log("Deleted entry", data);
                 await fetchInventarioProductosConEntradas();
@@ -424,13 +486,18 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     type: type,
                     quantity: quanity,
                     tecnico_id: tecnicoID,
+                    organizacion: organizacion,
                 },
-            ] as Movimientos[]);
+            ] as Movimientos[])
+            .select("*");
 
             if (error) {
                 console.error("Error creando inventario:", error);
             } else {
                 console.log("Inventario creado:", data);
+                return data?.[0].id;
+
+
             }
         } catch (err) {
             console.error("Error creating inventario:", err);
@@ -621,6 +688,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     fetchInventarioProductosConEntradasPorPrincipal={(singleEntryId: number | null) => {
                         fetchInventarioProductosConEntradasPorPrincipal(singleEntryId);
                     }}
+                    organizacion={organizacion}
                 ></InventarioActionModal>
             )}
         </SectionContainer>

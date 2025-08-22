@@ -11,15 +11,13 @@ type Productos = Tables<"Productos">;
 type InventarioProducos = Tables<"Inventario_productos">;
 type Inventarios = Tables<"Inventario">;
 type Movimientos = Tables<"Movimientos">;
+type GrupoDeMovimientos = Tables<"GrupoDeMovimientos">;
 
 type InventarioProductoEntradas = InventarioProducos & {
     Productos: Productos | null;
 };
 
 import { TextAlign } from "./CardInputs";
-import { set } from "ts-pattern/dist/patterns";
-import { MdOutlineDataExploration } from "react-icons/md";
-
 interface InventarioActionModalProps {
     editable: boolean;
     flag: Enums<"TipoInventario">;
@@ -34,6 +32,7 @@ interface InventarioActionModalProps {
     closeModal: () => void;
     fetchInventarioProductosConEntradas: () => void;
     fetchInventarioProductosConEntradasPorPrincipal: (singleEntryId: number | null) => void;
+    organizacion: string | null;
 }
 
 const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
@@ -159,7 +158,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
 
             if (data) {
                 setEntradasConProductos(data);
-                return data
+                return data;
             } else {
                 console.log("No inventario productos found.");
             }
@@ -173,8 +172,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             if (!inventarioId) return window.alert("Falta el Inventario destino");
             if (!productoId) return window.alert("Falta el Producto");
             if (!stock) return window.alert("Falta el Stock");
+            const grupoMovId  = await createGrupoDeMovimientos([]);
 
-            await createMovimiento(
+           const firstMovId =  await createMovimiento(
                 inventarioPrincipalId!,
                 "producto",
                 new Date(),
@@ -183,7 +183,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 cantidad < 1 ? cantidad * -1 : cantidad,
                 tecnicoId!
             );
-            await createMovimiento(
+            if(!firstMovId) return window.alert("Error al crear el movimiento de salida");
+            await createGrupoDeMovimientos([firstMovId],grupoMovId);
+          const secondMovId =   await createMovimiento(
                 inventarioId!,
                 "producto",
                 new Date(),
@@ -192,7 +194,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 cantidad < 1 ? cantidad * -1 : cantidad,
                 tecnicoId!
             );
-
+            if(!secondMovId) return window.alert("Error al crear el movimiento de entrada");
+           await createGrupoDeMovimientos([secondMovId],grupoMovId);
             if (inventarioEntry?.[0] && entryId) {
                 await editEntry(inventarioEntry[0].id, {
                     stock: inventarioEntry[0].stock - cantidad,
@@ -221,6 +224,55 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         } catch (error) {
             console.error("Error during the operation:", error);
             window.alert("Ocurrió un error durante la operación. Revisa la consola.");
+        }
+    };
+
+    const createGrupoDeMovimientos = async (movimientoIds?: number[] | null, grupoId?: number | null) => {
+        try {
+            let existingIds: number[] = [];
+
+            // If we already have a group, fetch its current movimientos_id
+            if (grupoId) {
+                const { data: existing, error: fetchError } = await supabase
+                    .from("GrupoDeMovimientos")
+                    .select("movimientos_id")
+                    .eq("id", grupoId)
+                    .single();
+
+                if (fetchError) {
+                    console.error("Error fetching existing group:", fetchError);
+                    return null;
+                }
+
+                if (existing?.movimientos_id) {
+                    existingIds = existing.movimientos_id;
+                }
+            }
+
+            // Merge old + new (avoid duplicates)
+            const mergedIds = [...new Set([...(existingIds || []), ...(movimientoIds || [])])];
+
+            // Upsert with merged IDs
+            const { data, error } = await supabase
+                .from("GrupoDeMovimientos")
+                .upsert([
+                    {
+                        ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
+                        movimientos_id: mergedIds,
+                        organizacion: props.organizacion,
+                    },
+                ] as GrupoDeMovimientos[])
+                .select("id");
+
+            if (error) {
+                console.error("Error in upsert:", error);
+                return null;
+            }
+
+            return data?.[0]?.id ?? null;
+        } catch (err) {
+            console.error("Exception:", err);
+            return null;
         }
     };
 
@@ -274,17 +326,21 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         tecnicoID: number | null = null
     ) => {
         try {
-            const { data, error } = await supabase.from("Movimientos").insert([
-                {
-                    inventario_id: inventarioID,
-                    item_type: itemType,
-                    date: fecha.toISOString(),
-                    item_id: ItemID,
-                    type: type,
-                    quantity: quanity,
-                    tecnico_id: tecnicoID,
-                },
-            ] as Movimientos[]);
+            const { data, error } = await supabase
+                .from("Movimientos")
+                .insert([
+                    {
+                        inventario_id: inventarioID,
+                        item_type: itemType,
+                        date: fecha.toISOString(),
+                        item_id: ItemID,
+                        type: type,
+                        quantity: quanity,
+                        tecnico_id: tecnicoID,
+                        organizacion: props.organizacion,
+                    },
+                ] as Movimientos[])
+                .select("*");
 
             if (error) {
                 console.error("Error creando movimiento:", error);
@@ -294,6 +350,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 setLote("");
                 setFechaDeCaducidad(null);
                 props.closeModal();
+                return data?.[0].id;
             }
         } catch (err) {
             console.error("Error creating inventario:", err);
@@ -322,7 +379,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             } else {
                 if (props.flag === "empleado") {
                     const itemDeOrigen = (await props.itemId) ?? -1;
-                    createMovimiento(
+                    const movGruopoId = await createGrupoDeMovimientos([], null);
+                   const firstMovId = await  createMovimiento(
                         inventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -331,13 +389,15 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                         stockFromEmpleados!,
                         null
                     );
+                    if(!firstMovId) return window.alert("Error al crear el movimiento de salida");
+                    createGrupoDeMovimientos([firstMovId],movGruopoId);
                     const newEntry = await fetchSingleEntry(itemDeOrigen);
                     const stockOrigen = newEntry?.stock ?? 0;
                     const entradaNuevaId = newEntry?.id ?? -1;
                     const nuevoInventarioPrincipalId = newEntry?.inventario_id ?? -1;
 
                     await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
-                    await createMovimiento(
+                   const secondMovId =  await createMovimiento(
                         nuevoInventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -345,7 +405,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                         "traspaso",
                         stockFromEmpleados!,
                         null
-                    );
+                    );if(!secondMovId) return window.alert("Error al crear el movimiento de entrada");
+                    await createGrupoDeMovimientos([secondMovId],movGruopoId);
                 }
                 await fetchInventarioProductosConEntradas();
                 await nullAllParameters();
@@ -442,29 +503,28 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
     };
 
     useEffect(() => {
-        if (props.flag === "empleado" && inventarioPrincipalId  ) {
+        if (props.flag === "empleado" && inventarioPrincipalId) {
+            const fetchData = async () => {
+                const entradasDeEmpleado = await fetchInventarioProductosConEntradas();
+                console.log(entradasConProductos);
+                const invEntradasDePrincipal = await fetchInventarioProductosConEntradasPorPrincipal(null);
+                console.log(invEntradasDePrincipal);
 
-        const fetchData = async () => {
-            const entradasDeEmpleado = await fetchInventarioProductosConEntradas();
-            console.log(entradasConProductos)
-            const invEntradasDePrincipal = await fetchInventarioProductosConEntradasPorPrincipal(null);
-            console.log(invEntradasDePrincipal)
+                if (!Array.isArray(invEntradasDePrincipal) || !Array.isArray(entradasDeEmpleado)) return;
 
-            if (!Array.isArray(invEntradasDePrincipal) || !Array.isArray(entradasDeEmpleado)) return;
+                const lotesAEliminar = new Set(entradasDeEmpleado.map(item => item.Lote));
 
-            const lotesAEliminar = new Set(entradasDeEmpleado.map(item => item.Lote));
+                const updated = invEntradasDePrincipal.filter(item => !lotesAEliminar.has(item.Lote));
 
-            const updated = invEntradasDePrincipal.filter(item => !lotesAEliminar.has(item.Lote));
+                if (props.editable) {
+                    return;
+                } else {
+                    setEntradasConProductosPrincipal(updated);
+                }
+            };
 
-            if (props.editable){
-            return
-            }else{
-              setEntradasConProductosPrincipal(updated);
-            }
-        };
-
-        fetchData();
-    }
+            fetchData();
+        }
     }, [inventarioPrincipalId]);
 
     useEffect(() => {
@@ -672,8 +732,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                         if (!stock) return window.alert("Falta el Stock");
                                         if (!fechaDeCaducidad) return window.alert("Falta la Fecha de caducidad");
 
+                                        const grupoMovId = await createGrupoDeMovimientos([], null);
                                         // 1. CREAR MOVIMIENTO DE SALIDA
-                                        await createMovimiento(
+                                        const firstMovId = await createMovimiento(
                                             inventarioPrincipalId!,
                                             "producto",
                                             new Date(),
@@ -682,7 +743,10 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                             cantidad,
                                             tecnicoId!
                                         );
-
+                                        if (!firstMovId) {
+                                            return window.alert("Error al crear el movimiento de salida");
+                                        }
+                                        await createGrupoDeMovimientos([firstMovId], grupoMovId);
                                         // 3. CREAR ENTRADA
 
                                         // 4. ACTUALIZAR STOCK DE LA ENTRADA ORIGINAL
@@ -697,7 +761,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                             );
 
                                             // 2. CREAR MOVIMIENTO DE ENTRADA
-                                            await createMovimiento(
+                                            const secondMovId = await createMovimiento(
                                                 inventarioId!,
                                                 "producto",
                                                 new Date(),
@@ -706,6 +770,10 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                                                 cantidad,
                                                 tecnicoId!
                                             );
+                                            if (!secondMovId) {
+                                                return window.alert("Error al crear el movimiento de salida");
+                                            }
+                                            await createGrupoDeMovimientos([secondMovId], grupoMovId);
                                             await editEntry(inventarioEntry[0].id, {
                                                 stock: inventarioEntry[0].stock - cantidad,
                                             });
