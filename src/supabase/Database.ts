@@ -7,7 +7,7 @@ export type Json =
   | Json[]
 
 export type Database = {
-  // Allows to automatically instanciate createClient with right options
+  // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
     PostgrestVersion: "12.2.3 (519615d)"
@@ -313,6 +313,27 @@ export type Database = {
           },
         ]
       }
+      GrupoDeMovimientos: {
+        Row: {
+          created_at: string
+          id: number
+          movimientos_id: number[] | null
+          organizacion: string
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          movimientos_id?: number[] | null
+          organizacion: string
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          movimientos_id?: number[] | null
+          organizacion?: string
+        }
+        Relationships: []
+      }
       GruposDeServicios: {
         Row: {
           id: number
@@ -530,6 +551,7 @@ export type Database = {
           item_id: number
           item_type: Database["public"]["Enums"]["TipoItem"]
           notes: string | null
+          organizacion: string | null
           quantity: number
           servicio_id: number | null
           tecnico_id: number | null
@@ -542,6 +564,7 @@ export type Database = {
           item_id: number
           item_type: Database["public"]["Enums"]["TipoItem"]
           notes?: string | null
+          organizacion?: string | null
           quantity: number
           servicio_id?: number | null
           tecnico_id?: number | null
@@ -554,6 +577,7 @@ export type Database = {
           item_id?: number
           item_type?: Database["public"]["Enums"]["TipoItem"]
           notes?: string | null
+          organizacion?: string | null
           quantity?: number
           servicio_id?: number | null
           tecnico_id?: number | null
