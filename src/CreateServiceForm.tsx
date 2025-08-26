@@ -7,6 +7,8 @@ import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "./utils/ClientSupabase";
 import PeriodicidadModal from "./PeriodicidadMOdal";
+import { set } from "ts-pattern/dist/patterns";
+import Spinner from "./rehusableComponents/Spinner";
 
 type Cliente = Tables<"Clientes">;
 type Responsable = Tables<"Responsables">;
@@ -49,12 +51,11 @@ const PeriodicidadTag = styled.div`
     }
 `;
 
-const SearchButtonLink = styled.button /*style*/ `
+const SearchButtonLink = styled.button<{disable:boolean}> /*style*/ `
     width: 8.5rem;
     height: 2.188rem;
-    background: #0d4e80;
+    background: ${props => (props.disable ? "gray":  "#0d4e80")};
     border-radius: 0.375rem;
-
     font-style: normal;
     font-weight: 400;
     font-size: 0.875rem;
@@ -330,6 +331,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
     const tagRef = useRef<HTMLDivElement | null>(null);
     const [fechas_recomendadas, set_fechas_recomendadas] = useState<Date[]>([]);
     const [dateTag, setDateTag] = useState<boolean>(false);
+    const [disableButton, setDisableButton] = useState<boolean>(false);
 
     const fetchResponsables = async () => {
         if (clienteId !== undefined) {
@@ -632,6 +634,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         frecuencia: Enums<"FrecuenciaServicio">,
         fechas: Date[]
     ) => {
+        setDisableButton(true);
         if (!cantidadServicios) {
             window.alert("Por favor defina la cantidad de servicios a crear");
             return;
@@ -646,6 +649,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         if (!date) return;
 
         if (frecuencia !== "Ninguna") {
+          
             let folioGuardados = []; // Declare an empty array to store the folios
             let idsDelServicio = [];
 
@@ -984,12 +988,15 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                             style={{ width: "100%", display: "flex", justifyContent: "center" }}
                         >
                             <SearchButtonLink
+                            id="createServiceButton"
+                            disable={disableButton}
+                            disabled={disableButton}
                                 type="button"
                                 onClick={() => {
                                     addServicioPeriodically(numDeServicios, startDate, frecuencia, fechas_recomendadas);
                                 }}
                             >
-                                Registrar
+                                {disableButton ? <Spinner></Spinner> : "Registrar"}
                             </SearchButtonLink>
                         </div>
                     </CreateServicioForm>
