@@ -943,6 +943,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                         </FormatoInputs>
                         <FormatoInputs width={90} marginleft={"0"}>
                             <FormLabels>Tipo de Servicio:</FormLabels>
+                            {/* TODO: CAMBIAR A UN MAP LOS TIPOS DE SERVICIO */}
                             <select
                                 value={tipoServicio}
                                 onChange={handleTipoServicio}
@@ -955,6 +956,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                                 <option value="Gubernamental">Gubernamental</option>
                                 <option value="Hotelería">Hotelería</option>
                                 <option value="Escolar">Escolar</option>
+                                <option value="Salud">Salud</option>
                             </select>
                         </FormatoInputs>
                         {tipoServicio !== "Residencial" && (

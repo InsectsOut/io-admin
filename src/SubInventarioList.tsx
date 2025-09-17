@@ -31,14 +31,6 @@ interface SubInventarioListProps {
     organizacion: string;
 }
 
-enum InventarioFlag {
-    tecnicos = "tecnicos",
-    principal = "principal",
-    equipo = "equipo",
-    vehiculos = "vehiculos",
-    menu_Principal = "menu_principal",
-}
-
 type Inventarios = Tables<"Inventario">;
 type Empleados = Tables<"Empleados">;
 
@@ -97,13 +89,11 @@ const EntryIcon = styled.span`
 const SubInventarioList: React.FC<SubInventarioListProps> = ({
     title,
     icon,
-    subinventarios,
     onSelect,
     onAdd,
     flag,
     organizacion,
 }) => {
-    const [newName, setNewName] = useState("");
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [tecnicoId, setTecnicoId] = useState<number | null>(null);
     const [empleados, setEmpleados] = useState<Empleados[]>([]);
@@ -113,13 +103,6 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
     const deleteRef = useRef<HTMLButtonElement>(null);
     const [inventarioId, setInventarioId] = useState<number>();
 
-    const handleSubmit = (e: React.FormEvent) => {
-        e.preventDefault();
-        if (newName.trim()) {
-            onAdd(newName.trim());
-            setNewName("");
-        }
-    };
 
     const createInventario = async () => {
         try {

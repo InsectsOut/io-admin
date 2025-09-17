@@ -5,6 +5,7 @@ export const servicioOptions = [
     { id: 4, value: "Gubernamental", label: "Gubernamental" },
     { id: 5, value: "Hotelería", label: "Hotelería" },
     { id: 6, value: "Escolar", label: "Escolar" },
+    { id: 7, value: "Salud", label: "Salud" },
 ];
 
 export const aplicacionOptions = [

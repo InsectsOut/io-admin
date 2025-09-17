@@ -9,6 +9,7 @@ import { Enums } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import PaginationComponent from "./PaginationComponent";
 import InventarioActionModal from "./rehusableComponents/InventarioActionModal";
+import InventarioVehiculoEquipoModal from "./rehusableComponents/InventarioActionModalVehiculoEquipo";
 
 
 
@@ -94,6 +95,7 @@ export const EntryItem = styled.li`
 
 export const EntryText = styled.span`
     font-size: 1rem;
+    text-align: left;
 `;
 export const Icono = styled(FaEdit)`
     &:hover {
@@ -665,7 +667,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 <FaPlus />
             </CreateButton>
 
-            {isModalOpen && (
+            {isModalOpen && (flag ==="empleado"  || flag ==="principal" ) &&(
                 <InventarioActionModal
                     flag={flag}
                     editable={editable}
@@ -690,6 +692,13 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     }}
                     organizacion={organizacion}
                 ></InventarioActionModal>
+            )}
+            {isModalOpen && (flag ==="equipo" || flag ==="vehiculo") && (
+                <InventarioVehiculoEquipoModal
+                organizacion={organizacion!}
+                 closeModal={() => setIsModalOpen(false)} 
+                 flag={flag}
+                ></InventarioVehiculoEquipoModal>
             )}
         </SectionContainer>
     );

@@ -181,7 +181,7 @@ const Inventario: React.FC<inventarioProps> = props => {
         <WrapperContainer>
             <InventarioMainContainer>
                 <LeftMenu>
-                    <MenuButtons>
+                    {/* <MenuButtons>
                         <FaPlus style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
                         <p>Agregar Entrada</p>
                     </MenuButtons>
@@ -192,7 +192,7 @@ const Inventario: React.FC<inventarioProps> = props => {
                     <MenuButtons>
                         <FaSignOutAlt style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
                         <p>Registrar salida</p>
-                    </MenuButtons>
+                    </MenuButtons> */}
                     {/* <MenuButtons>
                         <FaClipboardList style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
                         <p>Crear Inventario de técnico</p>
@@ -203,7 +203,7 @@ const Inventario: React.FC<inventarioProps> = props => {
                         }}
                     >
                         <FaPrescriptionBottle style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
-                        <p>Productos</p>
+                        <p>Artículos</p>
                     </MenuButtons>
                 </LeftMenu>
 

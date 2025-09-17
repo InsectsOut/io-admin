@@ -242,32 +242,44 @@ export type Database = {
       Equipos: {
         Row: {
           detalles: string | null
+          estacion_de_control:
+            | Database["public"]["Enums"]["estaciondecontrol"]
+            | null
           id: number
           image: string | null
           marca: string | null
           modelo: string | null
           nombre: string
           numero_serie: string | null
+          organizacion: string | null
           tipo_equipo: Database["public"]["Enums"]["TipoEquipo"]
         }
         Insert: {
           detalles?: string | null
+          estacion_de_control?:
+            | Database["public"]["Enums"]["estaciondecontrol"]
+            | null
           id?: number
           image?: string | null
           marca?: string | null
           modelo?: string | null
           nombre: string
           numero_serie?: string | null
+          organizacion?: string | null
           tipo_equipo: Database["public"]["Enums"]["TipoEquipo"]
         }
         Update: {
           detalles?: string | null
+          estacion_de_control?:
+            | Database["public"]["Enums"]["estaciondecontrol"]
+            | null
           id?: number
           image?: string | null
           marca?: string | null
           modelo?: string | null
           nombre?: string
           numero_serie?: string | null
+          organizacion?: string | null
           tipo_equipo?: Database["public"]["Enums"]["TipoEquipo"]
         }
         Relationships: []
@@ -386,26 +398,29 @@ export type Database = {
       }
       Inventario_equipos: {
         Row: {
-          equipo_id: number | null
+          equipo_id: number
           funcionales: boolean | null
           id: number
           inventario_id: number | null
+          num_de_serie: string | null
           precio: number
           stock: number
         }
         Insert: {
-          equipo_id?: number | null
+          equipo_id: number
           funcionales?: boolean | null
           id?: number
           inventario_id?: number | null
+          num_de_serie?: string | null
           precio: number
           stock: number
         }
         Update: {
-          equipo_id?: number | null
+          equipo_id?: number
           funcionales?: boolean | null
           id?: number
           inventario_id?: number | null
+          num_de_serie?: string | null
           precio?: number
           stock?: number
         }
@@ -1064,6 +1079,7 @@ export type Database = {
     }
     Enums: {
       DosisRecomendada: "min" | "max"
+      estaciondecontrol: "roedores" | "vectores" | "goma"
       FrecuenciaServicio:
         | "Ninguna"
         | "Semanal"
@@ -1230,6 +1246,7 @@ export const Constants = {
   public: {
     Enums: {
       DosisRecomendada: ["min", "max"],
+      estaciondecontrol: ["roedores", "vectores", "goma"],
       FrecuenciaServicio: [
         "Ninguna",
         "Semanal",
