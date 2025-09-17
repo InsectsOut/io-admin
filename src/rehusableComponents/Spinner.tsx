@@ -12,6 +12,7 @@ const Spinner = styled.div`
   width: 16px;
   height: 16px;
   animation: ${spin} 1s linear infinite;
+  margin: 0;
 `;
 
 export default Spinner;

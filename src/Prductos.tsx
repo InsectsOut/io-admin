@@ -15,16 +15,36 @@ import SubInventarioDetalle, {
 import { Database, Enums, Tables } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import { supabase } from "./utils/ClientSupabase";
-import { CreateButton } from "./Servicios";
+import {
+    CreateButton,
+    FiltrosLeft,
+    FiltrosLista,
+    FlechaAbajo,
+    ModalContainer,
+    ModalContentBottom,
+    ModalContentTop,
+} from "./Servicios";
 import { ModalButton, ModalContent, ModalForm, ModalOverlay } from "./rehusableComponents/CreateInventariosModal";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import PaginationComponent from "./PaginationComponent";
 type Productos = Tables<"Productos">;
+type Equipos = Tables<"Equipos">;
 type TipoProducto = Database["public"]["Enums"]["TipoProducto"];
+import Switch from "./rehusableComponents/ToggleSwitch";
+import EquipoCreateModal from "./rehusableComponents/EquipoVehiculoCreateModal";
+import { set } from "ts-pattern/dist/patterns";
+type TipoEquipoControlOption = Database["public"]["Enums"]["TipoEquipo"];
 
 interface ProductosProps {
     organizacion: string;
+}
+
+enum ProductoOption {
+    Plaguicidas = "Plaguicidas",
+    EquiposDeControl = "Equipos de control",
+    Computo="Computo",
+    Otros="Otros",
 }
 
 const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
@@ -52,8 +72,20 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
     const itemsPerPage: number = 8;
     const [productoNombre, setProductoNombre] = useState<string>("");
     const [singleProduct, setSingleProduct] = useState<Productos[]>();
+    const [singleEquipo, setSingleEquipo] = useState<Equipos[]>();
     const [editable, setEditable] = useState<boolean>(false);
-    const [precio,setPrecio] = useState<number | null> ()
+    const [precio, setPrecio] = useState<number | null>();
+    const [modalVisible, setModalVisible] = useState(false);
+    const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
+    const [modalRef, setModalRef] = useState<HTMLDivElement | null>(null);
+    const [textModal, setTextModal] = useState<string>("");
+    const [isRotated, setIsRotated] = useState(false);
+    const [selectedOption, setSelectedOption] = useState<ProductoOption>(ProductoOption.Plaguicidas);
+    const [isModalOpenEquipoVehiculo, setIsModalOpenEquipoVehiculo] = useState(false);
+    const [Equipos, setEquipos] = useState<Equipos[]>([]);
+    const [equipoId, setEquipoId] = useState<number | null>(null);
+    const [equipoNombre, setEquipoNombre] = useState<string>("");
+    const [editableEquipo, setEditableEquipo] = useState<boolean>(false);
 
     const handleNombreProductoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNombreProducto(e.target.value);
@@ -102,9 +134,9 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         setUnidadGasto(e.target.value as Enums<"UnidadDeGasto">);
     };
 
-    const handlePrecioChange = (e: React.ChangeEvent<HTMLInputElement>)  => {
-        setPrecio(+e.target.value)
-    }
+    const handlePrecioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        setPrecio(+e.target.value);
+    };
 
     const handleCantidadPresentacionChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = e.target.value;
@@ -182,7 +214,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     registro: registroCofepris || null,
                     tipo_de_producto: tipoProducto ?? null,
                     unidad_de_gasto: unidadGasto ?? null,
-                    precio:precio
+                    precio: precio,
                 })
                 .eq("id", productoId)
                 .select();
@@ -209,6 +241,45 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             if (data) {
                 console.log("Productos fetched successfully:", data);
                 setProductos(data);
+            } else {
+                console.log("No products found.");
+            }
+        } catch (error) {
+            console.error("Error fetching productos:", error);
+        }
+    };
+    const fetchEquipos = async (equipoOption:ProductoOption) => {
+        let filtro = [""]
+        switch (equipoOption) {
+            case "Equipos de control":
+            filtro = ["bomba_ulv", "termo_nebulizadora", "estacion_control"];
+            break;
+            case "Computo":
+            filtro = ["computo"];
+            break;
+            case "Otros":
+            filtro = ["otro"];
+            break;
+            default:
+            filtro = [""];
+        }
+        
+        try {
+            const { data, error, count } = await supabase
+                .from("Equipos")
+                .select("*", { count: "exact" })
+                .eq("organizacion", organizacion)
+                .in("tipo_equipo",filtro)
+                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+            const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+            setTotalPages(totalPages);
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+                console.log("Productos fetched successfully:", data);
+                setEquipos(data);
             } else {
                 console.log("No products found.");
             }
@@ -244,21 +315,19 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 setUnidadGasto(productos.unidad_de_gasto ?? undefined);
                 setCantidadPresentacion(productos.presentacion_cantidad ?? 0);
                 setUnidadPresentacion(productos.presentacion_unidad ?? undefined);
-                setPrecio(productos.precio)
-                if (productos.dosis_max){
-                    const dosisMaxDestructured = splitNumberAndUnit(productos?.dosis_max );
-                    console.log(dosisMaxDestructured)
-                    setDosisMaxima(Number(dosisMaxDestructured [0]))
-                    setUnidadDosisMaxima(dosisMaxDestructured [1].toUpperCase())
+                setPrecio(productos.precio);
+                if (productos.dosis_max) {
+                    const dosisMaxDestructured = splitNumberAndUnit(productos?.dosis_max);
+                    console.log(dosisMaxDestructured);
+                    setDosisMaxima(Number(dosisMaxDestructured[0]));
+                    setUnidadDosisMaxima(dosisMaxDestructured[1].toUpperCase());
                 }
-                if (productos.dosis_min){
-                    const dosisMinDestructured = splitNumberAndUnit(productos?.dosis_min );
-                    console.log(dosisMinDestructured)
-                    setDosisMinima(Number(dosisMinDestructured[0]))
-                    setUnidadDosisMinima(dosisMinDestructured [1].toUpperCase())
+                if (productos.dosis_min) {
+                    const dosisMinDestructured = splitNumberAndUnit(productos?.dosis_min);
+                    console.log(dosisMinDestructured);
+                    setDosisMinima(Number(dosisMinDestructured[0]));
+                    setUnidadDosisMinima(dosisMinDestructured[1].toUpperCase());
                 }
-                
-
             } else {
                 console.log("No products found.");
             }
@@ -272,8 +341,13 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
     };
 
     useEffect(() => {
-        fetchproductos();
-    }, [currentPage]);
+        if (selectedOption === "Plaguicidas") {
+            fetchproductos();
+        }
+        if (selectedOption !== "Plaguicidas") {
+            fetchEquipos(selectedOption);
+        }
+    }, [currentPage, selectedOption]);
 
     const deleteProduct = async (productoId: number) => {
         try {
@@ -289,11 +363,274 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             console.log(err);
         }
     };
+    const deleteEquipo = async (equipoId: number) => {
+        try {
+            const { error, data } = await supabase.from("Equipos").delete().eq("id", equipoId);
+            if (error) {
+                console.error("Error trying to delete the entry", error);
+            } else {
+                console.log("Deleted entry", data);
+                setDeleteModalOpen(false);
+                fetchEquipos(selectedOption);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
+
+    const handleFiltrosClick = (event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+        const target = event.currentTarget as HTMLLIElement;
+        const { top, left, height } = target.getBoundingClientRect();
+        console.log(target.id);
+
+        const newPosition = {
+            top: top + height + window.scrollY,
+            left: left + window.scrollX,
+        };
+
+        // If the modal is currently visible and the same element is clicked, hide the modal
+        if (modalVisible && modalPosition.top === newPosition.top && modalPosition.left === newPosition.left) {
+            setModalVisible(false);
+        } else if (
+            modalVisible &&
+            modalPosition.top === newPosition.top &&
+            modalPosition.left === newPosition.left - 100
+        ) {
+            setModalVisible(false);
+        } else {
+            // Otherwise, show the modal at the new position
+            if (window.innerWidth <= 900 && target.id === "estatusFilter") {
+                newPosition.left -= 100;
+                console.log(newPosition.left);
+                setModalPosition(newPosition);
+                setModalVisible(true);
+            } else {
+                setModalPosition(newPosition);
+                setModalVisible(true);
+            }
+        }
+    };
+
+    const handleRotation = () => {
+        setTextModal("TipoProd");
+
+        setIsRotated(prev => !prev);
+    };
+
+    const optionMatch = (option: TipoEquipoControlOption) => {
+        switch (option) {
+            case "bomba_ulv":
+                return "Bomba de aspersión";
+            case "estacion_control":
+                return "Estación de Control";
+            case "termo_nebulizadora":
+                return "Termo Nebulizadora";
+            case "otro":
+                return option;
+        }
+    };
+
+    const renderProducto = (entry: Productos, index: number) => {
+        return (
+            <EntryItem key={index}>
+                <EntryRow className="entryFirstElement prod1">
+                    <EntryText>
+                        <strong>{selectedOption === ProductoOption.EquiposDeControl ? "Equipo" : "Producto"}:</strong>{" "}
+                        {entry?.nombre}
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entrySecondElement prod2">
+                    <EntryText>
+                        <strong>Tipo:</strong> {entry.tipo_de_producto}
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entryThirdElement prod3">
+                    <EntryText>
+                        <strong>Presentación:</strong>
+                        <h4 style={{ all: "unset", textTransform: "uppercase" }}>{entry.presentacion}</h4>
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entryFourthElement prod4">
+                    <EntryText>
+                        <strong>Dósis mínima:</strong> {entry.dosis_min}
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entryFourthElement prod4">
+                    <EntryText>
+                        <strong>Dósis máxima:</strong> {entry.dosis_max}
+                    </EntryText>
+                </EntryRow>
+
+                <EntryRow
+                    onClick={() => {
+                        fetchSingleProduct(entry.id);
+                        setEditable(true);
+                        setIsModalOpen(true);
+                        setProductoId(entry.id);
+                    }}
+                    style={{ alignSelf: "left" }}
+                    className="entrySixthElement prod6"
+                    id="entrySixthElement"
+                >
+                    <Icono size={20} />
+                </EntryRow>
+                <button
+                    onClick={() => {
+                        setProductoId(entry.id);
+                        setProductoNombre(entry.nombre ?? "sin nombre");
+                        setDeleteModalOpen(true);
+                    }}
+                    id="borrarServicio"
+                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                >
+                    X
+                </button>
+            </EntryItem>
+        );
+    };
+    const renderEquipo = (equipo: any, index: number) => {
+        return (
+            <EntryItem key={index}>
+                <EntryRow className="entryFirstElement prod1">
+                    <EntryText>
+                        <strong>Nombre:</strong> {equipo.nombre}
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entrySecondElement prod2">
+                    <EntryText>
+                        <strong>Equipo:</strong> {optionMatch(equipo.tipo_equipo)}
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entryThirdElement prod3">
+                    <EntryText>
+                        <strong>Marca:</strong> {equipo.marca ?? "—"}
+                    </EntryText>
+                </EntryRow>
+                <EntryRow className="entryFourthElement prod4">
+                    <EntryText>
+                        <strong>Modelo:</strong> {equipo.modelo ?? "—"}
+                    </EntryText>
+                </EntryRow>
+            {selectedOption === ProductoOption.EquiposDeControl &&
+                <EntryRow className="entryFifthElement prod5">
+                    <EntryText>
+                        <strong>Estación de control:</strong> {equipo.estacion_de_control ?? "—"}
+                    </EntryText>
+                </EntryRow>
+    }
+
+                {/* Acciones */}
+                <EntryRow
+                    onClick={() => {
+                        setEditableEquipo(true);
+                        setIsModalOpenEquipoVehiculo(true);
+                        setEquipoId(equipo.id);
+                    }}
+                    className="entrySixthElement "
+                >
+                    <Icono size={20} />
+                </EntryRow>
+
+                <button
+                    onClick={() => {
+                        setEquipoId(equipo.id);
+                        setEquipoNombre(equipo.nombre ?? "sin nombre");
+                        setDeleteModalOpen(true);
+                    }}
+                    id="borrarServicio"
+                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                >
+                    X
+                </button>
+            </EntryItem>
+        );
+    };
 
     return (
         <SectionContainer>
             <SectionTitle>Contenido de Productos</SectionTitle>
-            <div>
+
+            {modalVisible && (
+                <ModalContainer
+                    open={modalVisible}
+                    style={{ top: modalPosition.top, left: modalPosition.left }}
+                    ref={modalRef}
+                >
+                    {textModal === "TipoProd" && (
+                        <>
+                            {/* <ModalContentTop open={modalVisible}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "8px" }}>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <input
+                                            type="radio"
+                                            name="tipoProductoFiltro"
+                                            value="cebo"
+                                            checked={tipoProducto === "cebo"}
+                                            onChange={() => setTipoProducto("cebo")}
+                                        />
+                                        Plaguicida
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <input
+                                            type="radio"
+                                            name="tipoProductoFiltro"
+                                            value="gel"
+                                            checked={tipoProducto === "gel"}
+                                            onChange={() => setTipoProducto("gel")}
+                                        />
+                                        Equipos de control
+                                    </label>
+                                </div>
+                            </ModalContentTop> */}
+                            <ModalContentTop open={modalVisible}>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "8px", padding: "8px" }}>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <input
+                                            type="radio"
+                                            name="tipoProductoFiltro"
+                                            value="cebo"
+                                            checked={tipoProducto === "cebo"}
+                                            onChange={() => setTipoProducto("cebo")}
+                                        />
+                                        Cebo
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <input
+                                            type="radio"
+                                            name="tipoProductoFiltro"
+                                            value="gel"
+                                            checked={tipoProducto === "gel"}
+                                            onChange={() => setTipoProducto("gel")}
+                                        />
+                                        Gel
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <input
+                                            type="radio"
+                                            name="tipoProductoFiltro"
+                                            value="plaguicida"
+                                            checked={tipoProducto === "plaguicida"}
+                                            onChange={() => setTipoProducto("plaguicida")}
+                                        />
+                                        Plaguicida
+                                    </label>
+                                </div>
+                            </ModalContentTop>
+                            <ModalContentBottom open={modalVisible}>
+                                <div className="filtroActionButtons">
+                                    <button className="actionButtonsStyles" id="limpiar" onClick={() => {}}>
+                                        Limpiar
+                                    </button>
+                                    <button className="actionButtonsStyles" id="aplicar" onClick={() => {}}>
+                                        Aplicar
+                                    </button>
+                                </div>
+                            </ModalContentBottom>
+                        </>
+                    )}
+                </ModalContainer>
+            )}
+            <div style={{}}>
                 <div
                     style={{
                         width: "100%",
@@ -303,87 +640,102 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                         alignItems: "center",
                     }}
                 >
-                    <ModalButton
-                        onClick={() => {
-                            setIsModalOpen(true);
+                    <div
+                        style={{
+                            display: "flex",
+                            alignSelf: "left",
+                            width: "50%",
+                            justifyContent:"left",
+                            gap:"1rem"
                         }}
-                        margin="0"
                     >
-                        Nuevo Producto
-                    </ModalButton>
-                    <PaginationComponent
-                        currentPage={currentPage}
-                        totalPages={totalPages}
-                        onPageChange={handlePageChange}
-                    ></PaginationComponent>
+                        <Switch
+                            optionSender={option => {
+                                setSelectedOption(option);
+                            }}
+                            options={[
+                                ProductoOption.Plaguicidas,
+                                ProductoOption.EquiposDeControl,
+                                ProductoOption.Computo,
+                                ProductoOption.Otros,
+                            ]}
+                        />
+                        <FiltrosLista
+                            // id="estatusFilter"
+                            onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
+                                handleFiltrosClick(event);
+                                handleRotation();
+                            }}
+                        >
+                            {selectedOption === "Plaguicidas"
+                                ? "Plaguicidas"
+                                : selectedOption === "Equipos de control"
+                                  ? "Equipos de control"
+                                  : ""}
+                            <FlechaAbajo />
+                        </FiltrosLista>
+                    </div>
+                    <div
+                        style={{
+                            display: "flex",
+                            width: "50%",
+                            alignItems: "center",
+                            justifyContent: "right",
+                        }}
+                    >
+                        {selectedOption === ProductoOption.Plaguicidas && (
+                            <ModalButton
+                                onClick={() => {
+                                    setIsModalOpen(true);
+                                }}
+                                margin="0"
+                            >
+                                Nuevo Producto
+                            </ModalButton>
+                        )}
+                        {selectedOption === ProductoOption.EquiposDeControl && (
+                            <ModalButton
+                                onClick={() => {
+                                    setIsModalOpenEquipoVehiculo(true);
+                                }}
+                                margin="0"
+                            >
+                                Nuevo Equipo de control
+                            </ModalButton>
+                        )}
+                        {selectedOption === ProductoOption.Computo && (
+                            <ModalButton
+                                onClick={() => {
+                                    setIsModalOpenEquipoVehiculo(true);
+                                }}
+                                margin="0"
+                            >
+                                Nuevo Equipo de computo
+                            </ModalButton>
+                        )}
+                        {selectedOption === ProductoOption.Otros && (
+                            <ModalButton
+                                onClick={() => {
+                                    setIsModalOpenEquipoVehiculo(true);
+                                }}
+                                margin="0"
+                            >
+                                Nuevo Equipo general
+                            </ModalButton>
+                        )}
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        ></PaginationComponent>
+                    </div>
                 </div>
             </div>
             <EntryList>
-                {productos?.map((entry, index) => (
-                    <EntryItem key={index}>
-                        <EntryRow className="entryFirstElement prod1">
-                            <EntryText>
-                                <strong>Producto:</strong> {entry?.nombre}
-                            </EntryText>
-                        </EntryRow>
-                        <EntryRow className="entrySecondElement prod2">
-                            <EntryText>
-                                <strong>Tipo:</strong> {entry.tipo_de_producto}
-                            </EntryText>
-                        </EntryRow>
-                        <EntryRow className="entryThirdElement prod3">
-                            <EntryText
-                            
-                                >
-                                    <strong>Presentación:</strong>
-                                    <h4 style={{all:"unset",textTransform:"uppercase"}}>
-                                    {entry.presentacion}{" "}
-                                    </h4>
-                                   
-                                </EntryText>
-                        </EntryRow>
-                        <EntryRow className="entryFourthElement prod4">
-                            <EntryText>
-                                <strong>Dósis mínima:</strong> {entry.dosis_min}
-                            </EntryText>
-                        </EntryRow>
-                        <EntryRow className="entryFourthElement prod4">
-                            <EntryText>
-                                <strong>Dósis máxima:</strong> {entry.dosis_max}
-                            </EntryText>
-                        </EntryRow>
-
-                        <EntryRow
-                            onClick={() => {
-                                fetchSingleProduct(entry.id);
-                                setEditable(true);
-                                setIsModalOpen(true);
-                                setProductoId(entry.id);
-                                // setEntryId(entry.id);
-                            }}
-                            //TODO LUEGO HACER CON SELECTORS QUE SI ESTOY EN UNO SE CAMBIE DE COLOR
-                            // onMouseEnter={() => setColorTrigger(true)}
-                            // onMouseOut={() => setColorTrigger(false)}
-                            style={{ alignSelf: "left" }}
-                            className="entrySixthElement prod6"
-                            id="entrySixthElement"
-                        >
-                            {" "}
-                            <Icono size={20} />
-                        </EntryRow>
-                        <button
-                            onClick={() => {
-                                setProductoId(entry.id);
-                                setProductoNombre(entry.nombre ?? "sin nombre");
-                                setDeleteModalOpen(true);
-                            }}
-                            id="borrarServicio"
-                            style={{ fontWeight: "bold", fontSize: "105%" }}
-                        >
-                            X
-                        </button>
-                    </EntryItem>
-                ))}
+                {selectedOption === ProductoOption.Plaguicidas &&
+                    productos?.map((entry, index) => renderProducto(entry, index))}
+                {selectedOption !== ProductoOption.Plaguicidas &&
+                    Equipos?.map((entry, index) => renderEquipo(entry, index))}
             </EntryList>
 
             {deleteModalOpen && (
@@ -391,14 +743,41 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     closeModal={() => {
                         setDeleteModalOpen(false);
                     }}
-                    titulo="¿Seguro quiere eliminar los productos?"
-                    btnText="Eliminar productos"
+                    titulo={
+                        selectedOption === ProductoOption.EquiposDeControl
+                            ? `¿Seguro quiere eliminar el equipo?`
+                            : `¿Seguro quiere eliminar el producto?`
+                    }
+                    btnText={
+                        selectedOption === ProductoOption.EquiposDeControl ? "Eliminar equipo" : "Eliminar producto"
+                    }
                     del={() => {
-                        deleteProduct(productoId!);
+                        selectedOption === ProductoOption.Plaguicidas
+                            ? deleteProduct(productoId!)
+                            : selectedOption === ProductoOption.EquiposDeControl
+                              ? deleteEquipo(equipoId!)
+                              : null;
                     }}
                     tipo={productoNombre}
                 ></DelModal>
             )}
+
+            {isModalOpenEquipoVehiculo && (
+                <EquipoCreateModal
+                selectedOption={selectedOption}
+                    equipoId={equipoId ?? null}
+                    editable={editableEquipo}
+                    fetchEquipos={() => {
+                        fetchEquipos(selectedOption);
+                    }}
+                    organizacion={organizacion}
+                    closeModal={() => {
+                        setIsModalOpenEquipoVehiculo(false);
+                        setEditableEquipo(false);
+                    }}
+                ></EquipoCreateModal>
+            )}
+
             {isModalOpen && (
                 <ModalOverlay>
                     <ModalContent>
@@ -595,8 +974,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                     required
                                     value={precio}
                                     onChange={handlePrecioChange}
-                                >
-                                </CardInputs>
+                                ></CardInputs>
                             </FormRow>
                         </ModalForm>
                         {!editable && (
