@@ -11,21 +11,20 @@ import PaginationComponent from "./PaginationComponent";
 import InventarioActionModal from "./rehusableComponents/InventarioActionModal";
 import InventarioVehiculoEquipoModal from "./rehusableComponents/InventarioActionModalVehiculoEquipo";
 
-
-
-
 interface SubInventarioDetalleProps {
     name?: string;
     items: InventarioItem[];
     onAddItem: (item: string) => void;
     flag: Enums<"TipoInventario">;
-    organizacion:string | null
+    organizacion: string | null;
 }
 type Productos = Tables<"Productos">;
 type InventarioProducos = Tables<"Inventario_productos">;
 type Inventarios = Tables<"Inventario">;
 type GrupoDeMovimientos = Tables<"GrupoDeMovimientos">;
 type Movimientos = Tables<"Movimientos">;
+type InventarioEquipos = Tables<"Inventario_equipos">;
+type Equipos = Tables<"Equipos">;
 
 type InventarioProductoEntradas = InventarioProducos & {
     Productos: Productos | null;
@@ -170,7 +169,7 @@ export const EntryRow = styled.div`
     }
 `;
 
-const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag,organizacion}) => {
+const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items, onAddItem, flag, organizacion }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [productoId, setProductoId] = useState<number>(-1);
     const [stock, setStock] = useState<number>();
@@ -199,6 +198,9 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [stockFromEmpleados, setStockFromEmpleados] = useState<number | null>(null);
     const [entryOrigen, setEntryOrigen] = useState<number | null>(null);
     const params = new URLSearchParams(window.location.search);
+    const [inventarioEquipos, setInventarioEquipos] = useState<InventarioEquipos[] | null>([]);
+    const [equipos, setEquipos] = useState<Equipos[]>([]);
+    const [inventarioEquipoSingleEntry, setInventarioEquipoSingleEntry] = useState<InventarioEquipos | null>(null);
 
     const nullAllParameters = () => {
         setProductoId(-1);
@@ -268,8 +270,22 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
     const fetchSingleEntry = async (entryId: number) => {
         try {
-            const { data, error } = await supabase.from("Inventario_productos").select("*").eq("id", entryId);
+            if (flag === "equipo") {
+                const { data, error } = await supabase.from("Inventario_equipos").select("*").eq("id", entryId);
+                if (data){
+                    console.log("la equipa" , data[0])
+                    await setInventarioEquipoSingleEntry(data[0]);
+                    return
+                }
+                if (error){
+                    console.log("Error fetching inventario de equipo:", error);
+                }
+            }
+            if (flag === "empleado" || flag === "principal"){
+                 const { data, error } = await supabase.from("Inventario_productos").select("*").eq("id", entryId);
             nullAllParameters();
+            
+           
 
             if (error) {
                 throw error;
@@ -298,6 +314,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             } else {
                 console.log("No inventario productos found.");
             }
+        }
         } catch (error) {
             console.error("Error fetching inventario productos:", error);
         }
@@ -347,53 +364,53 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     };
 
     const createGrupoDeMovimientos = async (movimientoIds?: number[] | null, grupoId?: number | null) => {
-            try {
-                let existingIds: number[] = [];
-    
-                // If we already have a group, fetch its current movimientos_id
-                if (grupoId) {
-                    const { data: existing, error: fetchError } = await supabase
-                        .from("GrupoDeMovimientos")
-                        .select("movimientos_id")
-                        .eq("id", grupoId)
-                        .single();
-    
-                    if (fetchError) {
-                        console.error("Error fetching existing group:", fetchError);
-                        return null;
-                    }
-    
-                    if (existing?.movimientos_id) {
-                        existingIds = existing.movimientos_id;
-                    }
-                }
-    
-                // Merge old + new (avoid duplicates)
-                const mergedIds = [...new Set([...(existingIds || []), ...(movimientoIds || [])])];
-    
-                // Upsert with merged IDs
-                const { data, error } = await supabase
+        try {
+            let existingIds: number[] = [];
+
+            // If we already have a group, fetch its current movimientos_id
+            if (grupoId) {
+                const { data: existing, error: fetchError } = await supabase
                     .from("GrupoDeMovimientos")
-                    .upsert([
-                        {
-                            ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
-                            movimientos_id: mergedIds,
-                            organizacion: organizacion,
-                        },
-                    ] as GrupoDeMovimientos[])
-                    .select("id");
-    
-                if (error) {
-                    console.error("Error in upsert:", error);
+                    .select("movimientos_id")
+                    .eq("id", grupoId)
+                    .single();
+
+                if (fetchError) {
+                    console.error("Error fetching existing group:", fetchError);
                     return null;
                 }
-    
-                return data?.[0]?.id ?? null;
-            } catch (err) {
-                console.error("Exception:", err);
+
+                if (existing?.movimientos_id) {
+                    existingIds = existing.movimientos_id;
+                }
+            }
+
+            // Merge old + new (avoid duplicates)
+            const mergedIds = [...new Set([...(existingIds || []), ...(movimientoIds || [])])];
+
+            // Upsert with merged IDs
+            const { data, error } = await supabase
+                .from("GrupoDeMovimientos")
+                .upsert([
+                    {
+                        ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
+                        movimientos_id: mergedIds,
+                        organizacion: organizacion,
+                    },
+                ] as GrupoDeMovimientos[])
+                .select("id");
+
+            if (error) {
+                console.error("Error in upsert:", error);
                 return null;
             }
-        };
+
+            return data?.[0]?.id ?? null;
+        } catch (err) {
+            console.error("Exception:", err);
+            return null;
+        }
+    };
 
     const regresarProductoAlnventarioPrincipal = async (
         stockFromEmpleados: number,
@@ -417,14 +434,21 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const deleteInventarioEntry = async (entryId: number) => {
         console.log("Deleting entry with ID:", entryId);
         try {
-            const { error, data } = await supabase.from("Inventario_productos").delete().eq("id", entryId);
+            let error, data;
+            if (flag === "equipo") {
+                // Delete from Inventario_equipos table
+                ({ error, data } = await supabase.from("Inventario_equipos").delete().eq("id", entryId));
+            } else {
+                // Default: Delete from Inventario_productos table
+                ({ error, data } = await supabase.from("Inventario_productos").delete().eq("id", entryId));
+            }
             if (error) {
                 console.error("Error trying to delete the entry", error);
             } else {
-                if (flag === "empleado") {
+                if (flag === "empleado" || flag === "principal") {
                     const itemDeOrigen = (await inventarioEntry?.[0]?.item_de_origen) ?? -1;
                     const grupoMovId = await createGrupoDeMovimientos([], null);
-                  const firstMovId =  await createMovimiento(
+                    const firstMovId = await createMovimiento(
                         inventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -433,9 +457,9 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                         stockFromEmpleados!,
                         null
                     );
-                     if (!firstMovId){
-                       return window.alert("Error al crear el movimiento de salida");
-                     }
+                    if (!firstMovId) {
+                        return window.alert("Error al crear el movimiento de salida");
+                    }
                     await createGrupoDeMovimientos([firstMovId], grupoMovId);
                     const newEntry = await fetchSingleEntry(itemDeOrigen);
                     const stockOrigen = newEntry?.stock ?? 0;
@@ -456,15 +480,37 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                         return window.alert("Error al crear el movimiento de entrada");
                     }
                     await createGrupoDeMovimientos([secondMovId], grupoMovId);
-                }
-                console.log("Deleted entry", data);
+                    console.log("Deleted entry", data);
                 await fetchInventarioProductosConEntradas();
                 await nullAllParameters();
+                }
+                if (flag === "equipo") {
+                    FetchInventarioEquipo();
+                }
             }
         } catch (err) {
             console.log(err);
         }
     };
+
+     const deleteInventarioEquipoEntry = async () => {
+            try {
+                if (flag === "equipo" && inventarioEquipoSingleEntry) {
+                    const { error } = await supabase
+                        .from("Inventario_equipos")
+                        .delete()
+                        .eq("id", inventarioEquipoSingleEntry.id);
+                    if (error) throw error;
+                   FetchInventarioEquipo();
+                  setIsModalOpen(false);
+                }
+                if (flag === "vehiculo") {
+                 return
+                }
+            } catch (err) {
+                console.error("Error eliminando inventario:", err);
+            }
+        };
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
     };
@@ -479,30 +525,70 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         tecnicoID: number | null = null
     ) => {
         try {
-            const { data, error } = await supabase.from("Movimientos").insert([
-                {
-                    inventario_id: inventarioID,
-                    item_type: itemType,
-                    date: fecha.toISOString(),
-                    item_id: ItemID,
-                    type: type,
-                    quantity: quanity,
-                    tecnico_id: tecnicoID,
-                    organizacion: organizacion,
-                },
-            ] as Movimientos[])
-            .select("*");
+            const { data, error } = await supabase
+                .from("Movimientos")
+                .insert([
+                    {
+                        inventario_id: inventarioID,
+                        item_type: itemType,
+                        date: fecha.toISOString(),
+                        item_id: ItemID,
+                        type: type,
+                        quantity: quanity,
+                        tecnico_id: tecnicoID,
+                        organizacion: organizacion,
+                    },
+                ] as Movimientos[])
+                .select("*");
 
             if (error) {
                 console.error("Error creando inventario:", error);
             } else {
                 console.log("Inventario creado:", data);
                 return data?.[0].id;
-
-
             }
         } catch (err) {
             console.error("Error creating inventario:", err);
+        }
+    };
+
+    const FetchInventarioEquipo = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario_equipos")
+                .select("*")
+                .eq("inventario_id", inventarioId);
+
+            if (data) {
+                setInventarioEquipos(data);
+                console.log("Inventario de equipo fetched:", data);
+            }
+            if (error) {
+                console.log("Error fetching inventario de equipo:", error);
+            }
+        } catch (error) {
+            console.error("Error fetching inventario de equipo:", error);
+        }
+    };
+
+    const fetchEquipos = async (organizacion: string) => {
+        try {
+            const { data, error } = await supabase
+                .from("Equipos")
+                .select("*", { count: "exact" })
+                .eq("organizacion", organizacion);
+            if (error) {
+                throw error;
+            }
+
+            if (data) {
+                console.log("Productos fetched successfully:", data);
+                setEquipos(data);
+            } else {
+                console.log("No products found.");
+            }
+        } catch (error) {
+            console.error("Error fetching productos:", error);
         }
     };
 
@@ -516,12 +602,20 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             nullAllParameters();
             fetchInventariosPrincipales();
         }
+        if (flag === "equipo") {
+            if (organizacion) {
+                fetchEquipos(organizacion);
+            }
+        }
     }, []);
 
     useEffect(() => {
         if (flag === "principal") fetchInventarioProductosConEntradas();
         if (flag === "empleado") {
             fetchInventarioProductosConEntradas();
+        }
+        if (flag === "equipo") {
+            FetchInventarioEquipo();
         }
     }, [currentPage]);
 
@@ -561,7 +655,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
                                 <EntryRow className="entrySecondElement">
                                     <EntryText>
-                                        <strong>Stock:</strong> {entry.stock}
+                                        <strong>Stock:</strong> {entry?.stock}
                                     </EntryText>
                                 </EntryRow>
                                 <EntryRow className="entryThirdElement">
@@ -579,7 +673,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 </EntryRow>
                                 <EntryRow className="entryFifthElement">
                                     <EntryText>
-                                        <strong>Valor:</strong> ${entry.stock * (entry?.Productos?.precio ?? 0)}
+                                        <strong>Valor:</strong> ${entry?.stock * (entry?.Productos?.precio ?? 0)}
                                     </EntryText>
                                 </EntryRow>
                                 {flag === "principal" && (
@@ -641,18 +735,120 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     </EntryList>
                 </>
             )}
+            {flag === "equipo" && (
+                <>
+                    <div
+                        style={{
+                            width: "100%",
+                            display: "flex",
+                            justifyContent: "right",
+                            marginBottom: "1rem",
+                            alignItems: "center",
+                        }}
+                    >
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        ></PaginationComponent>
+                    </div>
+                    <EntryList>
+                        {inventarioEquipos?.map((entry, index) => (
+                            <EntryItem key={index}>
+                                <EntryRow className="entryFirstElement">
+                                    <EntryText>
+                                        <strong>Equipo:</strong>{" "}
+                                        {equipos.find(item => item.id === entry?.equipo_id)?.nombre}
+                                    </EntryText>
+                                </EntryRow>
+
+                                <EntryRow className="entrySecondElement">
+                                    <EntryText>
+                                        <strong>Stock:</strong> {entry?.stock}
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entryThirdElement">
+                                    <EntryText>
+                                        <strong>Funcional:</strong> {entry?.equipo_id ? "Sí" : "No"}
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entryFourthElement">
+                                    <EntryText>
+                                        <strong>Número de serie: </strong>
+                                        <h4 style={{ all: "unset", textTransform: "uppercase" }}>{entry.num_de_serie}</h4>
+                                    </EntryText>
+                                </EntryRow>
+                                <EntryRow className="entryFifthElement">
+                                    <EntryText>
+                                        <strong>Valor:</strong> ${entry.stock * (entry?.precio ?? 0)}
+                                    </EntryText>
+                                </EntryRow>
+                                {flag === "equipo" && (
+                                    <EntryRow
+                                        onClick={async () => {
+                                           await  fetchSingleEntry(entry.id);
+                                           await  setEditable(true);
+                                            await setIsModalOpen(true);
+                                           await  setEntryId(entry.id);
+                                        }}
+                                        style={{ alignSelf: "left" }}
+                                        className="entrySixthElement"
+                                        id="entrySixthElement"
+                                    >
+                                        {" "}
+                                        <Icono size={20} />
+                                    </EntryRow>
+                                )}
+                                <button
+                                    onClick={async () => {
+                                        await setDeleteModalOpen(true);
+                                        await setEntryId(entry.id);
+                                        // await fetchSingleEntry(entry.id);
+                                        // await setStockFromEmpleados(entry.stock);
+                                    }}
+                                    id="borrarServicio"
+                                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                                >
+                                    X
+                                </button>
+                            </EntryItem>
+                        ))}
+                    </EntryList>
+                </>
+            )}
             {deleteModalOpen && (
                 <DelModal
                     closeModal={() => {
                         setDeleteModalOpen(false);
                     }}
-                    titulo="¿Seguro quiere eliminar los productos?"
-                    btnText="Eliminar productos"
+                    titulo={
+                        flag === "equipo"
+                            ? "¿Seguro quiere eliminar el equipo?"
+                            : "¿Seguro quiere eliminar los productos?"
+                    }
+                    btnText={
+                        flag === "equipo"
+                            ? "Eliminar equipo"
+                            : "Eliminar productos"
+                    }
                     del={() => {
-                        deleteInventarioEntry(entryId!);
+                        if (flag === "equipo") {
+                            deleteInventarioEquipoEntry();
+                        } else {
+                            deleteInventarioEntry(entryId!);
+                            
+                        }
                     }}
-                    tipo={productos.find(item => item.id === inventarioEntry?.[0]?.producto_id)?.nombre!}
-                    stock={inventarioEntry?.[0].stock}
+                    tipo={
+                        flag === "equipo"
+                            ? equipos.find(item => item.id === inventarioEquipoSingleEntry?.equipo_id)?.nombre ?? ""
+                            : productos.find(item => item.id === inventarioEntry?.[0]?.producto_id)?.nombre ?? ""
+                    }
+                    stock={
+                        flag === "equipo"
+                            ? inventarioEquipoSingleEntry?.stock
+                            : inventarioEntry?.[0].stock
+                    }
                     invNombre={params.get("Nombre") || "Inventario Principal"}
                     principal={["entradas"]}
                 ></DelModal>
@@ -660,6 +856,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             <CreateButton
                 onClick={() => {
                     nullAllParameters();
+                   setInventarioEquipoSingleEntry(null);
                     setEditable(false);
                     setIsModalOpen(true);
                 }}
@@ -667,7 +864,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                 <FaPlus />
             </CreateButton>
 
-            {isModalOpen && (flag ==="empleado"  || flag ==="principal" ) &&(
+            {isModalOpen && (flag === "empleado" || flag === "principal") && (
                 <InventarioActionModal
                     flag={flag}
                     editable={editable}
@@ -693,12 +890,15 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     organizacion={organizacion}
                 ></InventarioActionModal>
             )}
-            {isModalOpen && (flag ==="equipo" || flag ==="vehiculo") && (
+            {isModalOpen && (flag === "equipo" || flag === "vehiculo") && (
                 <InventarioVehiculoEquipoModal
-                organizacion={organizacion!}
-                 closeModal={() => setIsModalOpen(false)} 
-                 flag={flag}
-                ></InventarioVehiculoEquipoModal>
+                editable={editable}
+                    inventarioEquipoEntry={inventarioEquipoSingleEntry}
+                    fetchInventarioEquipo={()=> {FetchInventarioEquipo()}}
+                    organizacion={organizacion!}
+                    closeModal={() => setIsModalOpen(false)}
+                    flag={flag}
+                />
             )}
         </SectionContainer>
     );
