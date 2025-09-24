@@ -82,7 +82,7 @@ function NavBar() {
             {window.location.pathname !== "/" && (
                 <>
                     <NavContainer>
-                        <Logo onClick={() => navigate("/inicio")}  loading="lazy" src={icon} />
+                        <Logo onClick={() => navigate("/inicio")} loading="lazy" src={icon} />
                         <IconsContainer className="iconosContainer">
                             <Li
                                 onClick={() => {
@@ -91,7 +91,7 @@ function NavBar() {
                             >
                                 <FaHome size={30} color="#0E4E7E" />
                             </Li>
-                            <Li>
+                            <Li onClick={() => navigate("/perfil")}>
                                 <MdAccountCircle size={30} color="#0E4E7E" />
                             </Li>
                             <Li ref={slidingRef} onClick={openModal}>

@@ -19,6 +19,8 @@ import CreateEmployee from "./CreateEmployee";
 import MyConstanciaMobile from "./ConstanciaMobile";
 import Bitacoras from "./Bitacoras";
 import Inventario from "./Inventario";
+import Profile from "./Profile";
+import { Tables } from "./supabase/Database";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -36,6 +38,7 @@ const AppRoutes = () => {
             }
 
             setSessionData(data?.session);
+            console.log("datos de la sesion", data);
             const userId = data?.session?.user?.id ?? "";
             setUser_id(userId);
             localStorage.setItem("user_id", data?.session?.user?.id ?? "");
@@ -180,6 +183,21 @@ const AppRoutes = () => {
                     <Route
                         path="/inventario"
                         element={<Inventario organizacion={localStorage.getItem("org") ?? ""} />}
+                    />
+                    <Route
+                        path="/perfil"
+                        element={
+                            <Profile
+                                user={{
+                                    id: session.user.id,
+                                    email: session.user.email ?? "",
+                                    role: session.user.role,
+                                    name: session.user.user_metadata?.name,
+                                    avatarUrl: session.user.user_metadata?.avatar_url,
+                                    organizacion: localStorage.getItem("org") ?? "",
+                                }}
+                            />
+                        }
                     />
                 </>
             )}
