@@ -30,6 +30,7 @@ type InventarioProductoEntradas = InventarioProducos & {
     Productos: Productos | null;
 };
 
+
 interface InventarioItem {
     inventario_id: number;
     producto_id: number;
@@ -201,6 +202,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [inventarioEquipos, setInventarioEquipos] = useState<InventarioEquipos[] | null>([]);
     const [equipos, setEquipos] = useState<Equipos[]>([]);
     const [inventarioEquipoSingleEntry, setInventarioEquipoSingleEntry] = useState<InventarioEquipos | null>(null);
+    const [tipoEquipoInventario, setTipoEquipoInventario] = useState<Enums<"TipoEquipoOptions">>()
 
     const nullAllParameters = () => {
         setProductoId(-1);
@@ -571,6 +573,26 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         }
     };
 
+    const fetchequipoTipoFromInventario = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario")
+                .select("tipo_de_equipo")
+                .eq("id",inventarioId)
+            if (error) {
+                console.log(error);
+            } else {
+                if (data && data.length > 0) {
+                    setTipoEquipoInventario(data[0].tipo_de_equipo ?? undefined);
+                }
+                
+                console.log("Inventario data:", data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    }
+
     const fetchEquipos = async (organizacion: string) => {
         try {
             const { data, error } = await supabase
@@ -605,6 +627,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
         if (flag === "equipo") {
             if (organizacion) {
                 fetchEquipos(organizacion);
+                fetchequipoTipoFromInventario();
             }
         }
     }, []);
@@ -898,6 +921,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     organizacion={organizacion!}
                     closeModal={() => setIsModalOpen(false)}
                     flag={flag}
+                    inventarioTiPoEquipo={tipoEquipoInventario}
                 />
             )}
         </SectionContainer>

@@ -622,7 +622,8 @@ const MyDocument = () => {
                                 }}
                             >
                                 {registroAp?.map(registro => (
-                                    <View key={registro?.id} style={{ ...styles.registrosINfo, marginLeft: "15px" }}>
+                                    <View key={registro?.id} style={{ ...styles.registrosINfo, marginLeft: "15px", height:"90px"
+                                    }}>
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.tipo_aplicacion}</Text>
                                         </View>
@@ -667,6 +668,7 @@ const MyDocument = () => {
                             </View>
                         )}
                     </View>
+                    {/* aqui empieza la nueva seccion */}
                     <View style={{ ...styles.fechaSection, marginTop: "-20px" }}>
                         <View
                             style={{
@@ -788,7 +790,7 @@ const MyDocument = () => {
                     </View>
                 </Page>
                 <Page size={"LETTER"} style={styles.body}>
-                    <View style={styles.container}></View>
+                    <View style={styles.container}></View> 
 
                     <View style={{ ...styles.fechaSection, marginTop: "30px" }}>
                         <View
@@ -847,8 +849,9 @@ const MyDocument = () => {
                                     padding: 10,
                                     borderWidth: 1,
                                     height: 85,
-                                    minHeight: 75,
+                                    minHeight: rec.acciones && rec.acciones.length > 4 ? "150px" : "100px",
                                     marginBottom: "3px",
+                                   
                                 }}
                             >
                                 {/* Left Column */}
@@ -867,10 +870,10 @@ const MyDocument = () => {
                                     {rec?.acciones?.map?.((accion, index) => (
                                         <View
                                             key={index}
-                                            style={{ display: "flex", flexDirection: "row", marginBottom: 3 }}
+                                            style={{ display: "flex", flexDirection: "row", marginBottom: 3, }}
                                         >
                                             <Text>{index + 1} </Text>
-                                            {/* @ts-ignore */}
+                                            
                                             <Text>{accion}</Text>
                                         </View>
                                     ))}

@@ -370,6 +370,9 @@ export type Database = {
           inv_nombre: string | null
           organizacion: string
           tecnico_id: number | null
+          tipo_de_equipo:
+            | Database["public"]["Enums"]["TipoEquipoOptions"]
+            | null
           tipo_inventario: Database["public"]["Enums"]["TipoInventario"] | null
         }
         Insert: {
@@ -377,6 +380,9 @@ export type Database = {
           inv_nombre?: string | null
           organizacion: string
           tecnico_id?: number | null
+          tipo_de_equipo?:
+            | Database["public"]["Enums"]["TipoEquipoOptions"]
+            | null
           tipo_inventario?: Database["public"]["Enums"]["TipoInventario"] | null
         }
         Update: {
@@ -384,6 +390,9 @@ export type Database = {
           inv_nombre?: string | null
           organizacion?: string
           tecnico_id?: number | null
+          tipo_de_equipo?:
+            | Database["public"]["Enums"]["TipoEquipoOptions"]
+            | null
           tipo_inventario?: Database["public"]["Enums"]["TipoInventario"] | null
         }
         Relationships: [
@@ -1099,6 +1108,11 @@ export type Database = {
         | "termo_nebulizadora"
         | "estacion_control"
         | "otro"
+      TipoEquipoOptions:
+        | "Plaguicidas"
+        | "Equipos de control"
+        | "Computo"
+        | "Otros"
       TipoFeedback:
         | "ErrorInterfaz"
         | "ErrorCargando"
@@ -1267,6 +1281,12 @@ export const Constants = {
         "termo_nebulizadora",
         "estacion_control",
         "otro",
+      ],
+      TipoEquipoOptions: [
+        "Plaguicidas",
+        "Equipos de control",
+        "Computo",
+        "Otros",
       ],
       TipoFeedback: [
         "ErrorInterfaz",
