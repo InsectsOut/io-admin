@@ -102,6 +102,14 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const deleteRef = useRef<HTMLButtonElement>(null);
     const [inventarioId, setInventarioId] = useState<number>();
+    const [equipoType, setEquipoType] = useState<Enums<"TipoEquipoOptions">>("Equipos de control")
+
+    const equipoTypeObject: Enums<"TipoEquipoOptions">[] = [
+        "Equipos de control",
+        "Computo",
+        "Otros",
+    ];
+    
 
 
     const createInventario = async () => {
@@ -112,6 +120,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                     organizacion: organizacion,
                     tipo_inventario: flag,
                     inv_nombre: inventarioNombre,
+                    tipo_de_equipo: flag ==="equipo" ? equipoType : null
                 },
             ] as Inventarios[]);
 
@@ -284,11 +293,25 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                             {flag === "empleado" && (
                                 <StyledSelect value={tecnicoId ? tecnicoId : ""} onChange={handleEmpleadoChange}>
                                     <option value={""} disabled>
-                                        Selecciona un técnico
+                                           Selecciona un técnico 
                                     </option>
                                     {empleados.map(empleado => (
                                         <option key={empleado.id} value={empleado.id}>
                                             {empleado.nombre}
+                                        </option>
+                                    ))}
+                                </StyledSelect>
+                            )}
+                            {flag === "equipo" && (
+                                <StyledSelect
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEquipoType(e.target.value as Enums<"TipoEquipoOptions">)}
+                                >
+                                    <option value={""} disabled>
+                                        Selecciona el tipo de equipo
+                                    </option>
+                                    {equipoTypeObject.map(tipo => (
+                                        <option key={tipo} value={tipo}>
+                                            {tipo}
                                         </option>
                                     ))}
                                 </StyledSelect>

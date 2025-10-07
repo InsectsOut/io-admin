@@ -15,6 +15,7 @@ interface Props {
     fetchInventarioEquipo: () => void;
     inventarioEquipoEntry: InventarioEquipo | null;
     editable: boolean;
+    inventarioTiPoEquipo:Enums<"TipoEquipoOptions"> | undefined
 }
 type Equipo = Tables<"Equipos">;
 type TipoDeEquipo = Database["public"]["Enums"]["estaciondecontrol"];
@@ -31,12 +32,15 @@ const renderEquipoFields = (
     numSerie: string,
     setNumSerie: (s: string) => void,
     precioEquipo: number,
-    setPrecioEquipo: (n: number) => void
+    setPrecioEquipo: (n: number) => void,
+    inventarioEquipoOptioins:Enums<"TipoEquipoOptions"> | undefined
 ) => {
     const handlePrecioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = +e.target.value;
         setPrecioEquipo(value);
     };
+    const allowedTypes = ["bomba_ulv", "estacion_control", "termo_nebulizadora"];
+
 
     return (
         <>
@@ -49,12 +53,39 @@ const renderEquipoFields = (
                         setEquipoId(e.target.value ? parseInt(e.target.value) : null)
                     }
                 >
-                    <option value="">Selecciona el equipo</option>
+                    {/* <option value="">Selecciona el equipo</option>
                     {equipo.map(equipo => (
                         <option key={equipo.id} value={equipo.id}>
                             {equipo.nombre}
                         </option>
-                    ))}
+                    ))} */}
+                    <option value="">Selecciona el equipo</option>
+                    {inventarioEquipoOptioins ==="Computo" ?  equipo.filter(item => item.tipo_equipo ==="computo").map(item => 
+                        <option
+                        
+                        key={item.id}
+                        value={item.id}
+                        >
+                        {item.nombre}
+                        </option>
+                    ) : inventarioEquipoOptioins ==="Equipos de control" ? equipo.filter(item => allowedTypes.includes(item.tipo_equipo)).map (item =>
+                        <option
+                        
+                        key={item.id}
+                        value={item.id}
+                        >
+                        {item.nombre}
+                        </option>
+                     ):inventarioEquipoOptioins === "Otros" ? equipo.filter (item => item.tipo_equipo ==="otro").map(item =>
+                        <option
+                        
+                        key={item.id}
+                        value={item.id}
+                        >
+                        {item.nombre}
+                        </option>
+                     ):<p>No hay equipo que mostrar</p>}
+                  
                 </StyledSelect>
             </FormRow>
             <FormRow>
@@ -127,9 +158,9 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
     const [numSerie, setNumSerie] = useState<string>("");
     const [precioEquipo, setPrecioEquipo] = useState<number>(0);
     const location = useLocation();
-    const queryParams = new URLSearchParams(location.search);
+    const queryParams = new URLSearchParams(window.location.search);
     const inventarioIdParam = queryParams.get("inventarioId");
-    const inventarioID = inventarioIdParam ? parseInt(inventarioIdParam) : null;
+    
 
     const nullAllParameters = () => {
         setStock(0);
@@ -273,7 +304,8 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
                         numSerie,
                         setNumSerie,
                         precioEquipo,
-                        setPrecioEquipo
+                        setPrecioEquipo,
+                        props.inventarioTiPoEquipo
                     )}
                     <FormRow>
                         <ModalButton
@@ -288,9 +320,9 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
                             <ModalButton
                                 margin="0"
                                 onClick={() => {
-                                    inventarioID
+                                    inventarioIdParam
                                         ? createInventarioEquipo(
-                                              inventarioID,
+                                              +inventarioIdParam,
                                               equipoId!,
                                               stock,
                                               equipoFuncional,
