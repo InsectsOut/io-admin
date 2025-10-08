@@ -63,22 +63,77 @@ const MenuButtons = styled.div`
     }
 `;
 
-const DashbboardButton = styled.div`
-    border-radius: 0.215379rem;
-    box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
-    width: 20%;
-    height: 10rem;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 0.5rem;
-    cursor: pointer;
-    &:hover {
-        background: #6b8aac;
-        color: white;
+export const DashbboardButton = styled.div`
+  position: relative;
+  width: 22%;
+  min-width: 180px;
+  height: 9rem;
+  border-radius: 1rem;
+  background: linear-gradient(145deg, #f9fbfd, #e5ecf4);
+  box-shadow: 0 6px 20px rgba(14, 78, 126, 0.08),
+              inset 0 1px 0 rgba(255, 255, 255, 0.6);
+  border: 1px solid rgba(14, 78, 126, 0.1);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: all 0.25s ease;
+  overflow: hidden;
+
+  p {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #0e4e7e;
+    margin: 0;
+    text-align: center;
+    transition: color 0.3s ease;
+  }
+
+  svg {
+    font-size: 2rem;
+    color: #0e4e7e;
+    transition: transform 0.3s ease, color 0.3s ease;
+  }
+
+  &::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(120deg, rgba(14, 78, 126, 0.1), transparent 60%);
+    transform: rotate(25deg);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+  &:hover {
+    background: linear-gradient(145deg, #0e4e7e, #1d6fa5);
+    box-shadow: 0 10px 24px rgba(14, 78, 126, 0.25);
+    transform: translateY(-2px);
+    
+    p {
+      color: #fff;
     }
+    svg {
+      color: #fff;
+      transform: scale(1.1);
+    }
+    &::before {
+      opacity: 0.2;
+    }
+  }
+
+  &:active {
+    transform: translateY(0);
+    box-shadow: 0 4px 12px rgba(14, 78, 126, 0.2);
+  }
 `;
+
 
 const MainContent = styled.div`
     width: 85%;
@@ -208,17 +263,20 @@ const Inventario: React.FC<inventarioProps> = props => {
                 </LeftMenu>
 
                 <MainContent>
-                    <button
+                    <div
+                    style={{width:"100%", display:"flex", justifyContent:"flex-start", marginLeft:"2rem"}}
+                    >
+                    <DashbboardButton
+                        style={{ height: "3rem", margin: "1rem 0", fontSize: "1rem", fontWeight: 600 }}
                         onClick={() => {
-                            // Clear all query params
-                            clearParams()
-                            // Close modals or UI state
+                            clearParams();
                             setInventarioMenu(false);
                             setIsModalOpen(false);
                         }}
                     >
-                        regresar
-                    </button>
+                        Menú Principal
+                    </DashbboardButton>
+                    </div>
                     {!inventarioMenu && !isModalOpen && (
                         <>
                             <h1 className="title">Inventario</h1>

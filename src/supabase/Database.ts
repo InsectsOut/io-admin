@@ -1130,6 +1130,8 @@ export type Database = {
         | "venta"
         | "basura"
         | "servicio"
+        | "entrada"
+        | "error"
       TipoProducto: "plaguicida" | "trampa" | "cebo" | "gel"
       UnidadDeGasto: "ml" | "g" | "pzs"
     }
@@ -1306,6 +1308,8 @@ export const Constants = {
         "venta",
         "basura",
         "servicio",
+        "entrada",
+        "error",
       ],
       TipoProducto: ["plaguicida", "trampa", "cebo", "gel"],
       UnidadDeGasto: ["ml", "g", "pzs"],

@@ -3,6 +3,7 @@ import { FaUserCog, FaWarehouse, FaLaptop, FaCar } from "react-icons/fa";
 import SubInventarioList from "./SubInventarioList";
 import SubInventarioDetalle from "./SubInventarioDetalle";
 import { Enums } from "./supabase/Database";
+import { DashbboardButton } from "./Inventario";
 
 interface inventario_Views_Props {
     organizacion: string;
@@ -103,7 +104,7 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
 
     return (
         <>
-            {selectedSub && <button onClick={() => {clearParams();setSelectedSub(null)}}>← Volver a subinventarios</button>}
+            {selectedSub && <DashbboardButton  style={{ height: "3rem", margin: "1rem 0", fontSize: "1rem", fontWeight: 600, marginLeft:"2rem" }} onClick={() => {clearParams();setSelectedSub(null)}}>← Volver a subinventarios</DashbboardButton>}
             {!selectedSub ? (
                 <SubInventarioList
                     organizacion={organizacion}
