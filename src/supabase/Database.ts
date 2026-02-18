@@ -14,11 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      AreaGubernamental: {
+        Row: {
+          created_at: string
+          id: number
+          nombreAreaGob: string | null
+          organizacion: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: number
+          nombreAreaGob?: string | null
+          organizacion?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: number
+          nombreAreaGob?: string | null
+          organizacion?: string | null
+        }
+        Relationships: []
+      }
       Clientes: {
         Row: {
           apellidos: string | null
           created_at: string
           email: string
+          gob_id: number | null
           id: number
           nombre: string
           organizacion: string | null
@@ -32,6 +54,7 @@ export type Database = {
           apellidos?: string | null
           created_at?: string
           email: string
+          gob_id?: number | null
           id?: number
           nombre: string
           organizacion?: string | null
@@ -45,6 +68,7 @@ export type Database = {
           apellidos?: string | null
           created_at?: string
           email?: string
+          gob_id?: number | null
           id?: number
           nombre?: string
           organizacion?: string | null
@@ -55,6 +79,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "Clientes_gob_id_fkey"
+            columns: ["gob_id"]
+            isOneToOne: false
+            referencedRelation: "AreaGubernamental"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "Clientes_responsable_id_fkey"
             columns: ["responsable_id"]
@@ -751,6 +782,8 @@ export type Database = {
             | Database["public"]["Enums"]["DosisRecomendada"]
             | null
           id: number
+          inventario_id: number | null
+          inventario_producto_id: number | null
           producto_id: number | null
           servicio_id: number
           tipo_aplicacion: string | null
@@ -767,6 +800,8 @@ export type Database = {
             | Database["public"]["Enums"]["DosisRecomendada"]
             | null
           id?: number
+          inventario_id?: number | null
+          inventario_producto_id?: number | null
           producto_id?: number | null
           servicio_id: number
           tipo_aplicacion?: string | null
@@ -783,6 +818,8 @@ export type Database = {
             | Database["public"]["Enums"]["DosisRecomendada"]
             | null
           id?: number
+          inventario_id?: number | null
+          inventario_producto_id?: number | null
           producto_id?: number | null
           servicio_id?: number
           tipo_aplicacion?: string | null
@@ -791,6 +828,20 @@ export type Database = {
           updated_at?: string
         }
         Relationships: [
+          {
+            foreignKeyName: "RegistroAplicacion_inventario_id_fkey"
+            columns: ["inventario_id"]
+            isOneToOne: false
+            referencedRelation: "Inventario"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "RegistroAplicacion_inventario_producto_id_fkey"
+            columns: ["inventario_producto_id"]
+            isOneToOne: false
+            referencedRelation: "Inventario_productos"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "RegistroAplicacion_producto_id_fkey"
             columns: ["producto_id"]
@@ -1077,14 +1128,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      generate_folio: {
-        Args: { org_name: string }
-        Returns: number
-      }
-      generate_temporal_folio: {
-        Args: Record<PropertyKey, never> | { org_name: string }
-        Returns: number
-      }
+      generate_folio: { Args: { org_name: string }; Returns: number }
+      generate_temporal_folio:
+        | { Args: never; Returns: number }
+        | { Args: { org_name: string }; Returns: number }
     }
     Enums: {
       DosisRecomendada: "min" | "max"

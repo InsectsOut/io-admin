@@ -20,6 +20,7 @@ import { CardContainer } from "./rehusableComponents/CardContainer";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import GrupoServiciosCard from "./GrupoServiciosCards";
 import DelModal from "./DeleteModal";
+import PlaguicidasCard from "./PlaguicidasCard";
 
 type Servicio = Tables<"Servicios">;
 type Cliente = Tables<"Clientes">;
@@ -327,7 +328,6 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                 const initialDate = new Date(year, month - 1, day);
                 setSelectedDate(initialDate);
                 const initialEmpleadoId = servicio[0]?.tecnico_id ?? null;
-                console.log(initialEmpleadoId);
                 setEmpleadoID(initialEmpleadoId ?? null);
                 const initialTime = servicio[0]?.horario_servicio ?? "00:00";
                 setSelectedTime(initialTime);
@@ -336,7 +336,6 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                 setSelectedEstatus(servicio[0]?.realizado ?? false);
                 setEstatusString(servicio[0]?.realizado ? "Realizado" : "No realizado");
                 setClienteId(servicio[0]?.Clientes?.id as number);
-                console.log(servicio[0]?.tipo_servicio as string);
                 setTipoServicio(servicio[0]?.tipo_servicio as string);
                 setDireccion_id(servicio?.[0]?.direccion_id);
                 setPrecio(servicio[0]?.precio);
@@ -434,7 +433,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
             );
 
             if (folio_perm) {
-                console.log("Generated Folio:", folio_perm);
+               // console.log("Generated Folio:", folio_perm);
             }
 
             if (error_temp) {
@@ -547,7 +546,6 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
         setEstatusString(cambio);
 
         if (cambio === "Realizado") {
-            console.log("realizado");
             let confirmation = (await folioPermanenteAlert()).valueOf();
             console.log("la confi: ", (await confirmation).valueOf());
             setStatusFlag((await confirmation).valueOf());
@@ -559,7 +557,6 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
             }
             setSelectedEstatus(true);
         } else if (cambio === "No realizado") {
-            console.log("norealizado");
             setSelectedEstatus(false);
             setStatusFlag(false);
         }
@@ -576,7 +573,6 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
 
     const handleResponsableChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true);
-        console.log(+event.target.value);
         setEmpleadoID(+event.target.value);
     };
 
@@ -585,10 +581,10 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
     };
 
     const handleNavigate = () => {
-        window.open(`/Servicios/pdf/${servicios[0].folio}`);
+        window.open(`/certificado/${servicios[0].id}`);
     };
     const handleNavigateMobile = () => {
-        window.open(`/Servicios/pdfMobile/${servicios[0].folio}`);
+        window.open(`/certificado/${servicios[0].id}`);
     };
 
     const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
@@ -982,6 +978,15 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                             servicioId={servicios[0]?.id}
                         ></RegistrosCard>
 
+                         <PlaguicidasCard
+                                    openModal={() => {
+                                        setModalOpen(true);
+                                    }}
+                                    servicioId={servicios[0]?.id}
+                                    title={"Plaguicidas Utilizados"}
+                                ></PlaguicidasCard>
+                           
+
                         {servicios?.[0]?.grupo_de_servicios && (
                             <>
                                 <GrupoServiciosCard
@@ -993,6 +998,10 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                 ></GrupoServiciosCard>
                             </>
                         )}
+                        
+                            
+                               
+                      
                     </div>
                     <PdfMailButton posy="4.925">
                         <p>Registro de aplicación</p>

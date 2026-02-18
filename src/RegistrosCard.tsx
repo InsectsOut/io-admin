@@ -148,19 +148,19 @@ const RegistrosCard: React.FC<registrosProps> = props => {
     };
 
     const fetchRegistros = async () => {
-        if (servicio_Id == undefined) {
+        if (props?.servicioId === null || registros.length>0) {
             return;
         }
         try {
-            console.log(servicio_Id);
             const { data, error } = await supabase
                 .from("RegistroAplicacion")
                 .select("*")
                 // .eq("servicio_id",servicioId)
-                .filter("servicio_id", "eq", servicio_Id);
+                .filter("servicio_id", "eq", props?.servicioId);
             if (data) {
-                console.log(data);
+                console.log("fecthed registros:", data);
                 setRegistros(data);
+                return data
             }
 
             if (error) {
@@ -175,18 +175,32 @@ const RegistrosCard: React.FC<registrosProps> = props => {
         setRegistroId(number);
     };
 
-    useEffect(() => {
-        if (props?.servicioId !== null) {
-            fetchRegistros();
-        }
-        setServicioId(props?.servicioId);
-    }, [props]);
-
-    useEffect(() => {
+   useEffect(() => {
+  const obtenerRegistros = async () => {
+    try {
+      if (props?.servicioId !== null) {
+        await fetchRegistros();
         if (registros.length > 0) {
-            setClicked(true);
+          setClicked(true);
         }
-    }, [registros]);
+      }
+    } catch (err) {
+      console.error("Error al obtener registros:", err);
+    }
+  };
+
+  obtenerRegistros();
+}, [props?.servicioId, registros]);
+
+    // useEffect(() => {
+    //     console.log("registros loaded",registros);
+    //     if (registros.length > 0) {
+    //         console.log("Registros updated:", registros);
+    //         setClicked(true);
+            
+    //     }
+      
+    // }, []);
 
     const handleClick = (number: number) => {
         props.sendDataParent(number);

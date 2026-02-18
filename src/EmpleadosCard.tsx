@@ -683,6 +683,9 @@ const EmpleadosCard = () => {
                                         //@ts-ignore
                                         wid="20.003rem"
                                         dateFormat="YYYY-MM-dd"
+                                        showYearDropdown // enables a year dropdown
+                                        scrollableYearDropdown // allows scrolling through years
+                                        yearDropdownItemNumber={100} // how many years to show
                                         onChange={date => {
                                             handleFechaDeNacimeintoChange(date);
                                         }}
@@ -796,6 +799,9 @@ const EmpleadosCard = () => {
                                                     height="2.638rem"
                                                     wrapperClassName="datepicker"
                                                     dateFormat="YYYY-MM-dd"
+                                                    showYearDropdown // enables a year dropdown
+                                                    scrollableYearDropdown // allows scrolling through years
+                                                    yearDropdownItemNumber={100} // how many years to show
                                                     onChange={date => {
                                                         handleVigenciaDeConducirStart(date);
                                                     }}
@@ -818,6 +824,9 @@ const EmpleadosCard = () => {
                                                     onChange={date => {
                                                         handleVigenciaDeConducirEnd(date);
                                                     }}
+                                                    showYearDropdown // enables a year dropdown
+                                                    scrollableYearDropdown // allows scrolling through years
+                                                    yearDropdownItemNumber={100} // how many years to show
                                                     selected={vigencia_conducir_end}
                                                 />
                                             </div>

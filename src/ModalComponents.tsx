@@ -7,6 +7,7 @@ import { supabase } from "./utils/ClientSupabase";
 import { aplicacionOptions } from "./tipo_servicios";
 import { useParams } from "react-router-dom";
 import { Database, Tables } from "./supabase/Database";
+import { set } from "ts-pattern/dist/patterns";
 
 export const RegistroModal = styled.div`
     position: fixed;
@@ -122,7 +123,17 @@ enum dosis_recomendada {
 }
 
 type Productos = Tables<"Productos">;
+type Inventario = Tables<"Inventario">;
+type Empleados = Tables<"Empleados">;
 type TipoProducto = Database["public"]["Enums"]["TipoProducto"];
+
+type InventarioConEmpleado = Inventario & {
+    Empleados: Empleados | null;
+};
+
+type InventarioProductoConEmpleado = Tables<"Inventario_productos"> & {
+    Productos: Productos | null;
+};
 
 enum TipoProductoEnum {
     Plaguicida = "plaguicida",
@@ -146,32 +157,36 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     const [dosisRecomendada, setDosisRecomendada] = useState<dosis_recomendada>();
     const [tipo_producto, setTipoProducto] = useState<TipoProducto | null>(null);
     const [errorMessageElement, setErrorMessageElement] = useState<boolean>(false);
+    const [inventario, setInventario] = useState<InventarioConEmpleado[]>();
+    const [inventarioId, setInventarioId] = useState<number | null>(null);
+    const [idsDeProductos, setIdsDeProductos] = useState<number[]>([]);
+    const [inventarioProductos, setInventarioProductos] = useState<InventarioProductoConEmpleado[]>();
+    const [inventarioProductoID, setInventarioProductoID] = useState<number | null>(null);
 
     const HandleplagaChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const cambio = +event?.target.value;
         setTipoPlaga(cambio);
     };
 
-    const fetchProducto = async () => {
-        try {
-            const { data, error } = await supabase.from("Productos").select("*");
-            if (data) {
-                const [producto] = data;
-                setProducto(data);
-                setTipoProducto(producto.tipo_de_producto);
-            }
-            if (error) {
-                throw new Error(error.message);
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    };
+    // const fetchProducto = async (ids:number[]) => {
+    //     try {
+    //         const { data, error } = await supabase.from("Productos")
+    //         .select("*")
+    //         .in("id", ids);
+    //         if (data) {
+    //             const [producto] = data;
+    //             setProducto(data);
+    //             setTipoProducto(producto.tipo_de_producto);
+    //         }
+    //         if (error) {
+    //             throw new Error(error.message);
+    //         }
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    // };
 
-    const handleProductoIdChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
-        const cambio = +event.target.value;
-        setProductoId(cambio);
-    };
+ 
     const handleTipoProductoChange = (tipo: TipoProductoEnum) => {
         setTipoProducto(tipo);
         if (tipo) {
@@ -180,7 +195,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     };
 
     useEffect(() => {
-        fetchProducto();
         fetchServicioId();
     }, []);
 
@@ -244,6 +258,9 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
 
             if (data) {
                 const [registro] = data;
+                if (registro.id) {
+                    setInventarioId(registro?.inventario_id);
+                }
 
                 setCantidad(registro.cantidad ?? 0);
                 setArea_aplicacion(registro.area_aplicacion ?? "");
@@ -280,6 +297,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                             servicio_id: servicioId,
                             tipo_plaga_id: tipoPlaga,
                             dosis_recomendada: dosisRecomendada ?? null,
+                            inventario_id: inventarioId,
+                            inventario_producto_id: inventarioProductoID,
                         },
                     ] as any)
 
@@ -296,7 +315,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     .from("RegistroAplicacion")
                     .insert([
                         {
-                            //id:registroId,
                             unidad,
                             cantidad,
                             tipo_aplicacion,
@@ -305,11 +323,25 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                             servicio_id: servicioId,
                             tipo_plaga_id: tipoPlaga,
                             dosis_recomendada: dosisRecomendada ?? null,
+                            inventario_id: inventarioId,
+                            inventario_producto_id: inventarioProductoID,
                         },
                     ] as any)
                     .select("*");
                 if (error) {
                     console.error("Error inserting data:", error.message);
+                    console.log("Data attempted to insert:", {
+                        unidad,
+                        cantidad,
+                        tipo_aplicacion,
+                        producto_id: productoId,
+                        area_aplicacion,
+                        servicio_id: servicioId,
+                        tipo_plaga_id: tipoPlaga,
+                        dosis_recomendada: dosisRecomendada ?? null,
+                        inventario_id: inventarioId,
+                        inventario_producto_id: inventarioProductoID,
+                    });
                 } else {
                     console.log("Data inserted successfully:", data);
                     window.location.reload();
@@ -320,9 +352,81 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
         }
     };
 
+    const fetchInventario = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario")
+                .select(
+                    `
+        *,
+        Empleados(*)
+      `
+                )
+                .eq("organizacion", organizacion)
+                .in("tipo_inventario", ["principal", "empleado"]);
+
+            if (error) throw error;
+
+            console.log("Inventarios disponibles:", data);
+            setInventario(data);
+        } catch (err) {
+            console.error("Error al obtener inventario:", err);
+        }
+    };
+
+    const fetchProductosFromInventario = async (inventarioIdParam: number) => {
+        try {
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .select(
+                    `
+       *,Productos(*)
+      `
+                )
+                .eq("inventario_id", inventarioIdParam ?? 0);
+
+            if (error) throw error;
+            if (!data || data.length === 0) {
+                console.log("No se encontraron productos para el inventario seleccionado.");
+                setProducto([]);
+                setInventarioProductos([]);
+                return;
+            }
+            if (data) {
+                console.log("Productos en el inventario:", data);
+                console.log("productos", data[0].Productos);
+                // const productIds = data
+                //     .map(item => item.producto_id)
+                //     .filter((id): id is number => id !== null && id !== undefined);
+                // await fetchProducto(productIds)
+                setInventarioProductos(data);
+                setProducto([]);
+                setProducto(data.map(item => item.Productos).filter((prod): prod is Productos => prod !== null));
+                setTipoProducto(data[0].Productos?.tipo_de_producto ?? null);
+            }
+
+            console.log("productos disponibles:", data);
+        } catch (err) {
+            console.error("Error al obtener inventario:", err);
+        }
+    };
+
     useEffect(() => {
         fetchRegistroInfo();
+        fetchInventario();
+        if (registroId && productoId) {
+        }
     }, []);
+
+    useEffect(() => {
+        //Use effectpara actualizar los productos al cambiar de inventario solo si ya hay registro, para evitar correr 2 veces el fetch , ya que en on change tambien se corre el fetch de productos, pero solo si no existe el registro
+        const runFetch = async () => {
+            if (registroId !== null && inventarioId !== null) {
+                await fetchProductosFromInventario(inventarioId);
+            } else return;
+        };
+        runFetch();
+    }, [inventarioId]);
 
     return (
         <RegistroModal>
@@ -362,7 +466,14 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 <ModalInputs style={{ width: "90%" }}>
                     <DetailsTitle>Área de aplicación</DetailsTitle>
                     <HojaInputs
-                        style={{ overflowX: "scroll", display: "flex", flexDirection: "column", flexWrap: "wrap" }}
+                        style={{
+                            overflowX: "scroll",
+                            display: "flex",
+                            flexDirection: "column",
+                            flexWrap: "wrap",
+                            width: "100%",
+                            boxSizing: "border-box",
+                        }}
                         className="textInputs"
                         type="text"
                         value={area_aplicacion}
@@ -370,59 +481,75 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                         placeholder="Especifique el área de aplicación"
                     />
                 </ModalInputs>
-                <ModalInputs>
+                <ModalInputs width={90}>
                     <div style={{ display: "inline-flex", gap: "1rem" }}>
                         <div>
                             <div className="doubleInput">
-                                <DetailsTitle>Producto</DetailsTitle>
-                                <select
-                                    style={{
-                                        ...mainStyle,
-                                        background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
-                                    }}
-                                    onChange={e => {
-                                        const selectedProductId = +e.target.value;
-                                        const selectedProduct = producto?.find(p => p.id === selectedProductId);
-                                        if (selectedProduct) {
-                                            handleTipoProductoChange(
-                                                selectedProduct.tipo_de_producto as TipoProductoEnum
-                                            );
-                                        }
-                                        handleProductoIdChange(e);
-                                    }}
-                                    value={productoId}
-                                >
-                                    <option value={""}>-Elegir producto-</option>
-                                    {producto?.map(product => (
-                                        <option key={product.id} value={product.id}>
-                                            {product.nombre}
-                                        </option>
-                                    ))}
-                                </select>
+                                <DetailsTitle>Inventario</DetailsTitle>
+                                <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
+                                    <select
+                                        style={{
+                                            ...mainStyle,
+                                            background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
+                                            width: "100%",
+                                        }}
+                                        onChange={e => {
+                                            setInventarioId(+e.target.value);
+                                            !registroId ? fetchProductosFromInventario(+e.target.value) : null;
+                                        }}
+                                        value={inventarioId ?? ""}
+                                    >
+                                        <option value={""}>-Elegir inventario-</option>
+                                        {inventario?.map(inv => (
+                                            <option key={inv.id} value={inv.id}>
+                                                {inv.inv_nombre ? inv.inv_nombre : inv.Empleados?.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
+                                </div>
                             </div>
                             {errorMessageElement && <p style={{ color: "red" }}>Por favor elija un producto</p>}
                         </div>
                         <ModalInputs style={{ flexDirection: "row", flexGrow: "1" }}>
                             <div className="doubleInput">
-                                <DetailsTitle>Cantidad</DetailsTitle>
+                                <DetailsTitle>Producto</DetailsTitle>
                                 <div style={{ display: "flex", gap: "1rem" }}>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
-                                        <HojaInputs
-                                            style={{
-                                                overflowX: "scroll",
-                                                display: "flex",
-                                                flexDirection: "column",
-                                                flexWrap: "wrap",
-                                                width: "5.063rem",
-                                            }}
-                                            className="textInputs"
-                                            type="number"
-                                            min={0}
-                                            onChange={handleCantidadChange}
-                                            value={cantidad}
-                                        />
-                                        <SubTitles>Número</SubTitles>
-                                    </div>
+                                    <select
+                                        style={{
+                                            ...mainStyle,
+                                            background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
+                                            width: "100%",
+                                        }}
+                                        onChange={e => {
+                                            const selectedEntryId = +e.target.value;
+                                            
+
+                                            if (selectedEntryId) {
+                                                setInventarioProductoID(selectedEntryId);
+                                                const selectedEntryProductId = inventarioProductos?.find(entry => entry.id === selectedEntryId)?.producto_id;
+                                                const selectedProduct = producto?.find(prod => prod.id === selectedEntryProductId);
+                                                setProductoId(selectedProduct?.id ?? 0);
+                                                const tipoProducto = selectedProduct?.tipo_de_producto as TipoProductoEnum;
+                                                handleTipoProductoChange(
+                                                    tipoProducto
+                                                );
+                                            }
+                                        }}
+                                        value={inventarioProductoID ?? ""}
+                                    >
+                                        <option value={""}>-Elegir producto-</option>
+                                        {inventarioProductos
+                                            ?.filter(product => product.producto_id !== null)
+                                            .map(product => (
+                                                <option
+                                                    key={product.id}
+                                                    value={product.id as number}
+                                                >
+                                                    {product.Productos?.nombre}{" "}
+                                                    {product?.Lote ? `- Lote: ${product.Lote}` : ""}{" "}
+                                                </option>
+                                            ))}
+                                    </select>
                                     <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
                                         <select
                                             value={unidad}
@@ -438,7 +565,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                         </select>
                                         <SubTitles>g/ml</SubTitles>
                                     </div>
-                                    {tipo_producto === TipoProductoEnum.Plaguicida && (
+                                    {tipo_producto === TipoProductoEnum.Plaguicida && productoId && (
                                         <div
                                             style={{
                                                 display: "flex",

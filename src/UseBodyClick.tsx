@@ -1,7 +1,8 @@
 import { useEffect } from "react";
 
-const useBodyClick = (callback: () => void, excludedRefs: React.RefObject<HTMLElement>[]) => {
+const useBodyClick = (callback: () => void, excludedRefs: React.RefObject<HTMLElement>[],stopper?:boolean) => {
     useEffect(() => {
+        if (!stopper) return;
         const handleClick = (event: MouseEvent) => {
             if (excludedRefs.some(ref => ref.current?.contains(event.target as Node))) {
                 return; // Click happened inside one of the excluded elements, do nothing

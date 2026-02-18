@@ -303,12 +303,13 @@ const CreateEmployee: React.FC<createEmployeeProps> = props => {
                                 wid="19rem"
                                 height="2.638rem"
                                 wrapperClassName="datepicker"
-                                dateFormat="YYYY-MM-dd"
-                                onChange={date => {
-                                    handleFechaDeNacimientoChange(date);
-                                }}
+                                dateFormat="yyyy-MM-dd" // lowercase y is standard
+                                showYearDropdown // enables a year dropdown
+                                scrollableYearDropdown // allows scrolling through years
+                                yearDropdownItemNumber={100} // how many years to show
+                                onChange={date => handleFechaDeNacimientoChange(date)}
                                 selected={fecha_nacimiento}
-                            ></DateInput>
+                            />
                         </div>
                     </FormatoInputs>
                     <FormatoInputs style={{ width: "19.815rem" }}>

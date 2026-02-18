@@ -3,6 +3,7 @@ import { FaCalendarAlt } from "react-icons/fa";
 import { useEffect, useState, useRef } from "react";
 import DatePicker from "react-datepicker";
 import useBodyClick from "./UseBodyClick";
+import { Enums } from "./supabase/Database";
 
 export const StyledDatePicker = styled(DatePicker) /*style*/ `
     margin-left: 0.5rem;
@@ -165,6 +166,8 @@ interface periodicidadProps {
     dateTag: boolean;
     fechas_recomendadas?: Date[];
     datesSender?: (date: Date[]) => void;
+    frecuencia?: Enums<"FrecuenciaServicio">;
+    numDeServiciosPorMesSend?: (num: number) => void;
 }
 
 const PeriodicidadModal: React.FC<periodicidadProps> = ({
@@ -178,11 +181,13 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
     dateTag,
     fechas_recomendadas,
     datesSender,
+    frecuencia,
+    numDeServiciosPorMesSend
 }) => {
     const [startDate, setStartDate] = useState<Date | null>(startDateProp);
     const [selectedDays, setSelectedDays] = useState<number | null>();
     const days = [
-        { name: "D", number_of_day: 0  },
+        { name: "D", number_of_day: 0 },
         { name: "L", number_of_day: 1 },
         { name: "M", number_of_day: 2 },
         { name: "M", number_of_day: 3 },
@@ -198,6 +203,7 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
     const [modalOpen, setModalOpen] = useState<boolean>(false);
     const [modifiedDates, setModifiedDates] = useState<Date[]>(fechas_recomendadas ? fechas_recomendadas : []);
     const [dateTagState, setDateTagState] = useState<boolean>(dateTag);
+    const [serviciosPorMes, setServiciosPorMes] = useState<number | null>();
 
     const toggleDay = (day: any, index: number) => {
         setSelectedDays(day);
@@ -212,8 +218,11 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
         }
     };
 
-    const closeModal = () => {
-        setModalOpen(false);
+    const handleServiciosPorMesChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        let cambio = +event.target.value;
+        if (cambio) {
+            setServiciosPorMes(cambio);
+        }
     };
 
     useEffect(() => {
@@ -227,6 +236,12 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
             numDeServiciosSend(numDeServicios);
         }
     }, [numDeServicios]);
+
+    useEffect(() => {
+        if (serviciosPorMes && numDeServiciosPorMesSend) {
+            numDeServiciosPorMesSend(serviciosPorMes);
+        }   
+    }, [serviciosPorMes]);
 
     useEffect(() => {
         if (fechas_recomendadas && fechas_recomendadas.length > 0) {
@@ -280,6 +295,32 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
                                 placeholder="Eliga el número de servicios a crear"
                             ></RepInput>
                         </InputContainer>
+                        {frecuencia === "Quincenal"  && (
+                            <>
+                                <Label marginBott={0}>Número de servicios por mes</Label>
+                                <InputContainer>
+                                    <RepInput
+                                        type="number"
+                                        value={serviciosPorMes}
+                                        onChange={handleServiciosPorMesChange}
+                                        placeholder="Eliga el número de servicios a realizar por mes"
+                                    ></RepInput>
+                                </InputContainer>
+                            </>
+                        )}
+                        { frecuencia === "Semanal" && (
+                            <>
+                                <Label marginBott={0}>Número de servicios por mes</Label>
+                                <InputContainer>
+                                    <RepInput
+                                        type="number"
+                                        value={serviciosPorMes}
+                                        onChange={handleServiciosPorMesChange}
+                                        placeholder="Eliga el número de servicios a realizar por mes"
+                                    ></RepInput>
+                                </InputContainer>
+                            </>
+                        )}
                         <Label>Día de los servicios</Label>
                         <DaysContainer margin={"0"}>
                             {days.map(({ name, number_of_day }) => (

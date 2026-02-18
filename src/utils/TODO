@@ -1,15 +1,16 @@
 TODO En los fetches de servicios card empleados card calendario etc... hay que poner el filter constraint de que solo te muestre lo de esa organización 
     ✅ CALENADAR
     ✅ Clientes
-    ❌ ClientesCard
-    ❌ Constancia
-    ❌ CreateCliente
-    ❌ CreateEmployee
-    ❌ CreateServiceForm
-    ❌ DeleteModal
-    ❌ DireccionModal
-    ❌ ClientesCard
-    ❌ DireccionCard
-    ❌ Empleados
-    ❌ EmpleadosCar
-    ❌ EventModal
+    ✅ ClientesCard
+    ✅ Constancia
+    ✅ CreateCliente
+    ✅ CreateEmployee
+    ✅ CreateServiceForm
+    ✅ DeleteModal
+    ✅ DireccionModal
+    ✅ ClientesCard
+    ✅ DireccionCard
+    ✅ Empleados
+    ✅ EmpleadosCar
+    ✅ EventModal
+    ❌ TODOS LOS FETCHES DE SERVICIO DEBEN DE SER CON ID 
