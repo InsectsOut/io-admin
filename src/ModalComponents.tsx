@@ -261,6 +261,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 if (registro.id) {
                     setInventarioId(registro?.inventario_id);
                 }
+                setInventarioProductoID(registro?.inventario_producto_id ?? null);
 
                 setCantidad(registro.cantidad ?? 0);
                 setArea_aplicacion(registro.area_aplicacion ?? "");
@@ -395,11 +396,11 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
             if (data) {
                 console.log("Productos en el inventario:", data);
                 console.log("productos", data[0].Productos);
-                // const productIds = data
-                //     .map(item => item.producto_id)
-                //     .filter((id): id is number => id !== null && id !== undefined);
-                // await fetchProducto(productIds)
+
                 setInventarioProductos(data);
+                if (!data[0].id){
+                    setInventarioProductoID(null)
+                }
                 setProducto([]);
                 setProducto(data.map(item => item.Productos).filter((prod): prod is Productos => prod !== null));
                 setTipoProducto(data[0].Productos?.tipo_de_producto ?? null);

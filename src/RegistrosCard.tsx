@@ -1,9 +1,7 @@
 import { useEffect, useState } from "react";
-import { PestControlData } from "./RegistroData";
 import styled from "styled-components";
-import { Database, Tables } from "../src/supabase/Database";
+import {  Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
-import Modal from "./ModalComponents";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";

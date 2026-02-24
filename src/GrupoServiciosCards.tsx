@@ -3,7 +3,6 @@ import { PestControlData } from "./RegistroData";
 import styled from "styled-components";
 import { Database, Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
-import Modal from "./ModalComponents";
 import { useNavigate } from "react-router-dom";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;

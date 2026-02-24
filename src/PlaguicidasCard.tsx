@@ -3,13 +3,15 @@ import { PestControlData } from "./RegistroData";
 import styled from "styled-components";
 import { Database, Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
-import Modal from "./ModalComponents";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
-type RegistroConProducto = Tables<"RegistroAplicacion"> & { Productos: Tables<"Productos"> | null };
+type RegistroConProducto = Tables<"RegistroAplicacion"> & { 
+    Productos: Tables<"Productos"> | null;
+    Inventario_productos: Tables<"Inventario_productos">[] | null;
+};
 
 const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number }> /*style*/ `
     position: "relative";
@@ -173,10 +175,14 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
 
             if (data) {
                 console.log("Registros con productos:", data);
-                setRegistros(data);
+                const formattedData = data.map(item => ({
+                    ...item,
+                    Inventario_productos: item.Inventario_productos ? [item.Inventario_productos] : null
+                }));
+                setRegistros(formattedData);
 
-                if (data[0]?.cantidad_usada) {
-                    setCantidadUsada(data[0].cantidad_usada);
+                if (formattedData[0]?.cantidad_usada) {
+                    setCantidadUsada(formattedData[0].cantidad_usada);
                 }
             }
         } catch (err) {
@@ -270,7 +276,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                                 }}
                             >
                                 <p style={{ marginLeft: "1rem", width: "1%" }}>{index + 1}</p>
-                                <p style={{ width: "25%", textAlign: "left" }}>{data?.Productos?.nombre}</p>
+                                <p style={{ width: "25%", textAlign: "left" }}>{data?.Productos?.nombre} Lote: {data?.Inventario_productos?.[0]?.Lote}</p>
                                 <div
                                     style={{
                                         display: "flex",
