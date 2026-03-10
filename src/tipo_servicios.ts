@@ -22,4 +22,5 @@ export const aplicacionOptions = [
     { id: 11, value: "Desinfección", label: "Desinfección" },
     { id: 12, value: "Desratización con trampas", label: "Desratización con trampas" },
     { id: 13, value: "Monitoreo y captura de plagas en general", label: "Monitoreo y captura de plagas en general" },
+    { id: 14, value: "Retiro de panal", label: "Retiro de panal" },
 ];
