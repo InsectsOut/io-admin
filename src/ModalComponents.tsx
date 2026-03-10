@@ -414,12 +414,21 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     useEffect(() => {
         fetchRegistroInfo();
         fetchInventario();
-        if (window.location.hostname !== "localhost") {
-           fetchProducto()
-        }
         if (registroId && productoId) {
         }
     }, []);
+    
+    useEffect(() => {
+
+        if (window.location.hostname !== "localhost") {
+           fetchProducto()
+        }
+      
+    }, []);
+
+    useEffect(() => {
+       
+    }, [productoLocalHost]);
 
     useEffect(() => {
         //Use effectpara actualizar los productos al cambiar de inventario solo si ya hay registro, para evitar correr 2 veces el fetch , ya que en on change tambien se corre el fetch de productos, pero solo si no existe el registro
@@ -554,15 +563,23 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                                     selectedProduct?.tipo_de_producto as TipoProductoEnum;
                                                 handleTipoProductoChange(tipoProducto);
                                             } else {
-                                                // Production: show all products regardless of inventory
-                                                setProductoId(selectedEntryId);
-                                                // TODO: Set tipo_producto based on production logic
+                                               setInventarioProductoID(selectedEntryId);
+                                                const selectedEntryProductId = inventarioProductos?.find(
+                                                    entry => entry.id === selectedEntryId
+                                                )?.producto_id;
+                                                const selectedProduct = producto?.find(
+                                                    prod => prod.id === selectedEntryProductId
+                                                );
+                                                setProductoId(selectedProduct?.id ?? 0);
+                                                const tipoProducto =
+                                                    selectedProduct?.tipo_de_producto as TipoProductoEnum;
+                                                handleTipoProductoChange(tipoProducto);
                                             }
                                         }}
                                         value={
                                             window.location.hostname === "localhost"
                                                 ? (inventarioProductoID ?? "")
-                                                : (productoId ?? "")
+                                                : (inventarioProductoID ?? "")
                                         }
                                     >
                                         <option value={""}>-Elegir producto-</option>
