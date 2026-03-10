@@ -145,6 +145,7 @@ enum TipoProductoEnum {
 const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnClicked, organizacion }) => {
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null);
     const [producto, setProducto] = useState<Productos[]>();
+    const [productoLocalHost, setProductoLocalHost] = useState<Productos[]>();
     const [productoId, setProductoId] = useState<number>(0);
     const [area_aplicacion, setArea_aplicacion] = useState<string>("");
     const [tipo_aplicacion, setTipo_aplicacion] = useState<string>("");
@@ -168,23 +169,22 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
         setTipoPlaga(cambio);
     };
 
-    // const fetchProducto = async (ids:number[]) => {
-    //     try {
-    //         const { data, error } = await supabase.from("Productos")
-    //         .select("*")
-    //         .in("id", ids);
-    //         if (data) {
-    //             const [producto] = data;
-    //             setProducto(data);
-    //             setTipoProducto(producto.tipo_de_producto);
-    //         }
-    //         if (error) {
-    //             throw new Error(error.message);
-    //         }
-    //     } catch (err) {
-    //         console.log(err);
-    //     }
-    // };
+    const fetchProducto = async () => {
+        try {
+            const { data, error } = await supabase.from("Productos")
+            .select("*")
+            if (data) {
+                const [producto] = data;
+                setProductoLocalHost(data);
+                setTipoProducto(producto.tipo_de_producto);
+            }
+            if (error) {
+                throw new Error(error.message);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    };
 
     const handleTipoProductoChange = (tipo: TipoProductoEnum) => {
         setTipoProducto(tipo);
@@ -414,6 +414,9 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     useEffect(() => {
         fetchRegistroInfo();
         fetchInventario();
+        if (window.location.hostname !== "localhost") {
+           fetchProducto()
+        }
         if (registroId && productoId) {
         }
     }, []);
@@ -483,33 +486,37 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 </ModalInputs>
                 <ModalInputs width={90}>
                     <div style={{ display: "inline-flex", gap: "1rem" }}>
-                        <div>
-                            <div className="doubleInput">
-                                <DetailsTitle>Inventario</DetailsTitle>
-                                <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
-                                    <select
-                                        style={{
-                                            ...mainStyle,
-                                            background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
-                                            width: "100%",
-                                        }}
-                                        onChange={e => {
-                                            setInventarioId(+e.target.value);
-                                            !registroId ? fetchProductosFromInventario(+e.target.value) : null;
-                                        }}
-                                        value={inventarioId ?? ""}
-                                    >
-                                        <option value={""}>-Elegir inventario-</option>
-                                        {inventario?.map(inv => (
-                                            <option key={inv.id} value={inv.id}>
-                                                {inv.inv_nombre ? inv.inv_nombre : inv.Empleados?.nombre}
-                                            </option>
-                                        ))}
-                                    </select>
+                        {window.location.hostname === "localhost" && (
+                            <div>
+                                <div className="doubleInput">
+                                    <DetailsTitle>Inventario</DetailsTitle>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
+                                        <select
+                                            style={{
+                                                ...mainStyle,
+                                                background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
+                                                width: "100%",
+                                            }}
+                                            onChange={e => {
+                                                setInventarioId(+e.target.value);
+                                                if (!registroId) {
+                                                    fetchProductosFromInventario(+e.target.value);
+                                                }
+                                            }}
+                                            value={inventarioId ?? ""}
+                                        >
+                                            <option value={""}>-Elegir inventario-</option>
+                                            {inventario?.map(inv => (
+                                                <option key={inv.id} value={inv.id}>
+                                                    {inv.inv_nombre ? inv.inv_nombre : inv.Empleados?.nombre}
+                                                </option>
+                                            ))}
+                                        </select>
+                                    </div>
                                 </div>
+                                {errorMessageElement && <p style={{ color: "red" }}>Por favor elija un producto</p>}
                             </div>
-                            {errorMessageElement && <p style={{ color: "red" }}>Por favor elija un producto</p>}
-                        </div>
+                        )}
                         {/* <div className="doubleInput">
                             <DetailsTitle>Cantidad</DetailsTitle>
                             <HojaInputs
@@ -568,7 +575,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                                           {product?.Lote ? `- Lote: ${product.Lote}` : ""}
                                                       </option>
                                                   ))
-                                            : producto?.map(prod => (
+                                            : productoLocalHost?.map(prod => (
                                                   <option key={prod.id} value={prod.id}>
                                                       {prod.nombre}
                                                   </option>
