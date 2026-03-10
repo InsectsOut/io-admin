@@ -781,6 +781,7 @@ export type Database = {
           dosis_recomendada:
             | Database["public"]["Enums"]["DosisRecomendada"]
             | null
+          gasto_producto_confirmado: boolean | null
           id: number
           inventario_id: number | null
           inventario_producto_id: number | null
@@ -799,6 +800,7 @@ export type Database = {
           dosis_recomendada?:
             | Database["public"]["Enums"]["DosisRecomendada"]
             | null
+          gasto_producto_confirmado?: boolean | null
           id?: number
           inventario_id?: number | null
           inventario_producto_id?: number | null
@@ -817,6 +819,7 @@ export type Database = {
           dosis_recomendada?:
             | Database["public"]["Enums"]["DosisRecomendada"]
             | null
+          gasto_producto_confirmado?: boolean | null
           id?: number
           inventario_id?: number | null
           inventario_producto_id?: number | null

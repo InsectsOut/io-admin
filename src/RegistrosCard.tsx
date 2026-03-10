@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import styled from "styled-components";
-import {  Tables } from "../src/supabase/Database";
+import { Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
@@ -146,7 +146,7 @@ const RegistrosCard: React.FC<registrosProps> = props => {
     };
 
     const fetchRegistros = async () => {
-        if (props?.servicioId === null || registros.length>0) {
+        if (props?.servicioId === null || registros.length > 0) {
             return;
         }
         try {
@@ -158,7 +158,7 @@ const RegistrosCard: React.FC<registrosProps> = props => {
             if (data) {
                 console.log("fecthed registros:", data);
                 setRegistros(data);
-                return data
+                return data;
             }
 
             if (error) {
@@ -173,31 +173,31 @@ const RegistrosCard: React.FC<registrosProps> = props => {
         setRegistroId(number);
     };
 
-   useEffect(() => {
-  const obtenerRegistros = async () => {
-    try {
-      if (props?.servicioId !== null) {
-        await fetchRegistros();
-        if (registros.length > 0) {
-          setClicked(true);
-        }
-      }
-    } catch (err) {
-      console.error("Error al obtener registros:", err);
-    }
-  };
+    useEffect(() => {
+        const obtenerRegistros = async () => {
+            try {
+                if (props?.servicioId !== null) {
+                    await fetchRegistros();
+                    if (registros.length > 0) {
+                        setClicked(true);
+                    }
+                }
+            } catch (err) {
+                console.error("Error al obtener registros:", err);
+            }
+        };
 
-  obtenerRegistros();
-}, [props?.servicioId, registros]);
+        obtenerRegistros();
+    }, [props?.servicioId, registros]);
 
     // useEffect(() => {
     //     console.log("registros loaded",registros);
     //     if (registros.length > 0) {
     //         console.log("Registros updated:", registros);
     //         setClicked(true);
-            
+
     //     }
-      
+
     // }, []);
 
     const handleClick = (number: number) => {
@@ -265,6 +265,7 @@ const RegistrosCard: React.FC<registrosProps> = props => {
                             </div>
                         ))}
                 </div>
+            
                 {openDeleteModal && (
                     <DelModal
                         btnText={"Eliminar registro"}

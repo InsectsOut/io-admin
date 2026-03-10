@@ -984,6 +984,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                     }}
                                     servicioId={servicios[0]?.id}
                                     title={"Plaguicidas Utilizados"}
+                                  
                                 ></PlaguicidasCard>
                            
 

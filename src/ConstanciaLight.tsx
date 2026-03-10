@@ -964,6 +964,7 @@ const CertificadoServicio = ({}) => {
                                         alignItems: "center",
                                         justifyContent: "center",
                                         background: "#fafafa",
+                                      
                                     }}
                                 >
                                     {firmaTecnicoUrl ? (
@@ -988,9 +989,9 @@ const CertificadoServicio = ({}) => {
                                     alignItems: "center",
                                     height: "90%",
                                     justifyContent: "flex-end",
+                                   
                                 }}
                             >
-                                {/* Signature image for client */}
                                 <div
                                     style={{
                                         width: "80%",
@@ -1000,7 +1001,9 @@ const CertificadoServicio = ({}) => {
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                        background: "#fafafa",
+                                          background: "#fafafa",
+                                        
+                                       
                                     }}
                                 >
                                     {firmaClienteUrl ? (
@@ -1008,7 +1011,11 @@ const CertificadoServicio = ({}) => {
                                             crossOrigin="anonymous"
                                             src={firmaClienteUrl}
                                             alt="Firma Cliente"
-                                            style={{ maxWidth: "100%", maxHeight: "100%" }}
+                                            style={{ 
+                                                maxWidth: "200px", 
+                                                
+                                                objectFit: "contain"
+                                            }}
                                         />
                                     ) : (
                                         <span style={{ color: "#aaa", fontSize: "10px" }}>Espacio para firma</span>

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { PestControlData } from "./RegistroData";
 import styled from "styled-components";
-import { Database, Tables } from "../src/supabase/Database";
+import { Database, Enums, Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { s } from "@fullcalendar/core/internal-common";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
-type RegistroConProducto = Tables<"RegistroAplicacion"> & { 
+type RegistroConProducto = Tables<"RegistroAplicacion"> & {
     Productos: Tables<"Productos"> | null;
     Inventario_productos: Tables<"Inventario_productos">[] | null;
 };
@@ -16,7 +17,7 @@ type RegistroConProducto = Tables<"RegistroAplicacion"> & {
 const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number }> /*style*/ `
     position: "relative";
     width: 53%;
-    height: ${props => (props.clicado ? `${props.alturaregitro * 3.5 + 5}rem` : "5%")};
+    height: ${props => (props.clicado ? `${props.alturaregitro * 3.5 + 10}rem` : "5%")};
     max-height: 60vh;
     background: #f4f4f4;
     border-radius: 0.7179rem;
@@ -45,7 +46,7 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
         }
         transition: all 0.3s ease-in-out;
         overflow-y: scroll;
-        height: ${props => props.alturaregitro * 3.5 + 1}rem;
+        height: ${props => props.alturaregitro * 3.5 + 5}rem;
         max-height: 50vh;
 
         ul {
@@ -114,7 +115,7 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
 interface registrosProps {
     servicioId?: number | null;
     openModal?: () => void;
-    sendDataParent?: any;
+    //sendDataParent?: any;
     title?: string | null;
 }
 
@@ -126,8 +127,10 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
     const [servicio_Id, setServicioId] = useState<number | null>(props?.servicioId ?? null);
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
     const [cantidadUsada, setCantidadUsada] = useState<number>(0);
+    const [cantidades, setCantidades] = useState<Record<number, number>>({});
     const navigate = useNavigate();
     const { folio } = useParams();
+    const [enableConfirm, setEnableConfirm] = useState<boolean>(false);
 
     const getRegistroFromQuery = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -177,7 +180,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                 console.log("Registros con productos:", data);
                 const formattedData = data.map(item => ({
                     ...item,
-                    Inventario_productos: item.Inventario_productos ? [item.Inventario_productos] : null
+                    Inventario_productos: item.Inventario_productos ? [item.Inventario_productos] : null,
                 }));
                 setRegistros(formattedData);
 
@@ -190,8 +193,24 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
         }
     };
 
-    const handleSetRegistro = (number: number) => {
-        setRegistroId(number);
+    const handleCantidadRegistroChange = async (registroId: number, newCantidad: number) => {
+        try {
+            const { data, error } = await supabase
+                .from("RegistroAplicacion")
+                .update({ cantidad_usada: newCantidad })
+                .eq("id", registroId)
+                .select("*");
+
+            if (error) {
+                console.error("Error updating cantidad usada:", error.message);
+                return;
+            }
+            if (data) {
+                console.log("Updated cantidad usada for registro ID", registroId, "to", newCantidad);
+            }
+        } catch (err) {
+            console.error("Error updating cantidad usada: in registro", err);
+        }
     };
 
     useEffect(() => {
@@ -206,9 +225,9 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
         }
     }, [registros]);
 
-    const handleClick = (number: number) => {
-        props.sendDataParent(number);
-    };
+    // const handleClick = (number: number) => {
+    //     props.sendDataParent(number);
+    // };
 
     const deleteRegistros = async (servicioId: string) => {
         try {
@@ -246,6 +265,120 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
         }
     };
 
+    useEffect(() => {
+        console.table(registros);
+        if (!registros.length) return;
+
+        const cantidadesIniciales: Record<number, number> = {};
+
+        registros.forEach(registro => {
+            cantidadesIniciales[registro.id] = registro.cantidad_usada ?? 0;
+        });
+
+        setCantidades(cantidadesIniciales);
+    }, [registros]);
+
+    const generarMovimientoInventario = async (
+        registro: RegistroConProducto,
+        cantidad: number
+        //item_type: Enums<"item_type">
+    ) => {
+        try {
+            const { data, error } = await supabase.from("Movimientos").insert({
+                item_type: "producto",
+                inventario_id: registro.inventario_id ?? 0,
+                quantity: registro.cantidad_usada ?? 0,
+                type: "servicio",
+                servicio_id: props.servicioId ?? 0,
+                item_id: registro.inventario_producto_id ?? 0,
+                date: new Date().toISOString(),
+                organizacion: localStorage.getItem("org") ?? undefined,
+            });
+
+            if (error) {
+                console.error("Error generando movimiento de inventario:", error.message);
+            } else {
+                console.log("Movimiento de inventario generado:", data);
+            }
+        } catch (err) {
+            console.error("Error generando movimiento de inventario:", err);
+        }
+    };
+
+    const handleConfirmConsumption = async () => {
+        const registrosActualizados = registros.map(registro => ({
+            ...registro,
+            cantidad_usada: cantidades[registro.id] ?? registro.cantidad_usada ?? 0,
+        }));
+
+        try {
+            for (const registro of registrosActualizados) {
+                if (registro.cantidad_usada > 0) {
+                    await generarMovimientoInventario(registro, registro.cantidad_usada);
+                }
+            }
+            setEnableConfirm(false);
+            setOpen(false);
+        } catch (err) {
+            console.error("Error saving consumption:", err);
+        }
+    };
+
+    // const restInventarioProductos = async (registro: RegistroConProducto, cantidad: number) => {
+    //     try {
+    //         const inventarioProductoId = registro.inventario_producto_id;
+
+    //         if (!inventarioProductoId) {
+    //             console.error("No inventario_producto_id found");
+    //             return;
+    //         }
+
+    //         const { data, error } = await supabase
+    //             .from("Inventario_productos")
+    //             .update({ cantidad: cantidad })
+    //             .eq("id", inventarioProductoId)
+    //             .select("*");
+
+    //         if (error) {
+    //             console.error("Error restando cantidad del inventario:", error.message);
+    //             return;
+    //         }
+
+    //         console.log("Inventario actualizado:", data);
+    //     } catch (err) {
+    //         console.error("Error restando inventario:", err);
+    //     }
+    // };
+
+    const renderConfirmButton = () => (
+        <button
+            onClick={() => {
+                //setOpen(true);
+                handleConfirmConsumption();
+            }}
+            style={{
+                all: "unset",
+                display: "flex",
+                fontWeight: "bold",
+                color: "white",
+                alignItems: "center",
+                justifyContent: "center",
+                width: "95%",
+                padding: "0.5rem 1rem",
+                background: enableConfirm ? "#0d4e80" : "#0d4e80",
+                borderRadius: "0.7179rem",
+                cursor: enableConfirm ? "pointer" : "not-allowed",
+                transition: "all 0.3s ease-in-out",
+                boxSizing: "border-box",
+                opacity: enableConfirm ? 1 : 0.6,
+            }}
+            disabled={!enableConfirm}
+            onMouseEnter={e => enableConfirm && (e.currentTarget.style.background = "#0a3a5f")}
+            onMouseLeave={e => enableConfirm && (e.currentTarget.style.background = "#0d4e80")}
+        >
+            Confirmar
+        </button>
+    );
     return (
         <>
             <RegistroContainer clicado={clicked} alturaregitro={registros.length} className="registrosContainer">
@@ -261,6 +394,14 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                 <div className="bottomContent">
                     {registros
                         ?.sort((a, b) => a.id - b.id)
+                        .filter(
+                            (data, index, self) =>
+                                index ===
+                                self.findIndex(
+                                    item =>
+                                        item.Inventario_productos?.[0]?.Lote === data.Inventario_productos?.[0]?.Lote
+                                )
+                        )
                         .map((data, index) => (
                             <div
                                 style={{ width: "100%", display: "flex", alignItems: "center" }}
@@ -268,43 +409,94 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                                 className="listElement"
                                 onClick={() => {
                                     setRegistroId(data?.id);
-
-                                    // Pass both `data.id` and a specific `upsertFlag` value (e.g., actualizar or añadir)
-                                    handleClick(data?.id);
-
-                                    //  props.openModal();
+                                    // handleClick(data?.id);
                                 }}
                             >
-                                <p style={{ marginLeft: "1rem", width: "1%" }}>{index + 1}</p>
-                                <p style={{ width: "25%", textAlign: "left" }}>{data?.Productos?.nombre} Lote: {data?.Inventario_productos?.[0]?.Lote}</p>
+                                <div style={{ display: "flex", width: "55%", alignItems: "center", gap: "0.5rem" }}>
+                                    <p style={{ marginLeft: "1rem", width: "5%", textAlign: "center" }}>{index + 1}</p>
+                                    <p style={{ width: "50%", textAlign: "left", marginRight: "1rem" }}>
+                                        <strong>{data?.Productos?.nombre}</strong> - Lote:{" "}
+                                        {data?.Inventario_productos?.[0]?.Lote}
+                                    </p>
+                                </div>
                                 <div
                                     style={{
                                         display: "flex",
-                                        width: "25%",
-                                        textAlign: "left",
-                                        justifyContent: "center",
+                                        width: "45%",
+                                        alignItems: "center",
+                                        gap: "0.5rem",
                                     }}
                                 >
                                     <input
-                                        value={data?.cantidad_usada ?? 0}
+                                        value={cantidades[data.id] ?? {}}
                                         min={0}
                                         type="number"
-                                        onChange={e => setCantidadUsada(Number(e.target.value))}
-                                        style={{ all: "unset", width: "25%", textAlign: "left" }}
+                                        onChange={e => {
+                                            const value = Number(e.target.value);
+
+                                            setCantidades(prev => ({
+                                                ...prev,
+                                                [data.id]: value,
+                                            }));
+                                            setEnableConfirm(true);
+                                        }}
+                                        onBlur={() => {
+                                            const value = cantidades[data.id];
+                                            //window.alert(`¿Desea actualizar la cantidad usada a ${value}?`);
+                                            if (value) {
+                                                handleCantidadRegistroChange(data.id, value);
+                                            }
+                                        }}
+                                        style={{
+                                            all: "unset",
+                                            width: "60%",
+                                            textAlign: "center",
+                                            padding: "0.25rem",
+                                        }}
                                     />
-                                    <span>{data?.Productos?.unidad_de_gasto}</span>
+                                    <span style={{ width: "40%", textAlign: "left" }}>
+                                        {data?.Productos?.unidad_de_gasto}
+                                    </span>
                                 </div>
-                                <button
+                                {/* <button
                                     onClick={e => {
                                         openModal(e, data?.id);
                                     }}
                                     className="deleteButton"
                                 >
                                     X
-                                </button>
+                                </button> */}
                             </div>
                         ))}
+                    {registros.length > 0 && clicked && (
+                        <div
+                            style={{
+                                width: "100%",
+                                display: "flex",
+                                justifyContent: "center",
+                                marginTop: "1rem",
+                                paddingBottom: "1rem",
+                            }}
+                        >
+                            {renderConfirmButton()}
+                        </div>
+                    )}
+
+                    {modalOpen && (
+                        <DelModal
+                            btnText={"Confirmar Consumo"}
+                            titulo={"¿Deseas confirmar el consumo del inventario?"}
+                            closeModal={() => {
+                                setOpen(false);
+                            }}
+                            del={() => {
+                                // Handle inventory consumption
+                                setOpen(false);
+                            }}
+                        ></DelModal>
+                    )}
                 </div>
+
                 {openDeleteModal && (
                     <DelModal
                         btnText={"Eliminar registro"}
