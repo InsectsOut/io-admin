@@ -145,7 +145,6 @@ enum TipoProductoEnum {
 const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnClicked, organizacion }) => {
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null);
     const [producto, setProducto] = useState<Productos[]>();
-    const [productoLocalHost, setProductoLocalHost] = useState<Productos[]>();
     const [productoId, setProductoId] = useState<number>(0);
     const [area_aplicacion, setArea_aplicacion] = useState<string>("");
     const [tipo_aplicacion, setTipo_aplicacion] = useState<string>("");
@@ -169,23 +168,25 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
         setTipoPlaga(cambio);
     };
 
-    const fetchProducto = async () => {
-        try {
-            const { data, error } = await supabase.from("Productos")
-            .select("*")
-            if (data) {
-                const [producto] = data;
-                setProductoLocalHost(data);
-                setTipoProducto(producto.tipo_de_producto);
-            }
-            if (error) {
-                throw new Error(error.message);
-            }
-        } catch (err) {
-            console.log(err);
-        }
-    };
+    // const fetchProducto = async (ids:number[]) => {
+    //     try {
+    //         const { data, error } = await supabase.from("Productos")
+    //         .select("*")
+    //         .in("id", ids);
+    //         if (data) {
+    //             const [producto] = data;
+    //             setProducto(data);
+    //             setTipoProducto(producto.tipo_de_producto);
+    //         }
+    //         if (error) {
+    //             throw new Error(error.message);
+    //         }
+    //     } catch (err) {
+    //         console.log(err);
+    //     }
+    // };
 
+ 
     const handleTipoProductoChange = (tipo: TipoProductoEnum) => {
         setTipoProducto(tipo);
         if (tipo) {
@@ -397,8 +398,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 console.log("productos", data[0].Productos);
 
                 setInventarioProductos(data);
-                if (!data[0].id) {
-                    setInventarioProductoID(null);
+                if (!data[0].id){
+                    setInventarioProductoID(null)
                 }
                 setProducto([]);
                 setProducto(data.map(item => item.Productos).filter((prod): prod is Productos => prod !== null));
@@ -417,18 +418,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
         if (registroId && productoId) {
         }
     }, []);
-    
-    useEffect(() => {
-
-        if (window.location.hostname !== "localhost") {
-           fetchProducto()
-        }
-      
-    }, []);
-
-    useEffect(() => {
-       
-    }, [productoLocalHost]);
 
     useEffect(() => {
         //Use effectpara actualizar los productos al cambiar de inventario solo si ya hay registro, para evitar correr 2 veces el fetch , ya que en on change tambien se corre el fetch de productos, pero solo si no existe el registro
@@ -495,46 +484,33 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 </ModalInputs>
                 <ModalInputs width={90}>
                     <div style={{ display: "inline-flex", gap: "1rem" }}>
-                        {window.location.hostname === "localhost" && (
-                            <div>
-                                <div className="doubleInput">
-                                    <DetailsTitle>Inventario</DetailsTitle>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
-                                        <select
-                                            style={{
-                                                ...mainStyle,
-                                                background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
-                                                width: "100%",
-                                            }}
-                                            onChange={e => {
-                                                setInventarioId(+e.target.value);
-                                                if (!registroId) {
-                                                    fetchProductosFromInventario(+e.target.value);
-                                                }
-                                            }}
-                                            value={inventarioId ?? ""}
-                                        >
-                                            <option value={""}>-Elegir inventario-</option>
-                                            {inventario?.map(inv => (
-                                                <option key={inv.id} value={inv.id}>
-                                                    {inv.inv_nombre ? inv.inv_nombre : inv.Empleados?.nombre}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
+                        <div>
+                            <div className="doubleInput">
+                                <DetailsTitle>Inventario</DetailsTitle>
+                                <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
+                                    <select
+                                        style={{
+                                            ...mainStyle,
+                                            background: errorMessageElement ? "rgb(230, 150, 150)" : "white",
+                                            width: "100%",
+                                        }}
+                                        onChange={e => {
+                                            setInventarioId(+e.target.value);
+                                            !registroId ? fetchProductosFromInventario(+e.target.value) : null;
+                                        }}
+                                        value={inventarioId ?? ""}
+                                    >
+                                        <option value={""}>-Elegir inventario-</option>
+                                        {inventario?.map(inv => (
+                                            <option key={inv.id} value={inv.id}>
+                                                {inv.inv_nombre ? inv.inv_nombre : inv.Empleados?.nombre}
+                                            </option>
+                                        ))}
+                                    </select>
                                 </div>
-                                {errorMessageElement && <p style={{ color: "red" }}>Por favor elija un producto</p>}
                             </div>
-                        )}
-                        {/* <div className="doubleInput">
-                            <DetailsTitle>Cantidad</DetailsTitle>
-                            <HojaInputs
-                                type="number"
-                                value={cantidad}
-                                onChange={handleCantidadChange}
-                                placeholder="0"
-                            />
-                        </div> */}
+                            {errorMessageElement && <p style={{ color: "red" }}>Por favor elija un producto</p>}
+                        </div>
                         <ModalInputs style={{ flexDirection: "row", flexGrow: "1" }}>
                             <div className="doubleInput">
                                 <DetailsTitle>Producto</DetailsTitle>
@@ -547,56 +523,33 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                         }}
                                         onChange={e => {
                                             const selectedEntryId = +e.target.value;
+                                            
 
-                                            if (!selectedEntryId) return;
-
-                                            if (window.location.hostname === "localhost") {
+                                            if (selectedEntryId) {
                                                 setInventarioProductoID(selectedEntryId);
-                                                const selectedEntryProductId = inventarioProductos?.find(
-                                                    entry => entry.id === selectedEntryId
-                                                )?.producto_id;
-                                                const selectedProduct = producto?.find(
-                                                    prod => prod.id === selectedEntryProductId
-                                                );
+                                                const selectedEntryProductId = inventarioProductos?.find(entry => entry.id === selectedEntryId)?.producto_id;
+                                                const selectedProduct = producto?.find(prod => prod.id === selectedEntryProductId);
                                                 setProductoId(selectedProduct?.id ?? 0);
-                                                const tipoProducto =
-                                                    selectedProduct?.tipo_de_producto as TipoProductoEnum;
-                                                handleTipoProductoChange(tipoProducto);
-                                            } else {
-                                               setInventarioProductoID(selectedEntryId);
-                                                const selectedEntryProductId = inventarioProductos?.find(
-                                                    entry => entry.id === selectedEntryId
-                                                )?.producto_id;
-                                                const selectedProduct = producto?.find(
-                                                    prod => prod.id === selectedEntryProductId
+                                                const tipoProducto = selectedProduct?.tipo_de_producto as TipoProductoEnum;
+                                                handleTipoProductoChange(
+                                                    tipoProducto
                                                 );
-                                                setProductoId(selectedProduct?.id ?? 0);
-                                                const tipoProducto =
-                                                    selectedProduct?.tipo_de_producto as TipoProductoEnum;
-                                                handleTipoProductoChange(tipoProducto);
                                             }
                                         }}
-                                        value={
-                                            window.location.hostname === "localhost"
-                                                ? (inventarioProductoID ?? "")
-                                                : (inventarioProductoID ?? "")
-                                        }
+                                        value={inventarioProductoID ?? ""}
                                     >
                                         <option value={""}>-Elegir producto-</option>
-                                        {window.location.hostname === "localhost"
-                                            ? inventarioProductos
-                                                  ?.filter(product => product.producto_id !== null)
-                                                  .map(product => (
-                                                      <option key={product.id} value={product.id as number}>
-                                                          {product.Productos?.nombre}{" "}
-                                                          {product?.Lote ? `- Lote: ${product.Lote}` : ""}
-                                                      </option>
-                                                  ))
-                                            : productoLocalHost?.map(prod => (
-                                                  <option key={prod.id} value={prod.id}>
-                                                      {prod.nombre}
-                                                  </option>
-                                              ))}
+                                        {inventarioProductos
+                                            ?.filter(product => product.producto_id !== null)
+                                            .map(product => (
+                                                <option
+                                                    key={product.id}
+                                                    value={product.id as number}
+                                                >
+                                                    {product.Productos?.nombre}{" "}
+                                                    {product?.Lote ? `- Lote: ${product.Lote}` : ""}{" "}
+                                                </option>
+                                            ))}
                                     </select>
                                     <div style={{ display: "flex", flexDirection: "column", gap: ".25rem" }}>
                                         <select
