@@ -175,6 +175,7 @@ export default function Profile({ user }: ProfileProps) {
                 <option value="IOPQRO">IOPQRO</option>
                 <option value="IOPSLP">IOPSLP</option>
                 <option value="IOPSTESTING">IOPSTESTING</option>
+                <option value="IOPGOBLEON">IOPGOBLEON</option>
               </Select>
             )}
 

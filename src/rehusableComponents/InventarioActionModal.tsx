@@ -18,6 +18,7 @@ type InventarioProductoEntradas = InventarioProducos & {
 };
 
 import { TextAlign } from "./CardInputs";
+import { s } from "@fullcalendar/core/internal-common";
 interface InventarioActionModalProps {
     editable: boolean;
     flag: Enums<"TipoInventario">;
@@ -378,7 +379,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 console.error("Error trying to delete the entry", error);
             } else {
                 if (props.flag === "empleado") {
-                    const itemDeOrigen = (await props.itemId) ?? -1;
+                    const itemDeOrigen = await props.itemId ?? -1;
                     const movGruopoId = await createGrupoDeMovimientos([], null);
                    const firstMovId = await  createMovimiento(
                         inventarioPrincipalId!,
@@ -392,11 +393,13 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                     if(!firstMovId) return window.alert("Error al crear el movimiento de salida");
                     createGrupoDeMovimientos([firstMovId],movGruopoId);
                     const newEntry = await fetchSingleEntry(itemDeOrigen);
-                    const stockOrigen = newEntry?.stock ?? 0;
-                    const entradaNuevaId = newEntry?.id ?? -1;
-                    const nuevoInventarioPrincipalId = newEntry?.inventario_id ?? -1;
+                    console.log(newEntry);
+                    const stockOrigen = await newEntry?.stock ?? 0;
+                    const entradaNuevaId = await newEntry?.id ?? -1;
+                    const nuevoInventarioPrincipalId = await newEntry?.inventario_id ?? -1;
+                   
 
-                    await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
+                  //   await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
                    const secondMovId =  await createMovimiento(
                         nuevoInventarioPrincipalId!,
                         "producto",
@@ -408,7 +411,7 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                     );if(!secondMovId) return window.alert("Error al crear el movimiento de entrada");
                     await createGrupoDeMovimientos([secondMovId],movGruopoId);
                 }
-                await fetchInventarioProductosConEntradas();
+                await props.fetchInventarioProductosConEntradas();
                 await nullAllParameters();
             }
         } catch (err) {

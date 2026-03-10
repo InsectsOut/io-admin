@@ -21,6 +21,7 @@ import Bitacoras from "./Bitacoras";
 import Inventario from "./Inventario";
 import Profile from "./Profile";
 import { Tables } from "./supabase/Database";
+import CertificadoServicio from "./ConstanciaLight";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -38,7 +39,6 @@ const AppRoutes = () => {
             }
 
             setSessionData(data?.session);
-            console.log("datos de la sesion", data);
             const userId = data?.session?.user?.id ?? "";
             setUser_id(userId);
             localStorage.setItem("user_id", data?.session?.user?.id ?? "");
@@ -184,6 +184,9 @@ const AppRoutes = () => {
                         path="/inventario"
                         element={<Inventario organizacion={localStorage.getItem("org") ?? ""} />}
                     />
+                    <Route 
+                    path="/certificado/:id"
+                    element={<CertificadoServicio></CertificadoServicio>} ></Route>
                     <Route
                         path="/perfil"
                         element={

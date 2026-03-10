@@ -1,11 +1,90 @@
 import styled from "styled-components";
 import { ServiciosContainer } from "./Servicios";
 import { Titulo } from "./Servicios";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from "react-router-dom";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { supabase } from "./utils/ClientSupabase";
+import { Tables } from "./supabase/Database";
+
+type AreaGubernamental = Tables<"AreaGubernamental">;
+
+interface WarningModalProps {
+    message: string;
+    onClose: () => void;
+    visible: boolean;
+}
+
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    /* background: rgba(44, 62, 80, 0.45); */
+    background: rgb(0, 0, 0, 0.7);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+`;
+
+const ModalContainer = styled.div`
+    background: #f3f3f3;
+    box-shadow: 0px 4px 9.8px rgba(0, 0, 0, 0.25);
+    border-radius: 0.5rem;
+    width: 28rem;
+    min-height: 12rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 2rem;
+`;
+
+const ModalTitle = styled.div`
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #a01f27;
+    margin-bottom: 1rem;
+`;
+
+const ModalMessage = styled.div`
+    font-size: 1rem;
+    color: #474747;
+    text-align: center;
+    margin-bottom: 2rem;
+`;
+
+const CloseButton = styled.button`
+    background: #0d4e80;
+    color: white;
+    border: none;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    font-weight: 500;
+    padding: 0.75rem 2rem;
+    cursor: pointer;
+    &:hover {
+        background-color: #2980b9;
+        transform: scale(1.05);
+    }
+`;
+
+export const WarningModal: React.FC<WarningModalProps> = ({ message, onClose, visible }) => {
+    if (!visible) return null;
+    return (
+        <ModalOverlay>
+            <ModalContainer>
+                <ModalTitle>Advertencia</ModalTitle>
+                <ModalMessage>{message}</ModalMessage>
+                <CloseButton onClick={onClose}>Cerrar</CloseButton>
+            </ModalContainer>
+        </ModalOverlay>
+    );
+};
 
 const SearchButtonLink = styled.button`
     width: 4.5rem;
@@ -185,6 +264,9 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
     const [_servicioFolio, SetServicioFolio] = useState<number | null>(null);
     const [nombre, setNombre] = useState<string>("");
     const [apellido, setApellido] = useState<string>("");
+    const [areaGubernamental, setAreaGubernamental] = useState<AreaGubernamental[]>([]);
+    const [modalVisible, setModalVisible] = useState(false);
+    const [areaGubernamentalId, setAreaGubernamentalId] = useState<number | null>(-1);
     const navigate = useNavigate();
 
     const addCliente = async () => {
@@ -200,6 +282,7 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                         apellidos: apellido,
                         user_id: props.user_id,
                         organizacion: props.organizacion,
+                        gob_id: areaGubernamentalId && areaGubernamentalId !== -1 ? areaGubernamentalId : null,
                     },
                 ] as any)
                 .select();
@@ -221,14 +304,50 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
         }
     };
 
+    const handleAreaGubernamentalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const areaId = parseInt(event.target.value, 10);
+        setAreaGubernamentalId(areaId);
+    }
+
+    const fetchAreasGubernamentales = async () => {
+        try {
+            // Use the prop if available, otherwise fallback to "IOPSLP"
+            const organizacion = props.organizacion ?? "";
+
+            // Fetch rows from Supabase where organizacion matches
+            const { data, error } = await supabase
+                .from("AreaGubernamental")
+                .select("*")
+                .eq("organizacion", organizacion);
+
+            if (error) {
+                console.error("Error fetching áreas gubernamentales:", error);
+                setModalVisible(true);
+            }
+
+            if (!data || data.length === 0) {
+                console.warn(`No se encontraron áreas gubernamentales para: ${organizacion}`);
+                setAreaGubernamental([]); // make sure state is cleared
+                setModalVisible(true);
+            } else {
+                setAreaGubernamental(data);
+            }
+        } catch (err) {
+            console.error("Unexpected error fetching áreas gubernamentales:", err);
+        }
+    };
+
     const handleEmailChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const emailChange = event.target.value;
         setEmail(emailChange);
     };
 
-    const handleTipoCliente = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleTipoCliente = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         const tipo = event.target.value;
         setTipoCliente(tipo);
+        if (tipo === "Gubernamental") {
+            await fetchAreasGubernamentales();
+        }
     };
 
     const handleTelefonoChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -247,6 +366,11 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
 
     return (
         <CreateContainer id="createContainer">
+            <WarningModal
+                message="No se encontraron áreas gubernamentales, añada una en el módulo de Configuración."
+                onClose={() => setModalVisible(false)}
+                visible={modalVisible}
+            />
             <Titulo>Clientes</Titulo>
             <CreateFormContainer className="createForm">
                 <FormHeader>Para registrar un nuevo cliente, complete el siguiente formulario.</FormHeader>
@@ -271,6 +395,27 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                             <option value="Escolar">Escolar</option>
                         </select>
                     </FormatoInputs>
+                    {tipoCliente === "Gubernamental" && areaGubernamental.length > 0 && (
+                        <FormatoInputs style={{ width: "19.815rem" }}>
+                            <FormLabels>Dirección gubernamental:</FormLabels>
+                            <select
+                                id="tipoSelect"
+                                value={areaGubernamentalId ?? -1}
+                                onChange={handleAreaGubernamentalChange}
+                                className="textInputs arrowChange"
+                            >
+                                <option value="" disabled selected hidden>
+                                    Elegir el tipo de servicio...
+                                </option>
+                                <option  value={-1} disabled>--Elige el tipo del área gubernamental--</option>
+                                {areaGubernamental.map(area => (
+                                    <option key={area.id} value={area.id}>
+                                        {area.nombreAreaGob}
+                                    </option>
+                                ))}
+                            </select>
+                        </FormatoInputs>
+                    )}
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
                         <div style={{ width: "45%" }}>
                             <FormLabels>
@@ -278,9 +423,16 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                                     const tipoSelect = document.getElementById(
                                         "tipoSelect"
                                     ) as HTMLSelectElement | null;
-                                    return tipoSelect && tipoSelect.value !== "Residencial"
-                                        ? "Nombre de la empresa"
-                                        : "Nombre del Cliente";
+                                    if (tipoSelect) {
+                                        if (tipoSelect.value === "Gubernamental") {
+                                            return "Nombre de la dependencia";
+                                        } else if (tipoSelect.value !== "Residencial") {
+                                            return "Nombre de la empresa";
+                                        } else {
+                                            return "Nombre del Cliente";
+                                        }
+                                    }
+                                    return "Nombre del Cliente";
                                 })()}
                             </FormLabels>
                             <CardInputs

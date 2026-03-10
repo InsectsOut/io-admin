@@ -51,10 +51,10 @@ const PeriodicidadTag = styled.div`
     }
 `;
 
-const SearchButtonLink = styled.button<{disable:boolean}> /*style*/ `
+const SearchButtonLink = styled.button<{ disable: boolean }> /*style*/ `
     width: 8.5rem;
     height: 2.188rem;
-    background: ${props => (props.disable ? "gray":  "#0d4e80")};
+    background: ${props => (props.disable ? "gray" : "#0d4e80")};
     border-radius: 0.375rem;
     font-style: normal;
     font-weight: 400;
@@ -332,6 +332,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
     const [fechas_recomendadas, set_fechas_recomendadas] = useState<Date[]>([]);
     const [dateTag, setDateTag] = useState<boolean>(false);
     const [disableButton, setDisableButton] = useState<boolean>(false);
+    const [serviciosPorMes, setServiciosPorMes] = useState<number | null>();
 
     const fetchResponsables = async () => {
         if (clienteId !== undefined) {
@@ -583,6 +584,10 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         setNumDeServicios(num);
     };
 
+    const handleNumDeServiciosPorMesFromChild = (numDeServiciosPorMes: number) => {
+        setServiciosPorMes(numDeServiciosPorMes);
+    };
+
     const handleSelectedDayFromChild = (day: any) => {
         setSelectedDays(day);
         console.log(day);
@@ -649,7 +654,6 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         if (!date) return;
 
         if (frecuencia !== "Ninguna") {
-          
             let folioGuardados = []; // Declare an empty array to store the folios
             let idsDelServicio = [];
 
@@ -678,74 +682,178 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         }
     };
 
-  const createSuggestedDates = (
-    cantidadServicios: number | null,
-    startDate: Date | null,
-    frecuencia: Enums<"FrecuenciaServicio">,
-    selectedDay: number // 0: Sunday, 1: Monday, ...
-) => {
-    if (!cantidadServicios || cantidadServicios <= 0) {
-        window.alert("Por favor defina la cantidad de servicios a crear");
-        return;
-    }
-    if (!startDate) {
-        window.alert("Por favor defina la fecha de inicio de creación de servicios");
-        return;
-    }
+    //   const createSuggestedDates = (
+    //     cantidadServicios: number | null,
+    //     startDate: Date | null,
+    //     frecuencia: Enums<"FrecuenciaServicio">,
+    //     selectedDay: number, // 0: Sunday, 1: Monday, ...
+    //     serviciosPorMes?:number
+    // ) => {
+    //     if (!cantidadServicios || cantidadServicios <= 0) {
+    //         window.alert("Por favor defina la cantidad de servicios a crear");
+    //         return;
+    //     }
+    //     if (!startDate) {
+    //         window.alert("Por favor defina la fecha de inicio de creación de servicios");
+    //         return;
+    //     }
 
-    const getNextWeekday = (base: Date, targetDay: number): Date => {
-        const date = new Date(base);
-        const day = date.getDay();
-        const diff = (targetDay + 7 - day) % 7;
-        date.setDate(date.getDate() + diff);
-        return date;
-    };
+    //     const getNextWeekday = (base: Date, targetDay: number): Date => {
+    //         const date = new Date(base);
+    //         const day = date.getDay();
+    //         const diff = (targetDay + 7 - day) % 7;
+    //         date.setDate(date.getDate() + diff);
+    //         return date;
+    //     };
 
-    // use calendar math instead of "days"
-    const addFrequency = (date: Date, step: number): Date => {
-        const d = new Date(date);
+    //     // use calendar math instead of "days"
+    //     const addFrequency = (date: Date, step: number): Date => {
+    //         const d = new Date(date);
 
-        switch (frecuencia) {
-            case "Anual":
-                d.setFullYear(d.getFullYear() + step);
-                break;
-            case "Semestral": // every 6 months
-                d.setMonth(d.getMonth() + step * 6);
-                break;
-            case "Trimestral": // every 3 months
-                d.setMonth(d.getMonth() + step * 3);
-                break;
-            case "Bimestral": // every 2 months
-                d.setMonth(d.getMonth() + step * 2);
-                break;
-            case "Mensual":
-                d.setMonth(d.getMonth() + step);
-                break;
-            case "Quincenal":
-                d.setDate(d.getDate() + step * 14);
-                break;
-            case "Semanal":
-                d.setDate(d.getDate() + step * 7);
-                break;
-            default:
-                break;
+    //         switch (frecuencia) {
+    //             case "Anual":
+    //                 d.setFullYear(d.getFullYear() + step);
+    //                 break;
+    //             case "Semestral": // every 6 months
+    //                 d.setMonth(d.getMonth() + step * 6);
+    //                 break;
+    //             case "Trimestral": // every 3 months
+    //                 d.setMonth(d.getMonth() + step * 3);
+    //                 break;
+    //             case "Bimestral": // every 2 months
+    //                 d.setMonth(d.getMonth() + step * 2);
+    //                 break;
+    //             case "Mensual":
+    //                 d.setMonth(d.getMonth() + step);
+    //                 break;
+    //             case "Quincenal":
+    //                 d.setDate(d.getDate() + step * 14);
+    //                 break;
+    //             case "Semanal":
+    //                 d.setDate(d.getDate() + step * 7);
+    //                 break;
+    //             default:
+    //                 break;
+    //         }
+    //         return d;
+    //     };
+
+    //     let currentDate = getNextWeekday(startDate, selectedDay);
+    //     const generatedDates: Date[] = [];
+
+    //     for (let i = 0; i < cantidadServicios; i++) {
+    //         const nextDate = addFrequency(currentDate, i);
+    //         const adjustedDate = getNextWeekday(nextDate, selectedDay);
+    //         generatedDates.push(adjustedDate);
+    //     }
+
+    //     console.log(generatedDates);
+    //     set_fechas_recomendadas(generatedDates);
+    // };
+
+    const createSuggestedDates = (
+        cantidadServicios: number | null,
+        startDate: Date | null,
+        frecuencia: Enums<"FrecuenciaServicio">,
+        selectedDay: number, // 0 Sunday ... 6 Saturday
+        serviciosPorMes?: number | null
+    ) => {
+        if (!cantidadServicios || cantidadServicios <= 0) {
+            window.alert("Por favor defina la cantidad de servicios a crear");
+            return;
         }
-        return d;
+
+        if (!startDate) {
+            window.alert("Por favor defina la fecha de inicio de creación de servicios");
+            return;
+        }
+
+        const getNextWeekday = (base: Date, targetDay: number): Date => {
+            const date = new Date(base);
+            const diff = (targetDay + 7 - date.getDay()) % 7;
+            date.setDate(date.getDate() + diff);
+            return date;
+        };
+
+        const addFrequency = (date: Date, step: number): Date => {
+            const d = new Date(date);
+
+            switch (frecuencia) {
+                case "Anual":
+                    d.setFullYear(d.getFullYear() + step);
+                    break;
+                case "Semestral":
+                    d.setMonth(d.getMonth() + step * 6);
+                    break;
+                case "Trimestral":
+                    d.setMonth(d.getMonth() + step * 3);
+                    break;
+                case "Bimestral":
+                    d.setMonth(d.getMonth() + step * 2);
+                    break;
+                case "Mensual":
+                    d.setMonth(d.getMonth() + step);
+                    break;
+                case "Quincenal":
+                    d.setDate(d.getDate() + step * 14);
+                    break;
+                case "Semanal":
+                    d.setDate(d.getDate() + step * 7);
+                    break;
+            }
+            return d;
+        };
+
+        const generatedDates: Date[] = [];
+
+        /** -------------------------------
+         *  MONTH-SAFE MODE
+         * ------------------------------- */
+        if (serviciosPorMes && serviciosPorMes > 0 && (frecuencia === "Semanal" || frecuencia === "Quincenal")) {
+            let current = getNextWeekday(startDate, selectedDay);
+            let serviciosEnMes = 0;
+            let currentMonth = current.getMonth();
+            let currentYear = current.getFullYear();
+
+            while (generatedDates.length < cantidadServicios) {
+                generatedDates.push(new Date(current));
+                serviciosEnMes++;
+
+                // Calculate next date STRICTLY by frequency
+                const next = new Date(current);
+                next.setDate(next.getDate() + (frecuencia === "Semanal" ? 7 : 14));
+
+                // If next service exceeds monthly limit OR jumps to next month
+                if (
+                    serviciosEnMes >= serviciosPorMes ||
+                    next.getMonth() !== currentMonth ||
+                    next.getFullYear() !== currentYear
+                ) {
+                    // Move to next month, reset counter
+                    current = new Date(currentYear, currentMonth + 1, 1);
+                    current = getNextWeekday(current, selectedDay);
+                    serviciosEnMes = 0;
+                    currentMonth = current.getMonth();
+                    currentYear = current.getFullYear();
+                } else {
+                    current = getNextWeekday(next, selectedDay);
+                }
+            }
+        } else {
+        /** -------------------------------
+         *  NORMAL INTERVAL MODE
+         * ------------------------------- */
+            let currentDate = getNextWeekday(startDate, selectedDay);
+
+            for (let i = 0; i < cantidadServicios; i++) {
+                const nextDate = addFrequency(currentDate, i);
+                generatedDates.push(getNextWeekday(nextDate, selectedDay));
+            }
+        }
+
+        console.log(generatedDates);
+        set_fechas_recomendadas(generatedDates);
     };
-
-    let currentDate = getNextWeekday(startDate, selectedDay);
-    const generatedDates: Date[] = [];
-
-    for (let i = 0; i < cantidadServicios; i++) {
-        const nextDate = addFrequency(currentDate, i);
-        const adjustedDate = getNextWeekday(nextDate, selectedDay);
-        generatedDates.push(adjustedDate);
-    }
-
-    console.log(generatedDates);
-    set_fechas_recomendadas(generatedDates);
-};
-
 
     const handleTagClicks = (event: React.MouseEvent<HTMLDivElement>) => {
         event.stopPropagation();
@@ -886,7 +994,8 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                                                 numDeServicios,
                                                 startDate,
                                                 frecuencia,
-                                                selectedDays!
+                                                selectedDays!,
+                                                serviciosPorMes ?? null
                                             )
                                         }
                                         ModalCloser={handleCloseFromChild}
@@ -896,6 +1005,8 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                                         datesSender={handleDateChnageFromChild}
                                         startDateProp={selectedDate ?? null}
                                         onClose={periodModalOpen}
+                                        frecuencia={frecuencia}
+                                        numDeServiciosPorMesSend={handleNumDeServiciosPorMesFromChild}
                                     ></PeriodicidadModal>
                                 </>
                             )}
@@ -990,9 +1101,9 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                             style={{ width: "100%", display: "flex", justifyContent: "center" }}
                         >
                             <SearchButtonLink
-                            id="createServiceButton"
-                            disable={disableButton}
-                            disabled={disableButton}
+                                id="createServiceButton"
+                                disable={disableButton}
+                                disabled={disableButton}
                                 type="button"
                                 onClick={() => {
                                     addServicioPeriodically(numDeServicios, startDate, frecuencia, fechas_recomendadas);

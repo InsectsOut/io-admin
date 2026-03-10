@@ -3,7 +3,6 @@ import { PestControlData } from "./RegistroData";
 import styled from "styled-components";
 import { Database, Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
-import Modal from "./ModalComponents";
 import { useNavigate } from "react-router-dom";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
@@ -112,7 +111,6 @@ const GrupoServiciosCard: React.FC<registrosProps> = props => {
                 .select(`grupo_de_servicios,GruposDeServicios!inner("servicios_id")`)
                 .filter("id", "eq", servicio_Id);
             if (data) {
-                console.log(data[0]?.GruposDeServicios?.servicios_id);
                 let servicios = data[0]?.GruposDeServicios?.servicios_id;
                 set_servicios_del_grupo(servicios ?? []);
                 return servicios;
@@ -134,7 +132,6 @@ const GrupoServiciosCard: React.FC<registrosProps> = props => {
                 .in("id", servicios_grupo as number[]);
 
             if (data) {
-                console.log(data);
                 setServicios(data);
             }
             if (error) {
