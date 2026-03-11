@@ -541,9 +541,11 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         }
     }, []);
 
-    // useEffect(()=>{
-
-    // },[])
+    useEffect(()=>{
+if (props.flag ==="principal"){
+    fetchSingleEntry(props.entryId!);
+}
+    },[])
 
     return (
         <ModalOverlay>
@@ -693,13 +695,13 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                     <FormRow style={{ justifyContent: "flex-end", gap: "1rem" }}>
                         {props.editable && entryId && props.flag === "principal" && (
                             <ModalButton
-                                onClick={() => {
-                                    editEntry(entryId, {
+                                onClick={ async () => {
+                                    await editEntry(entryId, {
                                         stock: stock,
                                         lote: lote,
                                         fechaDeCaducidad: fechaDeCaducidad?.toISOString(),
                                     });
-                                    fetchInventarioProductosConEntradas();
+                                    await props.fetchInventarioProductosConEntradas();
                                 }}
                                 type="button"
                             >
