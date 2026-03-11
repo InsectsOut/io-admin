@@ -5,6 +5,7 @@ import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { set } from "ts-pattern/dist/patterns";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 
@@ -158,7 +159,9 @@ const RegistrosCard: React.FC<registrosProps> = props => {
             if (data) {
                 console.log("fecthed registros:", data);
                 setRegistros(data);
+                setClicked(true);
                 return data;
+                
             }
 
             if (error) {
@@ -178,9 +181,7 @@ const RegistrosCard: React.FC<registrosProps> = props => {
             try {
                 if (props?.servicioId !== null) {
                     await fetchRegistros();
-                    if (registros.length > 0) {
-                        setClicked(true);
-                    }
+                   
                 }
             } catch (err) {
                 console.error("Error al obtener registros:", err);
@@ -188,7 +189,23 @@ const RegistrosCard: React.FC<registrosProps> = props => {
         };
 
         obtenerRegistros();
-    }, [props?.servicioId, registros]);
+    }, [props?.servicioId]);
+    // useEffect(() => {
+    //     const obtenerRegistros = async () => {
+    //         try {
+    //             if (props?.servicioId !== null) {
+    //                 await fetchRegistros();
+    //                 if (registros.length > 0) {
+    //                     setClicked(true);
+    //                 }
+    //             }
+    //         } catch (err) {
+    //             console.error("Error al obtener registros:", err);
+    //         }
+    //     };
+
+    //     obtenerRegistros();
+    // }, [props?.servicioId, registros]);
 
     // useEffect(() => {
     //     console.log("registros loaded",registros);

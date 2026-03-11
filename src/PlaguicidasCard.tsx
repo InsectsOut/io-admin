@@ -324,37 +324,105 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
         }
     };
 
-    // const restInventarioProductos = async (registro: RegistroConProducto, cantidad: number) => {
-    //     try {
-    //         const inventarioProductoId = registro.inventario_producto_id;
+    const restInventarioProductos = async (registro: RegistroConProducto, cantidad: number, stock: number) => {
+        try {
+            const inventarioProductoId = registro.inventario_producto_id;
+            let cantidadGastada = cantidad;
+            const unidadDeGasto = registro.Productos?.unidad_de_gasto;
+            const presentacionUnidad = registro.Productos?.presentacion_unidad;
 
-    //         if (!inventarioProductoId) {
-    //             console.error("No inventario_producto_id found");
-    //             return;
-    //         }
+            if (!inventarioProductoId) {
+                console.error("No inventario_producto_id found");
+                return;
+            }
 
-    //         const { data, error } = await supabase
-    //             .from("Inventario_productos")
-    //             .update({ cantidad: cantidad })
-    //             .eq("id", inventarioProductoId)
-    //             .select("*");
+            if (cantidad <= 0) {
+                window.alert("La cantidad usada debe ser mayor a 0 para restar del inventario.");
+                return;
+            }
 
-    //         if (error) {
-    //             console.error("Error restando cantidad del inventario:", error.message);
-    //             return;
-    //         }
+            if (registro.cantidad_usada === undefined) {
+                window.alert(`No se encontró la cantidad usada para el registro ID ${registro.id}`);
+                return;
+            }
 
-    //         console.log("Inventario actualizado:", data);
-    //     } catch (err) {
-    //         console.error("Error restando inventario:", err);
-    //     }
-    // };
+            if (registro.cantidad_usada === 0) {
+                window.alert("La cantidad usada para este registro es 0, no se restará del inventario.");
+                return;
+            }
+
+            if (!unidadDeGasto) {
+                window.alert("No se pudo obtener la unidad de gasto para este producto. No se restará del inventario.");
+                return;
+            }
+
+            switch (true) {
+                case unidadDeGasto === "ml" && presentacionUnidad === "L":
+                    cantidadGastada = cantidad / 1000;
+                    window.alert(
+                        `La cantidad gastada se ha convertido de ${cantidad} ml a ${cantidadGastada} L para restar del inventario.`
+                    );
+
+                    break;
+
+                case unidadDeGasto === "g" && presentacionUnidad === "kg":
+                    cantidadGastada = cantidad / 1000;
+                    break;
+
+                case unidadDeGasto === "pzs" && presentacionUnidad === "pzs":
+                    cantidadGastada = cantidad;
+                    break;
+
+                default:
+                    cantidadGastada = cantidad;
+            }
+
+            if (cantidadGastada > stock) {
+                window.alert(
+                    `La cantidad ingresada (${cantidadGastada}) es mayor a la cantidad registrada en el inventario (${stock}).`
+                );
+                return;
+            }
+
+            if (cantidadGastada <= 0) {
+                window.alert("La cantidad gastada calculada es menor o igual a 0, no se restará del inventario.");
+                return;
+            }
+
+            const { data, error } = await supabase
+                .from("Inventario_productos")
+                .update({ stock: stock - cantidadGastada })
+                .eq("id", inventarioProductoId)
+                .select("*");
+
+            if (error) {
+                console.error("Error restando cantidad del inventario:", error.message);
+                return false;
+            }
+
+            return true;
+
+            console.log("Inventario actualizado:", data);
+        } catch (err) {
+            console.error("Error restando inventario:", err);
+        }
+    };
 
     const renderConfirmButton = () => (
         <button
-            onClick={() => {
-                //setOpen(true);
-                handleConfirmConsumption();
+            onClick={async () => {
+                const runner = async () => {
+                for (const registro of registros) {
+                    const success = await restInventarioProductos(
+                        registro,
+                        cantidades[registro.id] ?? 0,
+                        registro.Inventario_productos?.[0]?.stock ?? 0
+                    );
+                    if (!success) return;
+                }
+                await handleConfirmConsumption();
+            }
+            runner();
             }}
             style={{
                 all: "unset",
