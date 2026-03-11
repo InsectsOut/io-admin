@@ -430,6 +430,8 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         }
     };
 
+    
+
     const renderProducto = (entry: Productos, index: number) => {
         return (
             <EntryItem key={index}>

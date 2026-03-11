@@ -301,7 +301,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     setFechaDeCaducidad(null);
                     setInventarioPrincipalId(data[0]?.inventario_id!);
                     setEntryId(data[0]?.id ?? null);
-                    console.log("la data que se borrará", data);
+                    console.log("la data que se trajo", data);
 
                     if (data[0]?.fecha_de_caducidad) {
                         const [year, month, day] = data[0]?.fecha_de_caducidad.split("-").map(Number);
@@ -698,11 +698,13 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 </EntryRow>
                                 {flag === "principal" && (
                                     <EntryRow
-                                        onClick={() => {
-                                            fetchSingleEntry(entry.id);
-                                            setEditable(true);
-                                            setIsModalOpen(true);
-                                            setEntryId(entry.id);
+                                        onClick={async () => {
+                                            if (entry) {   
+                                            await fetchSingleEntry(entry.id);
+                                            await setEditable(true);
+                                            await setIsModalOpen(true);
+                                            await setEntryId(entry.id);
+                                            }
                                         }}
                                         style={{ alignSelf: "left" }}
                                         className="entrySixthElement"
