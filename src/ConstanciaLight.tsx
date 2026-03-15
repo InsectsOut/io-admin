@@ -10,7 +10,7 @@ import { CreateButton } from "./rehusableComponents/CreateInventariosModal";
 import { FaDownload } from "react-icons/fa";
 
 const Wrapper = styled.div`
-width: 100%;
+    width: 100%;
     @media (max-width: 600px) {
     }
 `;
@@ -402,8 +402,8 @@ const CertificadoServicio = ({}) => {
 
             if (error) throw error;
 
-            const firmaClienteUrl = await generateSignedUrl(data?.firma_cliente ?? "", "imagenes_servicios",false);
-            const firmaTecnicoUrl = await generateSignedUrl(data?.tecnico?.Firma ?? "", "documentos_empleados",false);
+            const firmaClienteUrl = await generateSignedUrl(data?.firma_cliente ?? "", "imagenes_servicios", false);
+            const firmaTecnicoUrl = await generateSignedUrl(data?.tecnico?.Firma ?? "", "documentos_empleados", false);
             setFirmaTecnicoUrl(firmaTecnicoUrl);
             setServicioData(data);
             setFirmaClienteUrl(firmaClienteUrl);
@@ -446,7 +446,7 @@ const CertificadoServicio = ({}) => {
                 await Promise.all(
                     data.map(async (rec: Recomendaciones) => {
                         if (rec.imagen) {
-                            urls[rec.id] = await generateSignedUrl(rec.imagen, "imagenes_servicios",true);
+                            urls[rec.id] = await generateSignedUrl(rec.imagen, "imagenes_servicios", true);
                         }
                     })
                 );
@@ -574,7 +574,7 @@ const CertificadoServicio = ({}) => {
                                 <Field className="longerField">
                                     <div
                                         style={{
-                                           width: "130.55px",
+                                            width: "130.55px",
                                             display: "flex",
                                             flexDirection: "row",
                                             alignItems: "flex-end",
@@ -603,16 +603,14 @@ const CertificadoServicio = ({}) => {
                                         <Label>DIRECCION</Label>
                                     </div>
                                     <Line className="longerLine">
-                                        {clienteData?.Direcciones?.[0]?.calle}{" "}
-                                        {clienteData?.Direcciones?.[0]?.numero_ext}{" "}
-                                        {clienteData?.Direcciones?.[0]?.numero_int
-                                            ? clienteData?.Direcciones?.[0]?.numero_int
-                                            : null}{" "}
-                                        {clienteData?.Direcciones?.[0]?.colonia} {clienteData?.Direcciones?.[0]?.ciudad}{" "}
-                                        {clienteData?.Direcciones?.[0]?.estado}{" "}
-                                        {clienteData?.Direcciones?.[0]?.codigo_postal
-                                            ? clienteData?.Direcciones?.[0]?.codigo_postal
-                                            : null}
+                                        {(() => {
+                                            const direccion = clienteData?.Direcciones?.find(
+                                                dir => dir.id === servicioData?.direccion_id
+                                            );
+                                            return direccion
+                                                ? `${direccion.calle ?? ""} ${direccion.numero_ext ?? ""} ${direccion.numero_int ?? ""} ${direccion.colonia ?? ""} ${direccion.ciudad ?? ""} ${direccion.estado ?? ""} ${direccion.codigo_postal ?? ""}`
+                                                : "";
+                                        })()}
                                     </Line>
                                 </Field>
                             </Row>
@@ -621,7 +619,7 @@ const CertificadoServicio = ({}) => {
                                 <Field className="longerField">
                                     <div
                                         style={{
-                                           width: "130.55px",
+                                            width: "130.55px",
                                             display: "flex",
                                             flexDirection: "row",
                                             alignItems: "flex-end",
@@ -816,7 +814,7 @@ const CertificadoServicio = ({}) => {
                                     display: "flex",
                                     flexDirection: "column",
                                     justifyContent: "left",
-                                    height:"fit-content",
+                                    height: "fit-content",
                                 }}
                             >
                                 {recomendaciones?.map((rec, index) => (
@@ -825,7 +823,7 @@ const CertificadoServicio = ({}) => {
                                             display: "flex",
                                             flexDirection: "row",
                                             justifyContent: "left",
-                                            fontSize:".8rem"
+                                            fontSize: ".8rem",
                                         }}
                                         key={index}
                                     >
@@ -902,9 +900,7 @@ const CertificadoServicio = ({}) => {
                                                         crossOrigin="anonymous"
                                                         src={signedUrls[recs.id]}
                                                         alt="Evidencia"
-                                                        style={{
-                                                        
-                                                        }}
+                                                        style={{}}
                                                     />
                                                 ) : (
                                                     <span style={{ fontSize: "8px", color: "#888" }}>
@@ -964,7 +960,6 @@ const CertificadoServicio = ({}) => {
                                         alignItems: "center",
                                         justifyContent: "center",
                                         background: "#fafafa",
-                                      
                                     }}
                                 >
                                     {firmaTecnicoUrl ? (
@@ -989,7 +984,6 @@ const CertificadoServicio = ({}) => {
                                     alignItems: "center",
                                     height: "90%",
                                     justifyContent: "flex-end",
-                                   
                                 }}
                             >
                                 <div
@@ -1001,9 +995,7 @@ const CertificadoServicio = ({}) => {
                                         display: "flex",
                                         alignItems: "center",
                                         justifyContent: "center",
-                                          background: "#fafafa",
-                                        
-                                       
+                                        background: "#fafafa",
                                     }}
                                 >
                                     {firmaClienteUrl ? (
@@ -1011,10 +1003,10 @@ const CertificadoServicio = ({}) => {
                                             crossOrigin="anonymous"
                                             src={firmaClienteUrl}
                                             alt="Firma Cliente"
-                                            style={{ 
-                                                maxWidth: "200px", 
-                                                
-                                                objectFit: "contain"
+                                            style={{
+                                                maxWidth: "200px",
+
+                                                objectFit: "contain",
                                             }}
                                         />
                                     ) : (
