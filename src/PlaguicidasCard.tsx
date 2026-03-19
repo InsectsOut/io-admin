@@ -7,6 +7,7 @@ import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import { s } from "@fullcalendar/core/internal-common";
+import ConfirmModal from "./rehusableComponents/ConfirmationModal";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 type RegistroConProducto = Tables<"RegistroAplicacion"> & {
@@ -113,7 +114,7 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
 `;
 
 interface registrosProps {
-    servicioId?: number | null;
+    servicioId: number;
     openModal?: () => void;
     //sendDataParent?: any;
     title?: string | null;
@@ -124,13 +125,14 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
     const [registros, setRegistros] = useState<RegistroConProducto[]>([]);
     const [modalOpen, setOpen] = useState<boolean>(false);
     const [registroId, setRegistroId] = useState<number>();
-    const [servicio_Id, setServicioId] = useState<number | null>(props?.servicioId ?? null);
+    const [servicio_Id, setServicioId] = useState<number>(props?.servicioId);
     const [openDeleteModal, setOpenDeleteModal] = useState<boolean>(false);
     const [cantidadUsada, setCantidadUsada] = useState<number>(0);
     const [cantidades, setCantidades] = useState<Record<number, number>>({});
     const navigate = useNavigate();
     const { folio } = useParams();
     const [enableConfirm, setEnableConfirm] = useState<boolean>(false);
+    const [disableInputs, setDisableInputs] = useState<boolean>(false);
 
     const getRegistroFromQuery = () => {
         const urlParams = new URLSearchParams(window.location.search);
@@ -193,6 +195,49 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
         }
     };
 
+    const FetchWasUsedFromServicio = async () => {
+        try {
+            const { data, error } = await supabase
+                .from("Servicios")
+                .select("was_used")
+                .filter("folio", "eq", `${folio}`)
+                .filter("organizacion", "eq", localStorage.getItem("org"))
+                .single();
+
+            if (error) {
+                console.error("Error fetching 'was_used' from Servicios:", error.message);
+                return false;
+            }
+            if (data) {
+
+                return data.was_used;
+            }
+        } catch (err) {
+            console.error("Unexpected error fetching 'was_used':", err);
+            return false;
+        }
+    };
+
+    const updateServicioWasUsed = async (servicioId: number) => {
+        try {
+            const { data, error } = await supabase
+                .from("Servicios")
+                .update({ was_used: true })
+                .eq("id", servicioId)
+                .select("*");
+
+            if (error) {
+                console.error("Error updating 'was_used' in Servicios:", error.message);
+                return;
+            }
+
+            if (data) {
+                console.log("'was_used' updated to true for servicio ID", servicioId);
+            }
+        } catch (err) {
+            console.error("Unexpected error updating 'was_used':", err);
+        }
+    };
     const handleCantidadRegistroChange = async (registroId: number, newCantidad: number) => {
         try {
             const { data, error } = await supabase
@@ -224,6 +269,18 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
             setClicked(true);
         }
     }, [registros]);
+
+    useEffect(() => {
+        const checkIfServicioWasUsed = async () => {
+            const wasUsed = await FetchWasUsedFromServicio();
+
+            if (!wasUsed) return;
+
+            setEnableConfirm(false);
+            setDisableInputs(true);
+        };
+        checkIfServicioWasUsed();
+    }, []);
 
     // const handleClick = (number: number) => {
     //     props.sendDataParent(number);
@@ -411,18 +468,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
     const renderConfirmButton = () => (
         <button
             onClick={async () => {
-                const runner = async () => {
-                for (const registro of registros) {
-                    const success = await restInventarioProductos(
-                        registro,
-                        cantidades[registro.id] ?? 0,
-                        registro.Inventario_productos?.[0]?.stock ?? 0
-                    );
-                    if (!success) return;
-                }
-                await handleConfirmConsumption();
-            }
-            runner();
+                setOpen(true);
             }}
             style={{
                 all: "unset",
@@ -499,6 +545,8 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                                         value={cantidades[data.id] ?? {}}
                                         min={0}
                                         type="number"
+                                        id="cantidadInput"
+                                        disabled={disableInputs}
                                         onChange={e => {
                                             const value = Number(e.target.value);
 
@@ -551,17 +599,38 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                     )}
 
                     {modalOpen && (
-                        <DelModal
-                            btnText={"Confirmar Consumo"}
-                            titulo={"¿Deseas confirmar el consumo del inventario?"}
-                            closeModal={() => {
+                        <ConfirmModal
+                            isOpen={modalOpen}
+                            titulo="Confirmar consumo"
+                            mensaje={`Se restará del inventario la cantidad usada y no podrás hacer cambios posteriores. Verifica que los valores sean correctos.
+                            la Cantidad usada para este servicio es: ${cantidadUsada} ${registros[0]?.Productos?.unidad_de_gasto}`}
+                            onConfirm={async () => {
                                 setOpen(false);
+                                const runner = async () => {
+                                    for (const registro of registros) {
+                                        const success = await restInventarioProductos(
+                                            registro,
+                                            cantidades[registro.id] ?? 0,
+                                            registro.Inventario_productos?.[0]?.stock ?? 0
+                                        );
+                                        if (!success) return;
+                                    }
+                                    await handleConfirmConsumption();
+                                    await updateServicioWasUsed(props.servicioId ?? 0);
+                                    await FetchWasUsedFromServicio().then(wasUsed => {
+                                        if (wasUsed === true) {
+                                            setEnableConfirm(false);
+                                            setDisableInputs(true
+                                            );
+                                        }
+                                    });
+                                };
+                                runner();
                             }}
-                            del={() => {
-                                // Handle inventory consumption
-                                setOpen(false);
-                            }}
-                        ></DelModal>
+                            onCancel={() => setOpen(false)}
+                            btnConfirmText="Aceptar"
+                            btnCancelText="Rechazar"
+                        />
                     )}
                 </div>
 

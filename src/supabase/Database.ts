@@ -977,6 +977,7 @@ export type Database = {
           tipo_servicio: string | null
           updated_at: string | null
           user_id: string | null
+          was_used: boolean | null
         }
         Insert: {
           cancelado?: boolean | null
@@ -1007,6 +1008,7 @@ export type Database = {
           tipo_servicio?: string | null
           updated_at?: string | null
           user_id?: string | null
+          was_used?: boolean | null
         }
         Update: {
           cancelado?: boolean | null
@@ -1037,6 +1039,7 @@ export type Database = {
           tipo_servicio?: string | null
           updated_at?: string | null
           user_id?: string | null
+          was_used?: boolean | null
         }
         Relationships: [
           {
