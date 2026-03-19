@@ -17,7 +17,7 @@ type RegistroConProducto = Tables<"RegistroAplicacion"> & {
 
 const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number }> /*style*/ `
     position: "relative";
-    width: 53%;
+    width: 100%;
     height: ${props => (props.clicado ? `${props.alturaregitro * 3.5 + 10}rem` : "5%")};
     max-height: 60vh;
     background: #f4f4f4;

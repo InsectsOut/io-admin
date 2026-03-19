@@ -508,7 +508,7 @@ const CertificadoServicio = ({}) => {
                         <HeaderLeft>
                             <img crossOrigin="anonymous" style={{ width: "25%" }} src={logo}></img>
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                                <Title style={{ fontSize: "15px" }}>NSECTS OUT PREVENCIÓN</Title>
+                                <Title style={{ fontSize: "15px" }}>INSECTS OUT PREVENCIÓN</Title>
                                 <Title style={{ fontSize: "15px" }}>Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V</Title>
                             </div>
                         </HeaderLeft>

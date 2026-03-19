@@ -9,7 +9,7 @@ type RegistroAplicacion = Tables<"RegistroAplicacion">;
 type Servicios = Tables<"Servicios">;
 
 const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number }> /*style*/ `
-    width: 53%;
+    width: 100%;
     height: ${props => (props.clicado ? `${props.alturaregitro * 3.5 + 5}rem` : "5%")};
     max-height: 60vh;
     background: #f4f4f4;

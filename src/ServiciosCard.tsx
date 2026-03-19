@@ -147,8 +147,29 @@ export const ReturnButton = styled.button`
 const ServiciosCardContainer = styled.div`
     display: flex;
     flex-direction: column;
-    position: relative;
-    overflow: visible;
+
+    .infoButtonsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 2rem;
+        width: 35%;
+        align-items: flex-end;
+        box-sizing: border-box;
+    }
+
+    .CardContainerDiv {
+        display: flex;
+        width: 50%;
+        box-sizing: border-box;
+        justify-content: space-around;
+    }
+
+    .cardsSeconddContainer {
+        display: flex;
+        width: 100%;
+        align-items: flex-start;
+        justify-content: space-around;
+    }
 
     .folioInputsCont {
         display: flex;
@@ -181,13 +202,11 @@ const ServiciosCardContainer = styled.div`
     .responsableCard {
         display: flex;
         width: 50%;
-        justify-content: flex-start;
         height: 100%;
-        position: absolute;
         flex-direction: row;
-        top: 0;
-        right: 13%;
-        padding-top: 4.925rem;
+        justify-content: space-around;
+        padding-right: 5.875rem;
+        box-sizing: border-box;
 
         @media (max-width: 900px) {
             display: none;
@@ -199,7 +218,7 @@ const ServiciosCardContainer = styled.div`
     }
 `;
 const AddResponsableCard = styled.div`
-    width: 24.625rem;
+    width: 100%;
     height: 5.875rem;
     background: #ffffff;
     border: 0.125rem solid #727272;
@@ -227,16 +246,11 @@ const TextoAddCard = styled.h1`
 `;
 
 const PdfMailButton = styled.div<StyledButtonProps>`
-    width: 32%;
+    width: 90%;
     height: 90px;
-    top: 153px;
     background: #f4f4f4;
     box-shadow: 0px 4px 4px rgba(0, 0, 0, 0.25);
     border-radius: 0.7179rem;
-    position: absolute;
-    top: 0;
-    margin-top: ${props => `${props.posy}rem`};
-    right: 5%;
     border-color: black;
 
     p {
@@ -433,7 +447,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
             );
 
             if (folio_perm) {
-               // console.log("Generated Folio:", folio_perm);
+                // console.log("Generated Folio:", folio_perm);
             }
 
             if (error_temp) {
@@ -581,7 +595,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
     };
 
     const handleNavigate = () => {
-        window.open(`/certificado/${servicios[0].id}`);
+        window.open(`/certificado/${servicios[0]?.id}`);
     };
     const handleNavigateMobile = () => {
         window.open(`/certificado/${servicios[0].id}`);
@@ -699,352 +713,364 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
             )}
             <ServiciosCardContainer>
                 <Titulo>Servicios</Titulo>
-                <CardContainer>
-                    <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
-                    {selectTag(infoTab)}
-                    {(infoTab === "general" || screenWidth > 900) && (
-                        <>
-                            <div className="detailsContainer">
-                                <InputsContainer width={90}>
-                                    <DetailsTitle>Folio</DetailsTitle>
-                                    <div className="folioInputsCont">
-                                        <CardInputs
-                                            largo={servicios[0]?.folio < 0 ? "65%" : "100%"}
-                                            readOnly
-                                            type="text"
-                                            placeholder={
-                                                servicios[0]?.folio < 0
-                                                    ? `FT-${servicios[0]?.folio * -1}`
-                                                    : servicios[0]?.folio
-                                            }
-                                        />
-                                        {servicios?.[0]?.folio < 0 && (
-                                            <div
-                                                onClick={() => {
-                                                    setFolioModalOpen(true);
-                                                }}
-                                                className="genFolioButt"
-                                                style={{ width: "35%", height: "2.513rem" }}
-                                            >
-                                                <p>Generar folio</p>
+                <div className="cardsSeconddContainer">
+                    <div className="CardContainerDiv" style={screenWidth > 900 ? { width: "100%" } : { width: "90%" }}>
+                        <CardContainer
+                        style={screenWidth > 900 ? {marginLeft: "0"} : {marginLeft: "0"}}
+                        >
+                            <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
+                            {selectTag(infoTab)}
+                            {(infoTab === "general" ) && (
+                                <>
+                                    <div className="detailsContainer">
+                                        <InputsContainer width={90}>
+                                            <DetailsTitle>Folio</DetailsTitle>
+                                            <div className="folioInputsCont">
+                                                <CardInputs
+                                                    largo={servicios[0]?.folio < 0 ? "65%" : "100%"}
+                                                    readOnly
+                                                    type="text"
+                                                    placeholder={
+                                                        servicios[0]?.folio < 0
+                                                            ? `FT-${servicios[0]?.folio * -1}`
+                                                            : servicios[0]?.folio
+                                                    }
+                                                />
+                                                {servicios?.[0]?.folio < 0 && (
+                                                    <div
+                                                        onClick={() => {
+                                                            setFolioModalOpen(true);
+                                                        }}
+                                                        className="genFolioButt"
+                                                        style={{ width: "35%", height: "2.513rem" }}
+                                                    >
+                                                        <p>Generar folio</p>
+                                                    </div>
+                                                )}
                                             </div>
-                                        )}
-                                    </div>
-                                </InputsContainer>
+                                        </InputsContainer>
 
-                                <InputsContainer width={90}>
-                                    <DetailsTitle>Nombre</DetailsTitle>
+                                        <InputsContainer width={90}>
+                                            <DetailsTitle>Nombre</DetailsTitle>
 
-                                    <select
-                                        value={clienteId}
-                                        style={{ ...mainStyle, width: "100%" }}
-                                        onChange={handleClientClick}
-                                    >
-                                        {clientes
-                                            .slice()
-                                            .sort((a, b) => {
-                                                const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
-                                                const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
-                                                return nameA.localeCompare(nameB);
-                                            })
-                                            .map(cliente => (
-                                                <option value={cliente.id} key={cliente.id}>
-                                                    {cliente.nombre} {cliente.apellidos}
-                                                </option>
-                                            ))}
-                                    </select>
-                                </InputsContainer>
-
-                                <InputsContainer
-                                    style={{ gap: "1rem", alignItems: "center" }}
-                                    flexDir={"row"}
-                                    width={90}
-                                >
-                                    <FechaInput>
-                                        <DetailsTitle>Fecha</DetailsTitle>
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: "1rem",
-                                                flexDirection: "row",
-                                                background: "white",
-                                                border: "0.071793rem solid #727272",
-                                                borderRadius: "0.215rem",
-                                            }}
-                                        >
-                                            <DateInput
-                                                //@ts-ignore
-                                                wid={"12rem"}
-                                                placeholderText={servicios[0]?.fecha_servicio}
-                                                selected={selectedDate}
-                                                onChange={date => {
-                                                    handleDateChange(date);
-                                                    setClicked(true);
-                                                }}
-                                                dateFormat="YYY/MM/dd"
-                                            />
-                                        </div>
-                                    </FechaInput>
-                                    <TimeInput marginTop={"0"} marginTopTablet={"0"} style={{ width: "100%" }}>
-                                        <DetailsTitle>Horario</DetailsTitle>
-                                        <Horario
-                                            width={"10rem"}
-                                            style={{
-                                                textAlign: "left",
-                                                marginTop: "0",
-                                                flexGrow: "1",
-                                                padding: "0 2rem 0 .5rem",
-                                                display: "flex",
-                                                justifyContent: "left",
-                                            }}
-                                            type="time"
-                                            onChange={handleTimeChange}
-                                            value={selectedTime?.toString()}
-                                            step="9000" // Optional: Use a step of 15 minutes (900 seconds)
-                                        />
-                                    </TimeInput>
-                                </InputsContainer>
-
-                                <InputsContainer width={90}>
-                                    <div style={{ display: "flex", flexDirection: "row" }}>
-                                        <div
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "flex-start",
-                                                gap: ".25rem",
-                                                flexDirection: "column",
-                                                width: "100%",
-                                            }}
-                                        >
-                                            <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
                                             <select
+                                                value={clienteId}
                                                 style={{ ...mainStyle, width: "100%" }}
-                                                value={direccion_id || ""}
-                                                onChange={handleDireccionChange}
+                                                onChange={handleClientClick}
                                             >
-                                                <option value="">Elige una dirección</option>
-
-                                                {dirección.map(options => (
-                                                    <option value={options.id} key={options.id}>
-                                                        {options.calle} {options.numero_ext} {options.colonia}
-                                                        {options.ciudad} {options.estado} {options.codigo_postal}
-                                                    </option>
-                                                ))}
+                                                {clientes
+                                                    .slice()
+                                                    .sort((a, b) => {
+                                                        const nameA = `${a.nombre} ${a.apellidos}`.toUpperCase();
+                                                        const nameB = `${b.nombre} ${b.apellidos}`.toUpperCase();
+                                                        return nameA.localeCompare(nameB);
+                                                    })
+                                                    .map(cliente => (
+                                                        <option value={cliente.id} key={cliente.id}>
+                                                            {cliente.nombre} {cliente.apellidos}
+                                                        </option>
+                                                    ))}
                                             </select>
-                                        </div>
-                                    </div>
-                                </InputsContainer>
+                                        </InputsContainer>
 
-                                <InputsContainer width={90}>
-                                    <div
-                                        style={{
-                                            display: "flex",
-                                            alignItems: "flex-start",
-                                            gap: ".25rem",
-                                            flexDirection: "column",
-                                            width: "100%",
+                                        <InputsContainer
+                                            style={{ gap: "1rem", alignItems: "center" }}
+                                            flexDir={"row"}
+                                            width={90}
+                                        >
+                                            <FechaInput>
+                                                <DetailsTitle>Fecha</DetailsTitle>
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "center",
+                                                        gap: "1rem",
+                                                        flexDirection: "row",
+                                                        background: "white",
+                                                        border: "0.071793rem solid #727272",
+                                                        borderRadius: "0.215rem",
+                                                    }}
+                                                >
+                                                    <DateInput
+                                                        //@ts-ignore
+                                                        wid={"12rem"}
+                                                        placeholderText={servicios[0]?.fecha_servicio}
+                                                        selected={selectedDate}
+                                                        onChange={date => {
+                                                            handleDateChange(date);
+                                                            setClicked(true);
+                                                        }}
+                                                        dateFormat="YYY/MM/dd"
+                                                    />
+                                                </div>
+                                            </FechaInput>
+                                            <TimeInput marginTop={"0"} marginTopTablet={"0"} style={{ width: "100%" }}>
+                                                <DetailsTitle>Horario</DetailsTitle>
+                                                <Horario
+                                                    width={"10rem"}
+                                                    style={{
+                                                        textAlign: "left",
+                                                        marginTop: "0",
+                                                        flexGrow: "1",
+                                                        padding: "0 2rem 0 .5rem",
+                                                        display: "flex",
+                                                        justifyContent: "left",
+                                                    }}
+                                                    type="time"
+                                                    onChange={handleTimeChange}
+                                                    value={selectedTime?.toString()}
+                                                    step="9000" // Optional: Use a step of 15 minutes (900 seconds)
+                                                />
+                                            </TimeInput>
+                                        </InputsContainer>
+
+                                        <InputsContainer width={90}>
+                                            <div style={{ display: "flex", flexDirection: "row" }}>
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        alignItems: "flex-start",
+                                                        gap: ".25rem",
+                                                        flexDirection: "column",
+                                                        width: "100%",
+                                                    }}
+                                                >
+                                                    <DetailsTitle style={{ width: "100%" }}>Dirección</DetailsTitle>
+                                                    <select
+                                                        style={{ ...mainStyle, width: "100%" }}
+                                                        value={direccion_id || ""}
+                                                        onChange={handleDireccionChange}
+                                                    >
+                                                        <option value="">Elige una dirección</option>
+
+                                                        {dirección.map(options => (
+                                                            <option value={options.id} key={options.id}>
+                                                                {options.calle} {options.numero_ext} {options.colonia}
+                                                                {options.ciudad} {options.estado}{" "}
+                                                                {options.codigo_postal}
+                                                            </option>
+                                                        ))}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </InputsContainer>
+
+                                        <InputsContainer width={90}>
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "flex-start",
+                                                    gap: ".25rem",
+                                                    flexDirection: "column",
+                                                    width: "100%",
+                                                }}
+                                            >
+                                                <DetailsTitle style={{ width: "100%" }}>Tipo de Servicio</DetailsTitle>
+                                                <select
+                                                    style={{ ...mainStyle, width: "100%" }}
+                                                    value={tipoServicio}
+                                                    onChange={tipoServicioChange}
+                                                >
+                                                    {servicioOptions.map(options => (
+                                                        <option value={options.value} key={options.id}>
+                                                            {options.label}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </InputsContainer>
+
+                                        <InputsContainer width={90}>
+                                            <DetailsTitle>Aplicador Responsable</DetailsTitle>
+                                            <div
+                                                style={{
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    gap: "1rem",
+                                                    width: "100%",
+                                                }}
+                                            >
+                                                <select
+                                                    value={empleadoId ?? undefined}
+                                                    style={{ ...mainStyle, width: "100%" }}
+                                                    onChange={e => {
+                                                        handleResponsableChange(e);
+                                                    }}
+                                                >
+                                                    {!empleadoId && <option>Elegir al técnico responsable...</option>}
+                                                    {empleados.map(empleado => (
+                                                        <option value={empleado.id} key={empleado.id}>
+                                                            {empleado.nombre}
+                                                        </option>
+                                                    ))}
+                                                </select>
+                                            </div>
+                                        </InputsContainer>
+
+                                        <InputsContainer width={90}>
+                                            <DetailsTitle>Estatus</DetailsTitle>
+                                            <div
+                                                style={{
+                                                    display: "inline-flex",
+                                                    alignItems: "center",
+                                                    gap: "1rem",
+                                                    width: "100%",
+                                                }}
+                                            >
+                                                <select
+                                                    disabled={servicios[0]?.folio > 0 ? true : false}
+                                                    value={estatusString}
+                                                    style={{ ...mainStyle, width: "100%" }}
+                                                    onChange={handleEstatusChange}
+                                                >
+                                                    <option value={"No realizado"}>No Realizado</option>
+                                                    <option value={"Realizado"}>Realizado</option>
+                                                </select>
+                                            </div>
+                                        </InputsContainer>
+                                    </div>
+                                </>
+                            )}
+                            {infoTab === "registros" && (
+                                <div style={{ position: "relative" }}>
+                                    <ButtonComponents
+                                        background="white"
+                                        height="3rem"
+                                        color="#0D4E80"
+                                        justify="center"
+                                        gap={1}
+                                        onClick={() => {
+                                            hanldeSetData(null).then(() => {
+                                                setModalOpen(true);
+                                                setAddButtonClicked(true);
+                                            });
                                         }}
                                     >
-                                        <DetailsTitle style={{ width: "100%" }}>Tipo de Servicio</DetailsTitle>
-                                        <select
-                                            style={{ ...mainStyle, width: "100%" }}
-                                            value={tipoServicio}
-                                            onChange={tipoServicioChange}
-                                        >
-                                            {servicioOptions.map(options => (
-                                                <option value={options.value} key={options.id}>
-                                                    {options.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </InputsContainer>
+                                        <p>Añadir registro</p> <IoIosAddCircleOutline size={25} />
+                                    </ButtonComponents>
 
-                                <InputsContainer width={90}>
-                                    <DetailsTitle>Aplicador Responsable</DetailsTitle>
-                                    <div
-                                        style={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: "1rem",
-                                            width: "100%",
+                                    <RegistrosCard
+                                        sendDataParent={handleChildData}
+                                        openModal={() => {
+                                            setModalOpen(true);
                                         }}
-                                    >
-                                        <select
-                                            value={empleadoId ?? undefined}
-                                            style={{ ...mainStyle, width: "100%" }}
-                                            onChange={e => {
-                                                handleResponsableChange(e);
-                                            }}
-                                        >
-                                            {!empleadoId && <option>Elegir al técnico responsable...</option>}
-                                            {empleados.map(empleado => (
-                                                <option value={empleado.id} key={empleado.id}>
-                                                    {empleado.nombre}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </InputsContainer>
-
-                                <InputsContainer width={90}>
-                                    <DetailsTitle>Estatus</DetailsTitle>
-                                    <div
-                                        style={{
-                                            display: "inline-flex",
-                                            alignItems: "center",
-                                            gap: "1rem",
-                                            width: "100%",
-                                        }}
-                                    >
-                                        <select
-                                            disabled={servicios[0]?.folio > 0 ? true : false}
-                                            value={estatusString}
-                                            style={{ ...mainStyle, width: "100%" }}
-                                            onChange={handleEstatusChange}
-                                        >
-                                            <option value={"No realizado"}>No Realizado</option>
-                                            <option value={"Realizado"}>Realizado</option>
-                                        </select>
-                                    </div>
-                                </InputsContainer>
-                            </div>
-                        </>
-                    )}
-                    {infoTab === "registros" && (
-                        <div style={{ position: "relative" }}>
-                            <ButtonComponents
-                                background="white"
-                                height="3rem"
-                                color="#0D4E80"
-                                justify="center"
-                                gap={1}
-                                onClick={() => {
-                                    hanldeSetData(null).then(() => {
-                                        setModalOpen(true);
-                                        setAddButtonClicked(true);
-                                    });
-                                }}
-                            >
-                                <p>Añadir registro</p> <IoIosAddCircleOutline size={25} />
-                            </ButtonComponents>
-
-                            <RegistrosCard
-                                sendDataParent={handleChildData}
-                                openModal={() => {
-                                    setModalOpen(true);
-                                }}
-                                servicioId={servicios[0]?.id}
-                            ></RegistrosCard>
-                        </div>
-                    )}
-                    {infoTab === "constancia" && (
-                        <div>
-                            <PdfMailButton position="relative">
-                                <p>Registro de aplicación</p>
-                                <div
-                                    style={{ width: "100%", display: "flex", justifyContent: "center", gap: ".25rem" }}
-                                    onClick={handleNavigateMobile}
-                                >
-                                    <IoDownloadOutline size={20} color="#2395FF" />
-                                    <p>Descargar PDF</p>
+                                        servicioId={servicios[0]?.id}
+                                    ></RegistrosCard>
                                 </div>
-                            </PdfMailButton>
-                        </div>
-                    )}
-                </CardContainer>
+                            )}
+                            {infoTab === "constancia" && (
+                                <div>
+                                    <PdfMailButton position="relative">
+                                        <p>Registro de aplicación</p>
+                                        <div
+                                            style={{
+                                                width: "100%",
+                                                display: "flex",
+                                                justifyContent: "center",
+                                                gap: ".25rem",
+                                            }}
+                                            onClick={handleNavigateMobile}
+                                        >
+                                            <IoDownloadOutline size={20} color="#2395FF" />
+                                            <p>Descargar PDF</p>
+                                        </div>
+                                    </PdfMailButton>
+                                </div>
+                            )}
+                        </CardContainer>
 
-                <div className="responsableCard">
-                    <div style={{ display: "flex", flexDirection: "column", width: "100%" }}>
-                        <AddResponsableCard>
-                            <div>
-                                <IoIosAddCircleOutline
-                                    size={30}
-                                    style={{ color: "black" }}
-                                    onClick={() => {
+                        <div className="responsableCard">
+                            <div style={{ display: "flex", flexDirection: "column", width: "70%" }}>
+                                <AddResponsableCard>
+                                    <div>
+                                        <IoIosAddCircleOutline
+                                            size={30}
+                                            style={{ color: "black" }}
+                                            onClick={() => {
+                                                setModalOpen(true);
+                                                setAddButtonClicked(true);
+                                            }}
+                                        />
+                                        <TextoAddCard>Añadir registro</TextoAddCard>
+                                    </div>
+                                </AddResponsableCard>
+                                <RegistrosCard
+                                    sendDataParent={handleChildData}
+                                    openModal={() => {
                                         setModalOpen(true);
-                                        setAddButtonClicked(true);
                                     }}
-                                />
-                                <TextoAddCard>Añadir registro</TextoAddCard>
-                            </div>
-                        </AddResponsableCard>
-                        <RegistrosCard
-                            sendDataParent={handleChildData}
-                            openModal={() => {
-                                setModalOpen(true);
-                            }}
-                            servicioId={servicios[0]?.id}
-                        ></RegistrosCard>
+                                    servicioId={servicios[0]?.id}
+                                ></RegistrosCard>
 
-                         <PlaguicidasCard
+                                <PlaguicidasCard
                                     openModal={() => {
                                         setModalOpen(true);
                                     }}
                                     servicioId={servicios[0]?.id}
                                     title={"Plaguicidas Utilizados"}
-                                  
                                 ></PlaguicidasCard>
-                           
 
-                        {servicios?.[0]?.grupo_de_servicios && (
-                            <>
-                                <GrupoServiciosCard
-                                    openModal={() => {
-                                        setModalOpen(true);
-                                    }}
-                                    servicioId={servicios[0]?.id}
-                                    title={"Grupo de servicios"}
-                                ></GrupoServiciosCard>
-                            </>
-                        )}
-                        
-                            
-                               
-                      
+                                {servicios?.[0]?.grupo_de_servicios && (
+                                    <>
+                                        <GrupoServiciosCard
+                                            openModal={() => {
+                                                setModalOpen(true);
+                                            }}
+                                            servicioId={servicios[0]?.id}
+                                            title={"Grupo de servicios"}
+                                        ></GrupoServiciosCard>
+                                    </>
+                                )}
+                            </div>
+                            <div className="infoButtonsContainer">
+                                <PdfMailButton posy="4.925">
+                                    <p>Registro de aplicación</p>
+                                    <div
+                                        style={{
+                                            width: "100%",
+                                            display: "flex",
+                                            justifyContent: "center",
+                                            gap: ".25rem",
+                                        }}
+                                        onClick={handleNavigate}
+                                    >
+                                        <IoDownloadOutline size={20} color="#2395FF" />
+                                        <p>Descargar PDF</p>
+                                    </div>
+                                </PdfMailButton>
+                                <PdfMailButton posy="12.3125">
+                                    <p style={{ marginBottom: 0 }}>Precio del Servicio</p>
+                                    <div style={{ display: "flex", alignItems: "center", width: "95%" }}>
+                                        <span
+                                            style={{
+                                                color: "#2395FF",
+                                                fontSize: "1.2rem",
+                                                marginRight: "5px",
+                                                marginLeft: ".5rem",
+                                            }}
+                                        >
+                                            $
+                                        </span>
+                                        <CardInputs
+                                            placeholder="Elija un precio"
+                                            type="number"
+                                            onChange={handlePrecioChange}
+                                            style={{
+                                                width: "100%",
+                                                background: "none",
+                                                border: "none",
+                                                color: "#2395FF",
+                                                fontWeight: "300",
+                                                fontSize: "1.2rem",
+                                                textAlign: "center",
+                                            }}
+                                            value={precio}
+                                        />
+                                    </div>
+                                </PdfMailButton>
+                            </div>
+                        </div>
                     </div>
-                    <PdfMailButton posy="4.925">
-                        <p>Registro de aplicación</p>
-                        <div
-                            style={{ width: "100%", display: "flex", justifyContent: "center", gap: ".25rem" }}
-                            onClick={handleNavigate}
-                        >
-                            <IoDownloadOutline size={20} color="#2395FF" />
-                            <p>Descargar PDF</p>
-                        </div>
-                    </PdfMailButton>
-                    <PdfMailButton posy="12.3125">
-                        <p style={{ marginBottom: 0 }}>Precio del Servicio</p>
-                        <div style={{ display: "flex", alignItems: "center", width: "95%" }}>
-                            <span
-                                style={{
-                                    color: "#2395FF",
-                                    fontSize: "1.2rem",
-                                    marginRight: "5px",
-                                    marginLeft: ".5rem",
-                                }}
-                            >
-                                $
-                            </span>
-                            <CardInputs
-                                placeholder="Elija un precio"
-                                type="number"
-                                onChange={handlePrecioChange}
-                                style={{
-                                    width: "100%",
-                                    background: "none",
-                                    border: "none",
-                                    color: "#2395FF",
-                                    fontWeight: "300",
-                                    fontSize: "1.2rem",
-                                    textAlign: "center",
-                                }}
-                                value={precio}
-                            />
-                        </div>
-                    </PdfMailButton>
-                    |
                 </div>
             </ServiciosCardContainer>
             <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
