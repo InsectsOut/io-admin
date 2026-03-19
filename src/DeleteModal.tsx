@@ -146,6 +146,7 @@ interface cardProps {
     stock?: number;
     invNombre?: string;
     principal?: ("entradas" | "menu")[];
+    run?: () => void;
 }
 
 
@@ -164,6 +165,7 @@ const DelModal: React.FC<cardProps> = ({
     stock,
     invNombre,
     principal,
+    run
 }) => {
     const [registro, setRegistro] = useState<string>("");
     const [motivoSalida, setMotivoSalida] = useState<string>(""); // 👈 Added
