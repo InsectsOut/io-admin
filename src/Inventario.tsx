@@ -255,6 +255,7 @@ const Inventario: React.FC<inventarioProps> = props => {
                     <MenuButtons
                         onClick={() => {
                             setIsModalOpen(prev => !prev);
+                            setInventarioMenu(false)
                         }}
                     >
                         <FaPrescriptionBottle style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
@@ -342,7 +343,7 @@ const Inventario: React.FC<inventarioProps> = props => {
                             flag={inventarioFlag!}
                         />
                     )}
-                    {isModalOpen && !inventarioMenu && (
+                    {isModalOpen && (
                         <ProductosMenu organizacion={props.organizacion!}></ProductosMenu>
                     )}
                 </MainContent>
