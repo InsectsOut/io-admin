@@ -7,7 +7,6 @@ import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "./utils/ClientSupabase";
 import PeriodicidadModal from "./PeriodicidadMOdal";
-import { set } from "ts-pattern/dist/patterns";
 import Spinner from "./rehusableComponents/Spinner";
 
 type Cliente = Tables<"Clientes">;
@@ -153,7 +152,7 @@ export const FormatoInputs = styled.div<{
     width?: number;
     screen_width?: number;
     marginleft?: string;
-    pos: Position;
+    pos?: Position;
 }> /*style*/ `
     position: ${props => (props.pos ? props.pos : "relative")};
     .tagsContainer {
@@ -263,7 +262,7 @@ export const TimeInput = styled.div<{ marginTop?: string; marginTopTablet?: stri
         margin-top: ${props => (props.marginTopTablet ? props.marginTopTablet : "1rem")};
     }
 `;
-export const FechaInput = styled.div<{ flexDir: string }> /*style*/ `
+export const FechaInput = styled.div<{ flexDir?: string }> /*style*/ `
     display: flex;
     flex-direction: column;
 

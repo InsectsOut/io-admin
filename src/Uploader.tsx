@@ -1,10 +1,9 @@
 import styled from "styled-components";
-import { colors } from "react-select/dist/declarations/src/theme";
 import { useEffect, useState } from "react";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 
 type styledInputButton = {
-    background: string;
+    background?: string;
 };
 // Container for the file upload section
 const UploadContainer = styled.div /*style*/ `
@@ -172,7 +171,9 @@ const FileUpload: React.FC<UploadProps> = props => {
 
             <Message>Selecciona o arrastra un archivo</Message>
             <FileInput disabled={disabled} onChange={props.onChange} type="file" id="file-upload" />
-            <FileLabel background={disabled} htmlFor="file-upload">
+            <FileLabel
+            //@ts-ignore
+             background={disabled} htmlFor="file-upload">
                 Elegir archivo
             </FileLabel>
         </UploadContainer>

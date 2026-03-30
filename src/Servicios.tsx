@@ -13,7 +13,6 @@ import { BsCalendarDate } from "react-icons/bs";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { MdDoNotDisturb } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { cl, co } from "@fullcalendar/core/internal-common";
 
 type Servicio = Tables<"Servicios">;
 type Cliente = Tables<"Clientes">;

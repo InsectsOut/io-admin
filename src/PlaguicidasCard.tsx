@@ -6,7 +6,6 @@ import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { s } from "@fullcalendar/core/internal-common";
 import ConfirmModal from "./rehusableComponents/ConfirmationModal";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
@@ -542,7 +541,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                                     }}
                                 >
                                     <input
-                                        value={cantidades[data.id] ?? {}}
+                                        value={cantidades[data?.id] ?? 0}
                                         min={0}
                                         type="number"
                                         id="cantidadInput"

@@ -33,7 +33,6 @@ type Equipos = Tables<"Equipos">;
 type TipoProducto = Database["public"]["Enums"]["TipoProducto"];
 import Switch from "./rehusableComponents/ToggleSwitch";
 import EquipoCreateModal from "./rehusableComponents/EquipoVehiculoCreateModal";
-import { set } from "ts-pattern/dist/patterns";
 type TipoEquipoControlOption = Database["public"]["Enums"]["TipoEquipo"];
 
 interface ProductosProps {
@@ -556,6 +555,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 <ModalContainer
                     open={modalVisible}
                     style={{ top: modalPosition.top, left: modalPosition.left }}
+                    //@ts-ignore
                     ref={modalRef}
                 >
                     {textModal === "TipoProd" && (

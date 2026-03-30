@@ -37,7 +37,7 @@ export const DetallesTitulo = styled.h1`
     margin-bottom: unset;
     margin-top: 0;
 `;
-export const InputsContainer = styled(FormatoInputs)<{ flexDir: string }>`
+export const InputsContainer = styled(FormatoInputs)<{ flexDir?: string }>`
     flex-direction: ${props => (props.flexDir ? props.flexDir : "column")};
     display: flex;
     justify-content: left;
@@ -730,6 +730,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                                     largo={servicios[0]?.folio < 0 ? "65%" : "100%"}
                                                     readOnly
                                                     type="text"
+                                                    // @ts-ignore
                                                     placeholder={
                                                         servicios[0]?.folio < 0
                                                             ? `FT-${servicios[0]?.folio * -1}`

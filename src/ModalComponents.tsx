@@ -7,7 +7,6 @@ import { supabase } from "./utils/ClientSupabase";
 import { aplicacionOptions } from "./tipo_servicios";
 import { useParams } from "react-router-dom";
 import { Database, Tables } from "./supabase/Database";
-import { set } from "ts-pattern/dist/patterns";
 
 export const RegistroModal = styled.div`
     position: fixed;

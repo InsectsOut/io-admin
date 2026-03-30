@@ -48,7 +48,7 @@ export const ModalInput = styled.input`
     border-radius: 0.5rem;
 `;
 
-export const ModalButton = styled.button<{ margin: string, disableFunction?: boolean }>`
+export const ModalButton = styled.button<{ margin?: string, disableFunction?: boolean }>`
     /* background: #0d4e80; */
     background: ${(props) => props.disableFunction ? "#a0a0a0" : "#0d4e80"};
     color: white;

@@ -5,7 +5,6 @@ import { Database, Enums, Tables } from "../supabase/Database";
 import { supabase } from "../utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { CardInputs } from "./CardInputs";
-import { eq } from "@fullcalendar/core/internal-common";
 import { TextAlign } from "./CardInputs";
 import { useLocation } from "react-router-dom";
 interface Props {

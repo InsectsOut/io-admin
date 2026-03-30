@@ -487,6 +487,7 @@ const CertificadoServicio = ({}) => {
             <ConstanciaContainer>
                 <CreateButton
                     onClick={handlePdf}
+                    // @ts-ignore
                     disabled={loading}
                     style={{
                         position: "fixed",
