@@ -16,8 +16,8 @@ type StyledInputProps = {
 };
 
 export const CardInputs = styled.input<{
-    largo: string;
-    textAlign: "start" | "end" | "left" | "right" | "center" | "justify" | "match-parent";
+    largo?: string;
+    textAlign?: "start" | "end" | "left" | "right" | "center" | "justify" | "match-parent";
 }> /*style*/ `
     width: ${props => (props.largo ? props.largo : "19.815rem")};
     height: 2.513rem;

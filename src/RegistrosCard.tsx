@@ -5,7 +5,6 @@ import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { set } from "ts-pattern/dist/patterns";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 

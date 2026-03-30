@@ -837,7 +837,7 @@ const EmpleadosCard = () => {
                         </>
                     )}
                     {infoTab === "docs" && (
-                        <InputsContainer className="docsInfoContainer" style={{ positio: "relative" }}>
+                        <InputsContainer className="docsInfoContainer" style={{ position: "relative" }}>
                             <div className="uploaderContainer">
                                 <ButtonComponents
                                     background="white"

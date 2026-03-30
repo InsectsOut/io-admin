@@ -5,8 +5,6 @@ import { supabase } from "./utils/ClientSupabase";
 import { FaPlus } from "react-icons/fa";
 import { Tables } from "./supabase/Database";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
-import { co } from "@fullcalendar/core/internal-common";
-import { set } from "ts-pattern/dist/patterns";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import useBodyClick from "./UseBodyClick";
 import { Enums } from "./supabase/Database";

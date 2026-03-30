@@ -18,7 +18,7 @@ type InventarioProductoEntradas = InventarioProducos & {
 };
 
 import { TextAlign } from "./CardInputs";
-import { s } from "@fullcalendar/core/internal-common";
+
 interface InventarioActionModalProps {
     editable: boolean;
     flag: Enums<"TipoInventario">;
@@ -657,6 +657,7 @@ if (props.flag ==="principal"){
                                     step="1"
                                     placeholder="Ej. 25.5"
                                     value={stock}
+                                    // @ts-ignore
                                     onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
                                         setStock(parseFloat(e.target.value))
                                     }

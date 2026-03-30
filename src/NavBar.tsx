@@ -8,7 +8,6 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import useBodyClick from "./UseBodyClick";
-import { M } from "vite/dist/node/types.d-aGj9QkWt";
 
 const NavContainer = styled.div`
     width: 100vw;

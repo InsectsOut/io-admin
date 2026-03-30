@@ -77,7 +77,7 @@ const Title = styled.h3`
     margin-bottom: 15px;
 `;
 
-const Label = styled.label<{ marginBott: number }>`
+const Label = styled.label<{ marginBott?: number }>`
     font-size: 14px;
     font-weight: bold;
     display: block;
@@ -389,7 +389,9 @@ const PeriodicidadModal: React.FC<periodicidadProps> = ({
                                 Descartar
                             </CancelButton>
                             <SaveButton
+                            // @ts-ignore
                                 ref={buttonRef}
+                                // @ts-ignore
                                 onClick={(event: React.MouseEvent<HTMLButtonElement>) => {
                                     dateGenerator ? dateGenerator() : null;
                                     dateTagChange();
