@@ -397,7 +397,7 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                     </FormatoInputs>
                     {tipoCliente === "Gubernamental" && areaGubernamental.length > 0 && (
                         <FormatoInputs style={{ width: "19.815rem" }}>
-                            <FormLabels>Dirección gubernamental:</FormLabels>
+                            <FormLabels>Anexo:</FormLabels>
                             <select
                                 id="tipoSelect"
                                 value={areaGubernamentalId ?? -1}
@@ -425,7 +425,7 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                                     ) as HTMLSelectElement | null;
                                     if (tipoSelect) {
                                         if (tipoSelect.value === "Gubernamental") {
-                                            return "Nombre de la dependencia";
+                                            return "Sub dependencia";
                                         } else if (tipoSelect.value !== "Residencial") {
                                             return "Nombre de la empresa";
                                         } else {

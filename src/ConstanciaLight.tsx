@@ -13,6 +13,10 @@ const Wrapper = styled.div`
     width: 100%;
     @media (max-width: 600px) {
     }
+    .page-break {
+  page-break-before: always;
+  padding-top: 1rem;
+}
 `;
 
 const ConstanciaContainer = styled.div`
@@ -354,6 +358,31 @@ const CertificadoServicio = ({}) => {
         }
     };
 
+    const fetchResponsableById = async (responsable_id: number | null) => {
+        try{
+            let query = supabase;
+            const { data, error } = await query
+                .from("Responsables")
+                .select("*")
+                .filter("id", "eq", responsable_id)
+                .single();
+            if (data) {
+                setResponsableData(data);
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
+    const getResponsableData = () =>{
+        const direccion = clienteData?.Direcciones?.find(dir => dir.id === servicioData?.direccion_id);
+        const responsableId = direccion?.responsable_de_direccion ?? null;
+        if(responsableId){
+            fetchResponsableById(responsableId);
+        }
+
+    }
+
     const fetchClienteById = async (cliente_id: number | null) => {
         try {
             let query = supabase;
@@ -362,8 +391,7 @@ const CertificadoServicio = ({}) => {
                 .select(
                     `
                     *,
-                    Direcciones(*),
-                    Responsables:Responsables!Responsables_cliente_id_fkey(*)
+                    Direcciones(*)
                   `
                 )
                 .filter("id", "eq", cliente_id)
@@ -375,7 +403,6 @@ const CertificadoServicio = ({}) => {
                 const cliente = data?.[0];
                 if (cliente) {
                     setClienteData(cliente);
-                    if (cliente.Responsables) setResponsableData(cliente.Responsables);
                 } else {
                     setClienteData(undefined);
                 }
@@ -408,6 +435,7 @@ const CertificadoServicio = ({}) => {
             setServicioData(data);
             setFirmaClienteUrl(firmaClienteUrl);
             setTecnicoName(data?.tecnico?.nombre ?? "");
+
 
             await fetchClienteById(data?.cliente_id ?? null);
         } catch (err) {
@@ -480,7 +508,11 @@ const CertificadoServicio = ({}) => {
         if (id) fetchServicioById(id);
         fetchRegistrosByServicioId(id ?? "");
         fetchRecomendaciones(id ? Number(id) : 0);
+       // getResponsableData();
     }, []);
+    useEffect(() => {
+  getResponsableData();
+    }, [clienteData, servicioData]);
 
     return (
         <Wrapper style={{ width: "100vw", display: "flex", justifyContent: "center", overflowX: "auto" }}>
@@ -835,7 +867,9 @@ const CertificadoServicio = ({}) => {
                             </Section>
                         </Section>
                     </div>
-                    <div style={{ marginTop: "1rem" }}>
+                    <div 
+                    className="page-break"
+                    style={{ marginTop: "1rem"}}>
                         <Section>
                             <SectionHeader className="reporteFotograficoHeader">
                                 <Label
@@ -917,14 +951,16 @@ const CertificadoServicio = ({}) => {
                             ))}
                         </Section>
                     </div>
-                    <div style={{ marginTop: "1rem" }}>
+                    <div 
+                    className= "page-break"
+                    style={{ marginTop: "1rem" }}>
                         <Section>
                             <SectionHeader largo="100%">
                                 <div style={{ width: "50%" }}>
-                                    <Label>CLIENTE RECIBE SERVICIO Y RECOMENDACIONES</Label>
+                                    <Label>INSECTS OUT</Label>
                                 </div>
                                 <div style={{ width: "50%" }}>
-                                    <Label>INSECTS OUT</Label>
+                                    <Label>CLIENTE RECIBE SERVICIO Y RECOMENDACIONES</Label>
                                 </div>
                             </SectionHeader>
                         </Section>

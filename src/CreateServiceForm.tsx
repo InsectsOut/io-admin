@@ -310,7 +310,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
     const [responsables, setResponsables] = useState<Responsable[]>([]);
     const [observaciones2, setObservaciones] = useState("");
     const [frecuencia, setFrecuencia] = useState<Enums<"FrecuenciaServicio">>("Ninguna");
-    const [estadoFacturacion, setEstadoFacturacion] = useState("");
+    const [estadoFacturacion, setEstadoFacturacion] = useState("Facturado");
     const [tipoServicio, setTipoServicio] = useState("");
     const [responsableId, setResponsableId] = useState<number | null>(null);
     const [ordenDeCommpra, setOrdeDeCompra] = useState("");
@@ -332,19 +332,20 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
     const [dateTag, setDateTag] = useState<boolean>(false);
     const [disableButton, setDisableButton] = useState<boolean>(false);
     const [serviciosPorMes, setServiciosPorMes] = useState<number | null>();
+    const [responsableDireccioId, setResponsableDireccionId] = useState<number | null>(null);
 
-    const fetchResponsables = async () => {
-        if (clienteId !== undefined) {
+    const fetchResponsables = async (direccion_responsable_id: number | null) => {
+        if (direccion_id !== undefined) {
             try {
-                if (!clienteId) {
+                if (!direccion_id) {
                     console.log("No matching id");
-                    console.log(clienteId);
+                    console.log(direccion_id);
                 }
 
                 const { error, data: responsable } = await supabase
                     .from("Responsables")
                     .select()
-                    .filter("cliente_id", "eq", `${clienteId}`);
+                    .filter("id", "eq", `${direccion_responsable_id}`);
 
                 if (error) {
                     console.log(error);
@@ -352,7 +353,6 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                 }
                 if (responsable) {
                     setResponsables(responsable);
-                    setResponsableId(responsable[0]?.id);
                 }
             } catch (err) {
                 console.log("Error encontrando a los responsables" + err);
@@ -500,6 +500,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
             if (data) {
                 console.log(data);
                 setDireccion(data);
+                //  setResponsableId(data[0]?.responsable_de_direccion)
             }
             if (error) {
                 console.log(error);
@@ -522,8 +523,8 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
     // }, [organizacion])
 
     useEffect(() => {
-        fetchResponsables();
-    }, [clienteId]);
+        fetchResponsables(responsableDireccioId);
+    }, [responsableDireccioId]);
 
     const handleClientClick = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const idSacado = +event.target.value;
@@ -565,9 +566,10 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         const responsableChange = +event.target.value;
         setResponsableId(responsableChange);
     };
-    const handleDireccionChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const handleDireccionChange = async (event: React.ChangeEvent<HTMLSelectElement>) => {
         const cambio = +event.target.value;
-        setDireccion_id(cambio);
+        await setDireccion_id(cambio);
+        await fetchSingleResponsableFromDireccion(cambio);
     };
 
     const handleOrdenCompra = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -681,75 +683,6 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         }
     };
 
-    //   const createSuggestedDates = (
-    //     cantidadServicios: number | null,
-    //     startDate: Date | null,
-    //     frecuencia: Enums<"FrecuenciaServicio">,
-    //     selectedDay: number, // 0: Sunday, 1: Monday, ...
-    //     serviciosPorMes?:number
-    // ) => {
-    //     if (!cantidadServicios || cantidadServicios <= 0) {
-    //         window.alert("Por favor defina la cantidad de servicios a crear");
-    //         return;
-    //     }
-    //     if (!startDate) {
-    //         window.alert("Por favor defina la fecha de inicio de creación de servicios");
-    //         return;
-    //     }
-
-    //     const getNextWeekday = (base: Date, targetDay: number): Date => {
-    //         const date = new Date(base);
-    //         const day = date.getDay();
-    //         const diff = (targetDay + 7 - day) % 7;
-    //         date.setDate(date.getDate() + diff);
-    //         return date;
-    //     };
-
-    //     // use calendar math instead of "days"
-    //     const addFrequency = (date: Date, step: number): Date => {
-    //         const d = new Date(date);
-
-    //         switch (frecuencia) {
-    //             case "Anual":
-    //                 d.setFullYear(d.getFullYear() + step);
-    //                 break;
-    //             case "Semestral": // every 6 months
-    //                 d.setMonth(d.getMonth() + step * 6);
-    //                 break;
-    //             case "Trimestral": // every 3 months
-    //                 d.setMonth(d.getMonth() + step * 3);
-    //                 break;
-    //             case "Bimestral": // every 2 months
-    //                 d.setMonth(d.getMonth() + step * 2);
-    //                 break;
-    //             case "Mensual":
-    //                 d.setMonth(d.getMonth() + step);
-    //                 break;
-    //             case "Quincenal":
-    //                 d.setDate(d.getDate() + step * 14);
-    //                 break;
-    //             case "Semanal":
-    //                 d.setDate(d.getDate() + step * 7);
-    //                 break;
-    //             default:
-    //                 break;
-    //         }
-    //         return d;
-    //     };
-
-    //     let currentDate = getNextWeekday(startDate, selectedDay);
-    //     const generatedDates: Date[] = [];
-
-    //     for (let i = 0; i < cantidadServicios; i++) {
-    //         const nextDate = addFrequency(currentDate, i);
-    //         const adjustedDate = getNextWeekday(nextDate, selectedDay);
-    //         generatedDates.push(adjustedDate);
-    //     }
-
-    //     console.log(generatedDates);
-    //     set_fechas_recomendadas(generatedDates);
-    // };
-
     const createSuggestedDates = (
         cantidadServicios: number | null,
         startDate: Date | null,
@@ -839,9 +772,9 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                 }
             }
         } else {
-        /** -------------------------------
-         *  NORMAL INTERVAL MODE
-         * ------------------------------- */
+            /** -------------------------------
+             *  NORMAL INTERVAL MODE
+             * ------------------------------- */
             let currentDate = getNextWeekday(startDate, selectedDay);
 
             for (let i = 0; i < cantidadServicios; i++) {
@@ -868,6 +801,21 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                 console.log("Date tag clicked");
                 setDateTag(true);
             }
+        }
+    };
+
+    const fetchSingleResponsableFromDireccion = async (direccion_id: number) => {
+        try {
+            const { data, error } = await supabase
+                .from("Direcciones")
+                .select("responsable_de_direccion")
+                .eq("id", direccion_id)
+                .single();
+            if (!error) {
+                setResponsableDireccionId(data?.responsable_de_direccion ?? null);
+            }
+        } catch (err) {
+            console.log("Error encontrando el responsable de la dirección" + err);
         }
     };
 
@@ -1073,6 +1021,24 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                             <FormatoInputs width={90} marginleft={"0"}>
                                 <FormLabels>Responsable:</FormLabels>
                                 <select
+                                    value={responsableId ?? ""}
+                                    onChange={handleResponsableChange}
+                                    className="textInputs arrowChange"
+                                >
+                                    <option value="">Elige al Responsable...</option>
+
+                                    {responsables.map(r => (
+                                        <option key={r.id} value={r.id}>
+                                            {r.nombre}
+                                        </option>
+                                    ))}
+                                </select>
+                            </FormatoInputs>
+                        )}
+                        {/* {tipoServicio !== "Residencial" && (
+                            <FormatoInputs width={90} marginleft={"0"}>
+                                <FormLabels>Responsable:</FormLabels>
+                                <select
                                     value={responsableId ?? undefined}
                                     onChange={handleResponsableChange}
                                     className="textInputs arrowChange"
@@ -1085,7 +1051,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                                     ))}
                                 </select>
                             </FormatoInputs>
-                        )}
+                        )} */}
                         <FormatoInputs width={90} marginleft={"0"}>
                             <FormLabels>Orden de compra</FormLabels>
                             <input

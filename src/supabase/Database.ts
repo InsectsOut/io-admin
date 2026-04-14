@@ -104,6 +104,7 @@ export type Database = {
       }
       Direcciones: {
         Row: {
+          apodo_direccion: string | null
           calle: string
           ciudad: string
           cliente_id: number
@@ -115,10 +116,12 @@ export type Database = {
           numero_ext: string
           numero_int: string | null
           piso: string | null
+          responsable_de_direccion: number | null
           ubicacion: string | null
           udpated_at: string
         }
         Insert: {
+          apodo_direccion?: string | null
           calle: string
           ciudad: string
           cliente_id: number
@@ -130,10 +133,12 @@ export type Database = {
           numero_ext: string
           numero_int?: string | null
           piso?: string | null
+          responsable_de_direccion?: number | null
           ubicacion?: string | null
           udpated_at?: string
         }
         Update: {
+          apodo_direccion?: string | null
           calle?: string
           ciudad?: string
           cliente_id?: number
@@ -145,6 +150,7 @@ export type Database = {
           numero_ext?: string
           numero_int?: string | null
           piso?: string | null
+          responsable_de_direccion?: number | null
           ubicacion?: string | null
           udpated_at?: string
         }
@@ -154,6 +160,13 @@ export type Database = {
             columns: ["cliente_id"]
             isOneToOne: false
             referencedRelation: "Clientes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "Direcciones_responsable_de_direccion_fkey"
+            columns: ["responsable_de_direccion"]
+            isOneToOne: false
+            referencedRelation: "Responsables"
             referencedColumns: ["id"]
           },
         ]
@@ -903,7 +916,7 @@ export type Database = {
           {
             foreignKeyName: "Responsables_cliente_id_fkey"
             columns: ["cliente_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "Clientes"
             referencedColumns: ["id"]
           },

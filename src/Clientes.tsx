@@ -137,11 +137,16 @@ const Clientes: React.FC<clientesProps> = props => {
                 .filter("organizacion", "eq", props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
             if (barraBusqueda) {
-                query.or(`apellidos.ilike.%${barraBusqueda}%,nombre.ilike.%${barraBusqueda}%`);
+                const search = barraBusqueda.trimEnd(); 
+
+                query.or(`apellidos.ilike.%${search}%,nombre.ilike.%${search}%`);
+
                 const { data: cliente, count } = await query;
+
                 if (cliente) {
                     console.log(cliente);
                     SetClientes(cliente);
+
                     const totalPages = count && Math.ceil(count / itemsPerPage);
                     setTotalPages(totalPages || 0);
                 }
