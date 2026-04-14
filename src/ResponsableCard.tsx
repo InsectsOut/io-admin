@@ -1,16 +1,16 @@
 import styled from "styled-components";
-import { Database, Tables } from "../src/supabase/Database";
-import { Titulo } from "./Servicios";
-import { createClient } from "@supabase/supabase-js";
+import { Tables } from "../src/supabase/Database";
 import { useParams } from "react-router-dom";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { DetailsTitle } from "./ServiciosCard";
 import { InputsContainer } from "./ServiciosCard";
-import { mainStyle } from "./ServiciosCard";
 import { DetallesTitulo } from "./ServiciosCard";
 import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { CardInputs } from "./rehusableComponents/CardInputs";
+import { StyledSelect } from "./rehusableComponents/StyledSelect";
+import { FaEdit } from "react-icons/fa";
+
 type Cliente = Tables<"Clientes">;
 type Responsable = Tables<"Responsables">;
 type Servicio = Tables<"Servicios">;
@@ -18,6 +18,8 @@ type Servicio = Tables<"Servicios">;
 type ClientesConResponsables = Cliente & {
     Responsables: Responsable | null;
 };
+type Responsables = Tables<"Responsables">;
+type Direccion = Tables<"Direcciones">;
 
 const SaveButton = styled.button /*style*/ `
     all: unset;
@@ -27,10 +29,12 @@ const SaveButton = styled.button /*style*/ `
     align-items: center;
     padding: 0;
     font-weight: bold;
-    width: 9.62rem;
+    box-sizing: border-box;
+
+    width: 95%;
     height: 2.226rem;
     margin-bottom: 0.5rem;
-    margin-right: 1rem;
+    margin-right: 12px;
     font-size: 0.8rem;
     border-radius: 0.359rem;
     &:hover {
@@ -42,14 +46,24 @@ const SaveButton = styled.button /*style*/ `
 
 interface ResponsableCardProps {
     onValueChange: (nuevoValor: string) => void;
-    updaterPass: boolean;
+    updaterPass?: boolean;
     onStateChange: () => void;
+    newResponsableFlag?: boolean;
+    modalCloser?: () => void;
+    justCreated?: () => void;
+    justCreatedFlag?: boolean;
+    justUpdated?:boolean;
 }
 
 const ResponsableCardContainer = styled(CardContainer) /*style*/ `
     height: fit-content;
     padding-bottom: 2rem;
     margin: unset;
+     padding-right: 1.5rem;
+    .bottomActionButtons{
+    display:flex;
+    justify-content:space-around;
+    }
 `;
 const inputWidthStyle = {
     width: "80%",
@@ -60,10 +74,18 @@ const ResCardInputs = styled(CardInputs) /*style*/ `
         width: 80%;
     }
 `;
-
-const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, updaterPass, onStateChange }) => {
+const ResponsableCard: React.FC<ResponsableCardProps> = ({
+    onValueChange,
+    onStateChange,
+    newResponsableFlag,
+    modalCloser,
+    updaterPass,
+    justCreated,
+    justCreatedFlag,
+    justUpdated,
+}) => {
     const { id } = useParams();
-    const [responsable, setResponsable] = useState<ClientesConResponsables[]>([]);
+    const [responsable, setResponsable] = useState<Responsable[]>([]);
     const [nombre, setNombre] = useState("");
     const [telefono, setTelefono] = useState<string>("");
     const [emai, setEmail] = useState("");
@@ -71,26 +93,45 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
     const [responsableId, setResponsable_id] = useState<number | null>(null);
     const [nuevoResponsableID, setNuevoResponsableID] = useState<number | null>(null);
     const [guardar, setGuardar] = useState(false);
+    const [selectedResponsable, setSelectedResponsable] = useState<Responsable | null>(null);
+    const [toggleEditName, setToggleEditName] = useState(false);
+    const [direccion, setDireccion] = useState<Direccion[]>();
+    const [direccionId, setDireccionId] = useState<number | null>(null);
 
-    const fetchResponsable = async () => {
+    const fetchDireccion = async (responsableId: number) => {
         try {
             let query = supabase
-                .from("Clientes")
-                .select(`*, Responsables!Clientes_responsable_id_fkey(*)`) // Specify the relationship name
-                .filter("id", "eq", `${id}`);
+                .from("Direcciones")
+                .select(`*`)
+                .filter("cliente_id", "eq", `${id}`)
+                .eq("responsable_de_direccion", responsableId);
+            const { data: direccion, error } = await query;
+            if (direccion) {
+                setDireccion(direccion);
+                setDireccionId(direccion?.[0]?.id ?? null);
+            } else {
+                setDireccion([] as any);
+            }
+        } catch (err) {
+            console.log("Error cargando la dirección del responsable", err);
+        }
+    };
+
+    const fetchResponsable = async () => {
+       
+        try {
+            let query = supabase
+                .from("Responsables")
+                .select(`*`)
+                .filter("cliente_id", "eq", `${id}`)
+                .order("created_at", { ascending: false });
             const { data: responsables, error } = await query;
             if (responsables && responsables.length > 0) {
                 setResponsable(responsables);
-                setNombre(responsables[0]?.Responsables?.nombre ?? "");
-                setTelefono(responsables[0]?.Responsables?.telefono ?? "");
-                setEmail(responsables[0]?.Responsables?.email ?? "");
-                setPuesto(responsables[0]?.Responsables?.puesto ?? "");
-                onValueChange(responsables[0]?.Responsables?.nombre ?? "");
-                // setResponsable_id(responsable?.[0]?.Responsables?.id ?? null)
-                setResponsable_id(() => responsables[0]?.Responsables?.id ?? null);
-                console.log(responsableId);
-
-                console.log(responsables);
+                if (!newResponsableFlag) {
+                    await setSelectedResponsable(responsables[0]);
+                    await setResponsable_id(responsables[0].id);
+                }
             } else {
                 console.log("No se encuentra nada", responsables);
                 console.log(error);
@@ -102,7 +143,11 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
 
     useEffect(() => {
         fetchResponsable();
-    }, []);
+    }, [justCreatedFlag]);
+
+    useEffect(() => {
+        handleResponsableChange(selectedResponsable);
+    }, [selectedResponsable]);
 
     const upsertResponsable = async () => {
         if (responsableId) {
@@ -124,6 +169,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
                     console.log("Error while trying to update ", error);
                 } else {
                     console.log("data updated succesfully ", data);
+                    //setResponsable_id(() => );
                 }
             } catch (err) {
                 console.log("Error while fetching", err);
@@ -143,27 +189,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
                     ] as any)
                     .select();
                 setNuevoResponsableID(() => data?.[0]?.id ?? null);
-                if (data?.[0]?.id) {
-                    console.log("El id del desponsable ", nuevoResponsableID);
-                    try {
-                        const { data: cliente, error } = await supabase
-                            .from("Clientes")
-                            .update([
-                                {
-                                    responsable_id: data?.[0]?.id,
-                                },
-                            ] as any)
-                            .filter("id", "eq", `${id}`)
-                            .select();
-                        if (error) {
-                            console.log("Error while trying to update ", error);
-                        } else {
-                            console.log("Client data updated succesfully ", data);
-                        }
-                    } catch (err) {
-                        console.log("Error while fetching", err);
-                    }
-                }
+
                 if (error) {
                     console.log("Error while trying to update ", error);
                 } else {
@@ -176,14 +202,18 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
     };
 
     useEffect(() => {
-        if (updaterPass === true) {
-            let flag = 1;
-            while (flag === 1) {
-                upsertResponsable().then(() => location.reload());
-                flag++;
-            }
+        if (updaterPass) {
+            upsertResponsable();
         }
     }, [updaterPass]);
+
+    useEffect(() => {
+        if (selectedResponsable?.id) {
+            fetchDireccion(selectedResponsable?.id);
+        } else {
+            return;
+        }
+    }, [selectedResponsable?.id]);
 
     const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const cambio = event.target.value;
@@ -209,26 +239,88 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
         onStateChange();
     };
 
+    const handleResponsableChange = (responsable: Responsables | null) => {
+        setEmail(responsable?.email ?? "");
+        setNombre(responsable?.nombre ?? "");
+        setPuesto(responsable?.puesto ?? "");
+        setTelefono(responsable?.telefono ?? "");
+    };
+
+//     useEffect(() =>{
+// setJustUpdatedFlag(() => justUpdated ?? false);
+//     },[justUpdated])
+
+     useEffect(() => {
+        const runner = async () => {
+ if (selectedResponsable?.id) {
+            await fetchDireccion(selectedResponsable?.id);
+        } else {
+            return;
+        }
+        }
+       runner()
+    }, [justUpdated]);
+
     return (
         <>
             <ResponsableCardContainer>
-                <DetallesTitulo>Información del Responsable</DetallesTitulo>
+                
+                <DetallesTitulo>
+                    {newResponsableFlag ? "Añadir Responsable" : "Información del Responsable"}
+                </DetallesTitulo>
                 <InputsContainer style={{ width: "100%" }}>
-                    <DetailsTitle>Nombre</DetailsTitle>
-                    <ResCardInputs
-                        value={nombre}
-                        id="textInputs"
-                        className="textInputs"
-                        placeholder="Nombre del Responsable"
-                        onChange={handleNameChange}
-                    ></ResCardInputs>
+                    <DetailsTitle>Responsable de dirección</DetailsTitle>
+                    <div style={{ display: "flex", alignItems: "center", width: "100%", gap: "0.5rem" }}>
+                        {toggleEditName || newResponsableFlag ? (
+                            <ResCardInputs
+                                value={nombre}
+                                onChange={handleNameChange}
+                                id="textInputs"
+                                className="textInputs"
+                                placeholder="Nombre del Responsable"
+                                largo="80%"
+                            ></ResCardInputs>
+                        ) : (
+                            !newResponsableFlag && (
+                                <StyledSelect
+                                    value={responsableId}
+                                    onChange={e => {
+                                        setResponsable_id(parseInt(e.target.value));
+                                        setSelectedResponsable(
+                                            responsable.find(r => r.id === parseInt(e.target.value)) ?? null
+                                        );
+                                    }}
+                                    width="80%"
+                                    style={{ boxSizing: "border-box", width: "83%" }}
+                                >
+                                    <option value="">Seleccione al responsable</option>
+                                    {responsable?.map(responsable => (
+                                        <option key={responsable?.id} value={responsable?.id}>
+                                            {responsable?.nombre}
+                                        </option>
+                                    ))}
+                                </StyledSelect>
+                            )
+                        )}
+                        {!newResponsableFlag && nombre !== "" && (
+                            <FaEdit
+                                onClick={() => (nombre !== "" ? setToggleEditName(!toggleEditName) : null)}
+                                style={{
+                                    cursor: "pointer",
+                                    color: toggleEditName ? "#0d4e80" : "#ccc",
+                                    transition: "color 0.3s",
+                                }}
+                            ></FaEdit>
+                        )}
+                    </div>
                 </InputsContainer>
                 <InputsContainer style={{ width: "100%" }}>
                     <DetailsTitle>Teléfono</DetailsTitle>
                     <ResCardInputs
                         value={telefono}
                         onChange={handleTelChange}
-                        id="textInputs"
+                        id="TelefonoResponsable"
+                        name="TelResponsable"
                         className="textInputs"
                         placeholder="Teléfono del Responsable"
                     ></ResCardInputs>
@@ -238,9 +330,10 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
                     <ResCardInputs
                         onChange={handleMailChange}
                         value={emai}
-                        id="textInputs"
+                        id="postResponsable"
+                        name="postResponsable"
                         className="textInputs"
-                        placeholder="email del responsable"
+                        placeholder="Correo del Responsable"
                     ></ResCardInputs>
                 </InputsContainer>
                 <InputsContainer style={{ width: "100%" }}>
@@ -248,11 +341,53 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({ onValueChange, update
                     <ResCardInputs
                         onChange={handlePuestoChange}
                         value={puesto}
-                        id="textInputs"
+                        id="PuestoResponsable"
+                        name="puestoResponsable"
                         className="textInputs"
                         placeholder="Puesto del Responsable"
                     ></ResCardInputs>
                 </InputsContainer>
+                {!newResponsableFlag && (
+                    <InputsContainer style={{ width: "100%" }}>
+                        <DetailsTitle>Ubicación del responsable</DetailsTitle>
+                        <StyledSelect
+                            value={direccionId ?? ""}
+                            onChange={e => setDireccionId(parseInt(e.target.value))}
+                            width="80%"
+                            style={{ boxSizing: "border-box", width: "83%" }}
+                        >
+                            <option value="">Seleccione al responsable</option>
+                            {direccion?.map(dir => (
+                                <option key={dir?.id} value={dir?.id}>
+                                    {dir?.apodo_direccion ?? dir?.calle + dir?.colonia }
+                                </option>
+                            ))}
+                        </StyledSelect>
+                    </InputsContainer>
+                )}
+                {newResponsableFlag && (
+                    <div
+                    className="bottomActionButtons"
+                    >
+                    <SaveButton
+                        onClick={async () => {
+                            await upsertResponsable();
+                            await fetchResponsable();
+                            await modalCloser?.();
+                            await justCreated?.();
+                        }}
+                    >
+                        Guardar Responsable
+                    </SaveButton>
+                    <SaveButton
+                        onClick={async () => {
+                            await modalCloser?.();
+                        }}
+                    >
+                       Cerrar
+                    </SaveButton>
+                    </div>
+                )}
             </ResponsableCardContainer>
         </>
     );

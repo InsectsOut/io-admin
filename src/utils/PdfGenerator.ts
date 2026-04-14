@@ -4,6 +4,19 @@ import html2pdf from "html2pdf.js";
  * Copia TODOS los estilos computados del DOM original
  * al DOM clonado (inline styles)
  */
+type Html2PdfOptionsExtended = {
+  filename?: string;
+  image?: any;
+  html2canvas?: any;
+  jsPDF?: any;
+  pagebreak?: {
+    mode?: string[] | string;
+    before?: string;
+    after?: string;
+    avoid?: string;
+  };
+};
+
 function inlineComputedStyles(source: HTMLElement, target: HTMLElement) {
   const sourceElements = source.querySelectorAll("*");
   const targetElements = target.querySelectorAll("*");
@@ -98,7 +111,31 @@ wrapper.style.width = "816px";
   /**
    * 6️⃣ Generar PDF
    */
- return new Promise<Blob>((resolve, reject) => {
+//  return new Promise<Blob>((resolve, reject) => {
+//   html2pdf()
+//     .set({
+//       filename: fileName,
+//       image: { type: "jpeg", quality: 0.98 },
+//       html2canvas: {
+//         scale: 4,
+//         useCORS: true,
+//         allowTaint: false,
+//         backgroundColor: "#ffffff",
+//       },
+//       jsPDF: {
+//         unit: "mm",
+//          format: [216, heightMm],
+//         orientation: "portrait",
+//       },
+    
+//     })
+//     .from(wrapper)
+//     .output("blob")
+//     .then((blob: Blob) => resolve(blob))
+//     .catch((err: any) => reject(err));
+//   });
+//CON ESTE PUEDO DIVIDIRLO EN PÁGINAS
+  return new Promise<Blob>((resolve, reject) => {
   html2pdf()
     .set({
       filename: fileName,
@@ -111,14 +148,16 @@ wrapper.style.width = "816px";
       },
       jsPDF: {
         unit: "mm",
-         format: [216, heightMm],
+        format: "letter",
         orientation: "portrait",
       },
-    
-    })
+      pagebreak: {
+        mode: ["avoid-all", "css", "legacy"],
+      },
+    } as any) // 👈 esto quita el error TS
     .from(wrapper)
     .output("blob")
     .then((blob: Blob) => resolve(blob))
     .catch((err: any) => reject(err));
-  });
+});
 }

@@ -9,6 +9,7 @@ import { DetallesTitulo } from "./ServiciosCard";
 import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import DirerccionModal from "./UpdateDireccionModal";
+import { StyledSelect } from "./rehusableComponents/StyledSelect";
 type Cliente = Tables<"Clientes">;
 type Direccion = Tables<"Direcciones">;
 
@@ -16,9 +17,13 @@ interface ResponsableCardProps {
     onValueChange?: (nuevoValor: string) => void;
     updaterPass?: boolean;
     onStateChange?: () => void;
+    justCreatedResponsable?: boolean;
+    justUpdatedSender?: () => void
 }
 
-const ResponsableCardContainer = styled(CardContainer) /*style*/ `
+type Responsables = Tables<"Responsables">;
+
+const DireccionesCardContainer = styled(CardContainer) /*style*/ `
     height: fit-content;
     max-height: 28.699rem;
     padding-bottom: 1rem;
@@ -118,7 +123,7 @@ export const ResCardInputs = styled(CardInputs) /*style*/ `
     }
 `;
 
-const DireccionCard: React.FC<ResponsableCardProps> = () => {
+const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
     const { id } = useParams();
     const [calle, setCalle] = useState<string>("");
     const [numeExt, setNumExt] = useState<string | null>("");
@@ -137,6 +142,10 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
     const [direccionId, setDireccionId] = useState<number | null>(null);
     const [deleteRenderStatus, setDeleteRenderStatus] = useState<string>("");
     const [url, setUrl] = useState<string>("");
+    const [responsabledeDireccion, setResponsableDeDireccion] = useState<Responsables[]>([]);
+    const [responsableId, setResponsableId] = useState<number | null>(null);
+    const [apodo, setApodo] = useState<string>("");
+    const [resPonsableDireccionUodatedFlag, setResponsableDireccionUpdatedFlag] = useState<boolean>(false);
 
     const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const cambio = event.target.value;
@@ -253,28 +262,33 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                 .filter("cliente_id", "eq", `${id}`);
             const { data: direcciones, error } = await query;
             if (direcciones && direcciones.length > 0) {
-                //const [respuesta] = direcciones
                 setDirección(direcciones);
-                // setCalle(respuesta?.calle)
-                // setColonia(respuesta?.colonia)
-                // setEstado(respuesta?.estado)
-                // setNumExt(respuesta?.numero_ext)
-                // setNumInt(respuesta?.numero_int)
-                // setPiso(respuesta?.piso)
-                // setZipCode(respuesta?.codigo_postal)
-                // setCiudad(respuesta?.ciudad)
-                console.table(direcciones);
             } else {
-                console.log("No se encuentra nada", direcciones);
-                console.log(error);
             }
         } catch (err) {
             console.log("Error cargando al responsable", err);
         }
     };
 
+    const fetcResponsableDeDireccion = async () => {
+        try {
+            let query = supabase
+                .from("Responsables")
+                .select("*") // Specify the relationship name
+                .eq("cliente_id",id)
+                .order("id");
+            const { data, error } = await query;
+            if (data && data.length > 0) {
+                setResponsableDeDireccion(data);
+            }
+        } catch (err) {
+            console.log("Error cargando al responsable de dirección", err);
+        }
+    };
+
     useEffect(() => {
         FetchDireccion();
+        //fetcResponsableDeDireccion()
     }, []);
 
     useEffect(() => {
@@ -288,6 +302,12 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
         handleCancelarChange();
         console.log(cancelarButton);
     }, [calle, ciudad, zipCode, colonia, estado, numInt, numeExt, piso]);
+
+    useEffect(()=>{
+        
+            fetcResponsableDeDireccion()
+  
+    },[props.justCreatedResponsable])
 
     const upsertDireccion = async () => {
         if (direccionFormOpen && !cancelarButton) {
@@ -304,6 +324,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                         piso: piso,
                         cliente_id: id,
                         ubicacion: url,
+                        responsable_de_direccion: responsableId,
+                        apodo_direccion: apodo,
                     },
                 ] as any);
                 if (error) {
@@ -319,6 +341,12 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
             console.log("Nada que agregar");
         }
     };
+    // useEffect(() => {
+    //     if (resPonsableDireccionUodatedFlag) {
+    //       props.justUpdatedSender()
+    //       console.log("ciclado?")
+    //     }
+    // }),[]
 
     return (
         <>
@@ -326,16 +354,17 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                 <DirerccionModal
                     direccionId={direccionId}
                     closeModal={handleOpenModa}
-                    fetchNewDir={FetchDireccion}
+                    fetchNewDir={() =>{FetchDireccion(); props.justUpdatedSender()}}
                     renderStat={deleteRenderStatus}
                 ></DirerccionModal>
             )}
-            <ResponsableCardContainer style={{ height: `${heightStatus ? "fit-content" : "30.022rem"}` }}>
+            <DireccionesCardContainer style={{ height: `${heightStatus ? "fit-content" : "30.022rem"}` }}>
                 <div
                     className="direccionesOpen"
                     onClick={() => {
                         handleRegisterRender();
                         handleHeightStatusChangeTrue();
+                        props.justUpdatedSender();
                     }}
                 >
                     <p>
@@ -349,12 +378,13 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                 {direccionFormOpen && !direccionesRegistro && (
                     <>
                         <DetallesTitulo>Dirección del cliente</DetallesTitulo>
-                        <div style={{ overflowY: "scroll", display: "flex", flexDirection: "column", gap: "1rem" }}>
+                        <div style={{ overflowY: "scroll", display: "flex", flexDirection: "column", gap: "1rem" , height:"20.5rem"}}>
                             <InputsContainer style={{ width: "100%" }}>
                                 <DetailsTitle>Calle</DetailsTitle>
                                 <ResCardInputs
                                     value={calle}
-                                    id="textInputs"
+                                    id="CalleInput"
+                                    name="calleDireccion"
                                     className="textInputs"
                                     placeholder="Ingrese la calle"
                                     onChange={handleStreetChange}
@@ -365,7 +395,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     value={numeExt}
                                     onChange={handleExtNumChange}
-                                    id="textInputs"
+                                    id="NumeroExteriorInput"
+                                    name="numExtDireccion"
                                     className="textInputs"
                                     placeholder="Ingrese número exterior"
                                 ></ResCardInputs>
@@ -375,7 +406,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleIntNumChange}
                                     value={numInt}
-                                    id="textInputs"
+                                    id="NumeroInteriorInput"
+                                    name="numIntDireccion"
                                     className="textInputs"
                                     placeholder="Ingrese número interior"
                                 ></ResCardInputs>
@@ -385,7 +417,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleFloorChange}
                                     value={piso}
-                                    id="textInputs"
+                                    id="PisoInput"
+                                    name="pisoDireccion"
                                     className="textInputs"
                                     placeholder="Ingrese el piso"
                                 ></ResCardInputs>
@@ -395,7 +428,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleColoniaChange}
                                     value={colonia}
-                                    id="textInputs"
+                                    id="ColoniaInput"
+                                    name="coloniaDireccion"
                                     className="textInputs"
                                     placeholder="Ingrese la colonia"
                                 ></ResCardInputs>
@@ -405,7 +439,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleEstadoChange}
                                     value={estado}
-                                    id="textInputs"
+                                    id="EstadoInput"
+                                    name="estadoDireccion"
                                     className="textInputs"
                                     placeholder="Ingrese el estado"
                                 ></ResCardInputs>
@@ -415,7 +450,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleCiudadChange}
                                     value={ciudad}
-                                    id="textInputs"
+                                    id="CiudadInput"
+                                    name="ciudadDireccion"
                                     className="textInputs"
                                     placeholder="ingrese la ciudad"
                                 ></ResCardInputs>
@@ -425,7 +461,8 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleZipChange}
                                     value={zipCode}
-                                    id="textInputs"
+                                    id="CodigoPostalInput"
+                                    name="zipCodeDireccion"
                                     className="textInputs"
                                     placeholder="ingrese el código postal"
                                 ></ResCardInputs>
@@ -435,10 +472,38 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                                 <ResCardInputs
                                     onChange={handleUrlChange}
                                     value={url}
-                                    id="textInputs"
+                                    id="GoogleMapsUrlInput"
+                                    name="urlDireccion"
                                     className="textInputs"
                                     placeholder="ingrese la url de la dirección"
                                 ></ResCardInputs>
+                            </InputsContainer>
+                            <InputsContainer style={{ width: "100%" }}>
+                                <DetailsTitle>Apodo</DetailsTitle>
+                                <ResCardInputs
+                                    onChange={(e) => setApodo(e.target.value)}
+                                    value={apodo}
+                                    id="ApodoInput"
+                                    name="apodoDireccion"
+                                    className="textInputs"
+                                    placeholder="ingrese un apodo para la dirección"
+                                ></ResCardInputs>
+                            </InputsContainer>
+                            <InputsContainer style={{ width: "100%" }}>
+                                <DetailsTitle>Responsable de dirección</DetailsTitle>
+                                <StyledSelect
+                                    value={responsableId}
+                                    onChange={(e) => setResponsableId(parseInt(e.target.value))}
+                                    style={{ width: "80%", boxSizing:"unset" , textAlign:"center"}}
+                                    width={"80%"}
+                                >
+                                    <option value="">Seleccione al responsable de esta dirección</option>
+                                    {responsabledeDireccion?.map((responsable) => (
+                                        <option key={responsable?.id} value={responsable?.id}>
+                                            {responsable?.nombre}
+                                        </option>
+                                    ))}
+                                </StyledSelect>
                             </InputsContainer>
                         </div>
                     </>
@@ -480,7 +545,7 @@ const DireccionCard: React.FC<ResponsableCardProps> = () => {
                 >
                     Agregar Dirección
                 </div>
-            </ResponsableCardContainer>
+            </DireccionesCardContainer>
         </>
     );
 };

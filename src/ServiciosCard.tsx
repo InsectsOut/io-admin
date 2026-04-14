@@ -308,6 +308,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
     const [confirmation, setConfirmation] = useState<boolean>(false);
     const [folioModalOpen, setFolioModalOpen] = useState<boolean>(false);
     const [precio, setPrecio] = useState<number | null>(null);
+    const [responsable_direccion_id, setResponsableDireccionId] = useState<number | null>(null);
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null;
     };
@@ -477,6 +478,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                             direccion_id: direccion_id,
                             folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm,
                             precio: precio,
+                            responsable_id:responsable_direccion_id
                         },
                     ] as any)
                     .filter("id", "eq", `${servicios[0].id}`);
@@ -518,6 +520,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                             tipo_plaga_id: tipoPlaga,
                             direccion_id: direccion_id,
                             precio: precio,
+                            responsable_id:responsable_direccion_id
                         },
                     ] as any)
                     .filter("id", "eq", `${servicios[0].id}`);
@@ -605,6 +608,10 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
         const cambio = +event.target.value;
         setDireccion_id(cambio);
         setClicked(true);
+        const selectedDireccion = dirección.find(dir => dir.id === cambio);
+        if (selectedDireccion) {
+            setResponsableDireccionId(selectedDireccion.responsable_de_direccion);
+        }
     };
 
     const handlePrecioChange = (event: React.ChangeEvent<HTMLInputElement>) => {

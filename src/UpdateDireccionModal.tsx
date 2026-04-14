@@ -8,15 +8,13 @@ import { DetallesTitulo } from "./ServiciosCard";
 import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { ResCardInputs } from "./DireccionCard";
+import { StyledSelect } from "./rehusableComponents/StyledSelect";
 type Direccion = Tables<"Direcciones">;
 
 const ModalOverlay = styled(RegistroModal) /*style*/ `
     height: 100vh;
     .modalContainer {
         width: 40%;
-        height: 28rem;
-        background: white;
-        max-height: 28.699rem;
         padding-bottom: 1rem;
         margin: unset;
         display: inline-flex;
@@ -60,6 +58,7 @@ const ModalOverlay = styled(RegistroModal) /*style*/ `
         color: inherit;
         background: none;
         color: black;
+        box-sizing:border-box;
     }
     .addButton:hover {
         background-color: #0d4e80;
@@ -109,6 +108,9 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
     const [cancelarButton, setCancelarButton] = useState<boolean>(true);
     const [direccion, setDireccion] = useState<Direccion[]>();
     const [renderStatus, setRenderStatus] = useState<string>("");
+    const [responsabledeDireccion, setResponsabledeDireccion] = useState<Tables<"Responsables">[]>();
+    const [responsableId, setResponsableId] = useState<number>();
+    const [apodo, setApodo] = useState<string>("");
 
     const handleStreetChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         const cambio = event.target.value;
@@ -169,6 +171,8 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                 setZipCode(respuesta?.codigo_postal);
                 setCiudad(respuesta?.ciudad);
                 setUrl(respuesta?.ubicacion);
+                setResponsableId(respuesta?.responsable_de_direccion);
+                setApodo(respuesta?.apodo_direccion);
                 console.table(direcciones);
             } else {
                 console.log("No se encuentra nada", direcciones);
@@ -194,6 +198,8 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                         numero_int: numInt,
                         piso: piso,
                         ubicacion: url,
+                        responsable_de_direccion: responsableId,
+                        apodo_direccion: apodo,
                     },
                 ] as any)
                 .filter("id", "eq", props.direccionId)
@@ -221,15 +227,32 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
         } catch (err) {}
     };
 
+    const fetchResponsablesByClientId = async () => {
+        try {
+            let query = supabase.from("Responsables").select("*").filter("cliente_id", "eq", id);
+
+            const { data, error } = await query;
+            if (error) {
+                console.log("There was an error ", error);
+            } else {
+                console.log("Data fetched successfully:", data);
+                setResponsabledeDireccion(data);
+            }
+        } catch (err) {
+            console.log("Error fetching responsable de direccion", err);
+        }
+    };
+
     useEffect(() => {
         FetchDireccion();
+        fetchResponsablesByClientId();
     }, []);
 
     return (
         <>
             <ModalOverlay>
                 <div
-                    style={{ height: `${props.renderStat === "DELETE" ? "fit-content" : "50%"}` }}
+                    style={{ height: `${props.renderStat === "DELETE" ? "fit-content" : "60%"}` }}
                     className="modalContainer"
                 >
                     <DetallesTitulo id="title">
@@ -340,10 +363,36 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese url de google"
                                 ></ResCardInputs>
                             </InputsContainer>
+                            <InputsContainer style={{ width: "45%" }}>
+                                <DetailsTitle>Responsable de dirección</DetailsTitle>
+                                <StyledSelect
+                                    value={responsableId}
+                                    onChange={e => setResponsableId(parseInt(e.target.value))}
+                                    style={{ width: "100%", boxSizing: "border-box", textAlign: "center" }}
+                                >
+                                    <option value="">Seleccione al responsable de esta dirección</option>
+                                    {responsabledeDireccion?.map(responsable => (
+                                        <option key={responsable?.id} value={responsable?.id}>
+                                            {responsable?.nombre}
+                                        </option>
+                                    ))}
+                                </StyledSelect>
+                            </InputsContainer>
+                            <InputsContainer style={{ width: "45%" }}>
+                                <DetailsTitle>Apodo</DetailsTitle>
+                                <ResCardInputs
+                                    onChange={e => setApodo(e.target.value)}
+                                    value={apodo}
+                                    id="ApodoInput"
+                                    name="apodoDireccion"
+                                    className="textInputs"
+                                    placeholder="ingrese un apodo para la dirección"
+                                ></ResCardInputs>
+                            </InputsContainer>
 
                             <div
                                 className="addButton"
-                                style={{ width: "39.164%", maxWidth: "39.164%", marginRight: "35px" }}
+                                style={{ width: "45%"}}
                                 id=""
                                 onClick={() => {
                                     update().then(() => {

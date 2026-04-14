@@ -22,6 +22,19 @@ interface serviciosProps {
     organizacion?: string;
 }
 
+const ModalOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+`;
+
 const ClientCardContainer = styled(CardContainer) /*style*/ `
     height: fit-content;
     padding-bottom: 2rem;
@@ -29,6 +42,11 @@ const ClientCardContainer = styled(CardContainer) /*style*/ `
 export const BodyContainer = styled.div`
     display: flex;
     gap: 2.94rem;
+    .responsableSection {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+    }
 `;
 const NumberInputs = styled(CardInputs)`
     &::-webkit-inner-spin-button,
@@ -89,6 +107,10 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     const [responsableExists, setResponsableExists] = useState<boolean | null>(false);
     const [, setResponsableId] = useState<number | null>();
     const [updater, setUpdater] = useState(false);
+    const [showModal, setShowModal] = useState(false);
+    const [newResponsableFlag, setNewResponsableFlag] = useState(false);
+    const [responsableJustCreated, setResponsableJustCreated] = useState(false);
+    const [direccionUpdatedFlag, setDireccionUpdatedFlag] = useState<boolean>(false);
 
     const insertResponsable = async (elCliente: Cliente[]) => {
         const nombreCompleto = `${elCliente?.[0]?.nombre} ${elCliente?.[0]?.apellidos} `;
@@ -241,8 +263,29 @@ const ClientesCard: React.FC<serviciosProps> = props => {
         }
     };
 
+    const justCreatedHandler = () => {
+        setResponsableJustCreated(prev => !prev);
+    }
+
+
+
     return (
         <>
+            {showModal && (
+                <>
+                    <ModalOverlay>
+                    <ResponsableCard
+                        updaterPass={updater}
+                        onValueChange={handleChildValue}
+                        onStateChange={handleChildStateChange}
+                        newResponsableFlag={newResponsableFlag}
+                        modalCloser={() => setShowModal(false)}
+                        justCreated={() => justCreatedHandler()}
+                       
+                    ></ResponsableCard>
+                    </ModalOverlay>
+                </>
+            )}
             <Titulo>Clientes</Titulo>
             <BodyContainer id="bodyContainer">
                 <ClientCardContainer>
@@ -307,7 +350,7 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                             ))}
                         </select>
                     </InputsContainer>
-                    {tipoCliente !== "Residencial" && (
+                    {/* {tipoCliente !== "Residencial" && (
                         <InputsContainer>
                             <DetailsTitle>Responsable</DetailsTitle>
                             <CardInputs
@@ -318,18 +361,21 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                                 value={responsable}
                             ></CardInputs>
                         </InputsContainer>
-                    )}
+                    )} */}
                 </ClientCardContainer>
-                {responsableExists && tipoCliente !== "Residencial" && (
-                    <>
-                        <ResponsableCard
-                            updaterPass={updater}
-                            onValueChange={handleChildValue}
-                            onStateChange={handleChildStateChange}
-                        ></ResponsableCard>
-                    </>
-                )}
-                {!responsableExists && tipoCliente !== "Residencial" && (
+                <div className="responsableSection">
+                    {responsableExists && tipoCliente !== "Residencial" && (
+                        <>
+                            <ResponsableCard
+                                updaterPass={updater}
+                                onValueChange={handleChildValue}
+                                onStateChange={handleChildStateChange}
+                                justCreatedFlag={responsableJustCreated}
+                                 justUpdated={direccionUpdatedFlag}
+                            ></ResponsableCard>
+                        </>
+                    )}
+                    {/* {!responsableExists && tipoCliente !== "Residencial" && (
                     <AddResponsableCard
                         style={{ alignSelf: "center" }}
                         onClick={() => {
@@ -342,15 +388,37 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                         </div>
                     </AddResponsableCard>
                 )}
-                <DireccionCard></DireccionCard>
+                <DireccionCard></DireccionCard> */}
+                    {tipoCliente !== "Residencial" && (
+                        <AddResponsableCard
+                        
+                            style={{ alignSelf: "center" }}
+                            onClick={() => {
+                                //setResponsableExists(true);
+                                setShowModal(true);
+                                setNewResponsableFlag(true)
+                            }}
+                        >
+                            <div>
+                                <IoIosAddCircleOutline size={30} style={{ color: "black" }} />
+                                <TextoAddCard>Añadir responsable</TextoAddCard>
+                            </div>
+                        </AddResponsableCard>
+                    )}
+                </div>
+                <DireccionCard
+                justCreatedResponsable={responsableJustCreated}
+                justUpdatedSender={async () => {await setDireccionUpdatedFlag(prev => !prev);}}
+                ></DireccionCard>
             </BodyContainer>
             <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
             <StyledButton
                 disabled={!isClicked}
                 clicado={isClicked}
-                onClick={() => {
-                    updateOrInsert();
-                    updateCliente();
+                onClick={async () => {
+                    await updateOrInsert();
+                   await  updateCliente();
+                   window.location.reload();
                 }}
             >
                 Guardar Cambios
