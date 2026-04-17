@@ -114,6 +114,9 @@ export const FiltrosLista = styled.li /*style*/ `
         transform: scale(1.05);
         cursor: pointer;
     }
+    &.TipoServFilt{
+
+    }
 `;
 export const FlechaAbajo = styled.div /*style*/ `
     position: relative;
@@ -321,7 +324,8 @@ export const ServiciosSelectContainer = styled.div /*style*/ `
     flex-direction: column;
     gap: 0.5rem;
     @media (max-width: 900px) {
-        margin-left: 0px;
+        margin-left: auto;
+        margin-right: auto;
     }
 `;
 export const ServiciosElement = styled.div /*style*/ `
@@ -867,6 +871,12 @@ export const Servicios: React.FC<serviciosProps> = props => {
     };
 
     useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    useEffect(() => {
         if (textModal != "") {
             filterServicios();
         }
@@ -1173,12 +1183,13 @@ export const Servicios: React.FC<serviciosProps> = props => {
                             Cliente <FlechaAbajo className={isRotated ? "rotated" : ""} />{" "}
                         </FiltrosLista>
                         <FiltrosLista
+                        className="TipoServFilt"
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                 handleFiltrosClick(event);
                                 handleRotation2();
                             }}
                         >
-                            Tipo de servicio <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />{" "}
+                            {screenWidth <= 900 ? "Tipo" : "Tipo de servicio"} <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />{" "}
                         </FiltrosLista>
                         <FiltrosLista
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -1564,14 +1575,26 @@ export const Servicios: React.FC<serviciosProps> = props => {
                             onTouchEnd={() => handleTouchEnd(servicio.id)}
                             key={servicio.id}
                         >
-                            <ServiciosElement1 style={{ textAlign: "left" }}>
+                            <ServiciosElement1
+                                style={{
+                                    textAlign: "left",
+                                    ...(screenWidth <= 900 && {
+                                        justifyContent: "flex-start",
+                                        gap: "0",
+                                        flex: "1",
+                                        width: "auto",
+                                        minWidth: 0,
+                                    }),
+                                }}
+                            >
                                 <div
                                     style={{
                                         textAlign: "left",
                                         padding: "0",
                                         display: "flex",
                                         justifyContent: "left",
-                                        width: "40%",
+                                        width: screenWidth <= 900 ? "auto" : "40%",
+                                        flexShrink: 0,
                                     }}
                                 >
                                     <FolioLink
@@ -1585,12 +1608,19 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                     </FolioLink>
                                 </div>
                                 <div
+                                    onTouchStart={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
+                                    onTouchMove={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
+                                    onTouchEnd={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
                                     style={{
                                         textAlign: "left",
                                         padding: "0",
                                         display: "flex",
                                         justifyContent: "left",
-                                        width: "60%",
+                                        width: screenWidth <= 900 ? "42%" : "60%",
+                                        flex: screenWidth <= 900 ? "1" : undefined,
+                                        maxWidth: screenWidth <= 900 ? "20rem" : undefined,
+                                        overflowX: screenWidth <= 900 ? "auto" : "hidden",
+                                        overflowY: "hidden",
                                     }}
                                 >
                                     <FolioLink
@@ -1599,8 +1629,11 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                         style={{
                                             textAlign: "left",
                                             padding: "0",
-                                            display: "flex",
+                                            display: "block",
                                             justifyContent: "left",
+                                            ...(screenWidth <= 900 && {
+                                                whiteSpace: "nowrap",
+                                            }),
                                         }}
                                         className="primerSector"
                                     >
@@ -1608,7 +1641,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                         {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos}{" "}
                                     </FolioLink>
                                 </div>
-                                <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>
+                                {screenWidth > 900 && <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>}
                                 {screenWidth > 900 && (
                                     <h3 className="primerSector" id="iconSector">
                                         {" "}
@@ -1616,16 +1649,41 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                     </h3>
                                 )}
                             </ServiciosElement1>
-                            <ServiciosElement2>
+                            <ServiciosElement2
+                                style={
+                                    screenWidth <= 900
+                                        ? {
+                                              width: "6rem",
+                                              flexShrink: 0,
+                                              justifyContent: "center",
+                                              gap: "0.3rem",
+                                              flexDirection: "row",
+                                              alignItems: "center",
+                                              marginRight:"2rems"
+                                          }
+                                        : {}
+                                }
+                            >
                                 <h3 className="primerSector" style={{ fontWeight: "bold" }}>
-                                    {screenWidth > 900 ? "Fecha" : <BsCalendarDate></BsCalendarDate>}{" "}
+                                    {screenWidth > 900 ? "Fecha" : <BsCalendarDate />}{" "}
                                 </h3>
-                                <h3 className="primerSector">{servicio.fecha_servicio} </h3>
+                                {screenWidth > 900 ? (
+                                    <h3 className="primerSector">{servicio.fecha_servicio}</h3>
+                                ) : (
+                                    <span style={{ fontSize: "1rem", color: "#727272", whiteSpace: "nowrap" }}>
+                                        {servicio.fecha_servicio}
+                                    </span>
+                                )}
                             </ServiciosElement2>
-                            <ServiciosElement3>
+                            <ServiciosElement3
+                                style={
+                                    screenWidth <= 900
+                                        ? { width: "6rem", flexShrink: 0, justifyContent: "center", gap: "0.3rem" }
+                                        : {}
+                                }
+                            >
                                 <h3 className="primerSector" style={{ fontWeight: "bold", textAlign: "left" }}>
-                                    {" "}
-                                    Estatus :
+                                    {screenWidth > 900 ? " Estatus :" : "Est."}
                                 </h3>
                                 <h3>
                                     {servicio.realizado ? (

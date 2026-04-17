@@ -22,14 +22,16 @@ import {
     ServiciosElement2,
     ServiciosElement3,
     ServiciosElement4,
+    ServiciosElement5,
     ServiciosSelectContainer,
     Titulo,
 } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
-import { FaEdit } from "react-icons/fa";
+import { FaEdit, FaTag } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import DelModal from "./DeleteModal";
-import { LowerActionButtons } from "./Servicios";
+import { LowerActionButtons, FiltrosRight } from "./Servicios";
 import { FiltrosLeft } from "./Servicios";
 
 type Cliente = Tables<"Clientes">;
@@ -64,6 +66,10 @@ const Clientes: React.FC<clientesProps> = props => {
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deletedClient, setDeletedCliente] = useState<any>([]);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [swipedItems, setSwipedItems] = useState<{ [key: number]: boolean }>({});
+    const [swipeData, setSwipeData] = useState<{
+        [key: number]: { startX: number; startY: number; swipeDirection: string };
+    }>({});
 
     const handleSearchChange = (e: any) => {
         const cambio = e.target.value;
@@ -137,7 +143,7 @@ const Clientes: React.FC<clientesProps> = props => {
                 .filter("organizacion", "eq", props.organizacion)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
             if (barraBusqueda) {
-                const search = barraBusqueda.trimEnd(); 
+                const search = barraBusqueda.trimEnd();
 
                 query.or(`apellidos.ilike.%${search}%,nombre.ilike.%${search}%`);
 
@@ -260,6 +266,50 @@ const Clientes: React.FC<clientesProps> = props => {
         console.log("deleted", deletedClient);
     };
 
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
+        const touch = e.touches[0];
+        setSwipeData(prevState => ({
+            ...prevState,
+            [id]: { startX: touch.clientX, startY: touch.clientY, swipeDirection: "" },
+        }));
+    };
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - swipeData[id].startX;
+        const deltaY = touch.clientY - swipeData[id].startY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            setSwipeData(prevState => ({
+                ...prevState,
+                [id]: { ...prevState[id], swipeDirection: deltaX > 0 ? "right" : "left" },
+            }));
+        } else {
+            setSwipeData(prevState => ({
+                ...prevState,
+                [id]: { ...prevState[id], swipeDirection: deltaY > 0 ? "down" : "up" },
+            }));
+        }
+    };
+
+    const handleTouchEnd = (id: number) => {
+        if (swipeData[id].swipeDirection === "left") {
+            setSwipedItems(prevState => ({
+                ...prevState,
+                [id]: true,
+            }));
+        } else if (swipeData[id].swipeDirection === "right") {
+            setSwipedItems(prevState => ({
+                ...prevState,
+                [id]: false,
+            }));
+        }
+        setSwipeData(prevState => ({
+            ...prevState,
+            [id]: { ...prevState[id], swipeDirection: "" },
+        }));
+    };
+
     const deleteCliente = async (clienteId: number) => {
         try {
             let query = supabase
@@ -278,6 +328,12 @@ const Clientes: React.FC<clientesProps> = props => {
             location.reload();
         } catch (err) {}
     };
+
+    useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     useEffect(() => {
         if (!modalVisible) {
@@ -504,7 +560,7 @@ const Clientes: React.FC<clientesProps> = props => {
                             </ModalContainer>
                         )}
                     </FiltrosLeft>
-                    <>
+                    {screenWidth >= 900 && (
                         <div style={{ display: "flex", alignItems: "center" }}>
                             <CreateButton style={{ position: "relative" }} to="/nuevo-cliente">
                                 Nuevo Cliente
@@ -516,61 +572,110 @@ const Clientes: React.FC<clientesProps> = props => {
                                 onPageChange={handlePageChange}
                             />
                         </div>
-                    </>
+                    )}
                 </FiltrosContainer>
+                {screenWidth < 900 && (
+                    <FiltrosRight>
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </FiltrosRight>
+                )}
             </ServiciosContainer>
             <ServiciosSelectContainer>
                 {clientes.map(cliente => (
-                    <ServiciosElement key={cliente.id}>
-                        <ClientesElement1 style={{ minWidth: "15%", maxWidth: "25%" }}>
-                            <FolioLink to={`${location.pathname}/${cliente.id}`} className="primerSector">
+                    <ServiciosElement
+                        key={cliente.id}
+                        onTouchStart={(e: any) => handleTouchStart(e, cliente.id)}
+                        onTouchMove={(e: any) => handleTouchMove(e, cliente.id)}
+                        onTouchEnd={() => handleTouchEnd(cliente.id)}
+                    >
+                        <ClientesElement1
+                            style={{
+                                minWidth: screenWidth >= 900 ? "15%" : "55%",
+                                maxWidth: screenWidth >= 900 ? "25%" : "60%",
+                            }}
+                        >
+                            <FolioLink
+                                to={`${location.pathname}/${cliente.id}`}
+                                className="primerSector"
+                                style={
+                                    screenWidth < 900
+                                        ? {
+                                              width: "100%",
+                                              maxWidth: "100%",
+                                              overflow: "hidden",
+                                              textOverflow: "ellipsis",
+                                              whiteSpace: "nowrap",
+                                              textAlign: "left",
+                                              paddingLeft: "0.75rem",
+                                          }
+                                        : {}
+                                }
+                            >
                                 {" "}
                                 {cliente.nombre} {cliente.apellidos}{" "}
                             </FolioLink>
                         </ClientesElement1>
-                        <ServiciosElement2 style={{ justifyContent: "left" }}>
-                            <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
-                                {" "}
-                                <FaEdit size={20} />
-                            </h3>
-                        </ServiciosElement2>
-                        <ServiciosElement3>
+                        {screenWidth >= 900 && (
+                            <ServiciosElement2 style={{ justifyContent: "left" }}>
+                                <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
+                                    {" "}
+                                    <FaEdit size={20} />
+                                </h3>
+                            </ServiciosElement2>
+                        )}
+                        <ServiciosElement3 style={screenWidth < 900 ? { width: "35%", flexShrink: 0 } : {}}>
                             <h3
                                 className="primerSector"
                                 style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
                             >
-                                {" "}
-                                Tipo de Cliente : {cliente.tipo_cliente}
+                                {screenWidth < 900 ? <FaTag size={14} /> : "Tipo de Cliente :"} {cliente.tipo_cliente}
                             </h3>
                         </ServiciosElement3>
-                        <ServiciosElement4
-                            style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
-                            screen_width={screenWidth}
-                        >
-                            <button
-                                id="borrarServicio"
+                        {screenWidth >= 900 && (
+                            <ServiciosElement4
+                                style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                                screen_width={screenWidth}
+                            >
+                                <button
+                                    id="borrarServicio"
+                                    onClick={() => {
+                                        deleteClienteHandler(cliente).then(() => {
+                                            setDeleteModalVisible(true);
+                                        });
+                                    }}
+                                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                                >
+                                    X
+                                </button>
+                            </ServiciosElement4>
+                        )}
+                        {screenWidth < 900 && (
+                            <ServiciosElement5
+                                screen_width={screenWidth}
+                                swipeActiator={swipedItems[cliente.id]}
                                 onClick={() => {
                                     deleteClienteHandler(cliente).then(() => {
                                         setDeleteModalVisible(true);
                                     });
                                 }}
-                                style={{ fontWeight: "bold", fontSize: "105%" }}
                             >
-                                X
-                            </button>
-                        </ServiciosElement4>
+                                <RiDeleteBin6Line />
+                            </ServiciosElement5>
+                        )}
                     </ServiciosElement>
                 ))}
                 {screenWidth < 900 && (
                     <LowerActionButtons>
                         <div
                             style={{
-                                width: "82.485625rem",
+                                width: "100%",
                                 height: "2.25rem",
-                                position: "absolute",
-                                top: "90%",
-                                right: "9%",
-                                color: "white",
+                                margin: "0 auto",
+                                position: "relative",
                             }}
                         >
                             <CreateButton to="/nuevo-cliente">Nuevo Cliente</CreateButton>
