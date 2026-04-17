@@ -445,10 +445,7 @@ const CertificadoServicio = ({}) => {
 
     const generateSignedUrl = async (path: string, bucket: string, transform: boolean) => {
         try {
-            const options = transform
-                ? { transform: { width: 200, height: 200, resize: "contain" as "contain" } }
-                : undefined;
-            const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60, options);
+            const { data, error } = await supabase.storage.from(bucket).createSignedUrl(path, 60 * 60);
             if (error) {
                 throw new Error(error.message);
             }
@@ -935,7 +932,7 @@ const CertificadoServicio = ({}) => {
                                                         crossOrigin="anonymous"
                                                         src={signedUrls[recs.id]}
                                                         alt="Evidencia"
-                                                        style={{}}
+                                                        style={{width: "200px", height: "200px", objectFit: "contain" }}
                                                     />
                                                 ) : (
                                                     <span style={{ fontSize: "8px", color: "#888" }}>
