@@ -66,6 +66,7 @@ export const Titulo = styled.h1 /*style*/ `
     @media (max-width: 900px) {
         margin-left: 0px;
         margin-bottom: 1rem;
+        text-align: center;
     }
 `;
 export const SearchBarForm = styled.form /*style*/ `
@@ -114,8 +115,7 @@ export const FiltrosLista = styled.li /*style*/ `
         transform: scale(1.05);
         cursor: pointer;
     }
-    &.TipoServFilt{
-
+    &.TipoServFilt {
     }
 `;
 export const FlechaAbajo = styled.div /*style*/ `
@@ -1183,13 +1183,14 @@ export const Servicios: React.FC<serviciosProps> = props => {
                             Cliente <FlechaAbajo className={isRotated ? "rotated" : ""} />{" "}
                         </FiltrosLista>
                         <FiltrosLista
-                        className="TipoServFilt"
+                            className="TipoServFilt"
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                 handleFiltrosClick(event);
                                 handleRotation2();
                             }}
                         >
-                            {screenWidth <= 900 ? "Tipo" : "Tipo de servicio"} <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />{" "}
+                            {screenWidth <= 900 ? "Tipo" : "Tipo de servicio"}{" "}
+                            <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />{" "}
                         </FiltrosLista>
                         <FiltrosLista
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -1659,7 +1660,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                               gap: "0.3rem",
                                               flexDirection: "row",
                                               alignItems: "center",
-                                              marginRight:"2rems"
+                                              marginRight: "2rems",
                                           }
                                         : {}
                                 }

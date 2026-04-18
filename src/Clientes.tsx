@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { supabase } from "./utils/ClientSupabase";
 import { Tables } from "../src/supabase/Database";
 import {
@@ -54,12 +54,22 @@ const Clientes: React.FC<clientesProps> = props => {
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
     const [clientes, SetClientes] = useState<Cliente[]>([]);
-    const [clientId, setClientId] = useState<number | null>();
-    const [selectedOptions, setSelectedOptions] = useState("");
+    const [clientId, setClientId] = useState<number | null>(() => {
+        const p = new URLSearchParams(window.location.search).get("cliente");
+        return p ? Number(p) : null;
+    });
+    const [selectedOptions, setSelectedOptions] = useState(() => {
+        return new URLSearchParams(window.location.search).get("tipo") ?? "";
+    });
     const [_fetchError] = useState("");
-    const [barraBusqueda, setBarraBusqueda] = useState("");
+    const [barraBusqueda, setBarraBusqueda] = useState(() => {
+        return new URLSearchParams(window.location.search).get("busqueda") ?? "";
+    });
     const [clientesFiltrados] = useState<Cliente[]>([]);
-    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [currentPage, setCurrentPage] = useState<number>(() => {
+        const p = new URLSearchParams(window.location.search).get("currentPage");
+        return p ? Number(p) : 1;
+    });
     const [totalPages, setTotalPages] = useState<number>(1);
     const itemsPerPage: number = 8;
     const [allClientes, setAllCliente] = useState<Cliente[]>([]);
@@ -70,6 +80,19 @@ const Clientes: React.FC<clientesProps> = props => {
     const [swipeData, setSwipeData] = useState<{
         [key: number]: { startX: number; startY: number; swipeDirection: string };
     }>({});
+    const isFirstRender = useRef(true);
+
+    const setQueryParam = (key: string, value: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set(key, value);
+        window.history.replaceState({}, "", url.toString());
+    };
+
+    const clearQueryParam = (key: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(key);
+        window.history.replaceState({}, "", url.toString());
+    };
 
     const handleSearchChange = (e: any) => {
         const cambio = e.target.value;
@@ -127,6 +150,13 @@ const Clientes: React.FC<clientesProps> = props => {
 
     const fetchClientes = async () => {
         setText("");
+        clearQueryParam("cliente");
+        clearQueryParam("tipo");
+        if (barraBusqueda) {
+            setQueryParam("busqueda", barraBusqueda);
+        } else {
+            clearQueryParam("busqueda");
+        }
 
         if (barraBusqueda === "") {
             const { count } = await supabase
@@ -167,26 +197,61 @@ const Clientes: React.FC<clientesProps> = props => {
     };
 
     useEffect(() => {
-        fetchClientes2();
+        fetchClientes2(); // solo carga dropdown (id, nombre, apellidos) - liviano
+        filtrarClientesFromUrl(); // carga la lista visible con o sin filtros
     }, []);
 
     const fetchClientes2 = async () => {
         try {
             const { data, error } = await supabase
                 .from("Clientes")
-                .select("*")
+                .select("id, nombre, apellidos")
                 .filter("organizacion", "eq", props.organizacion);
 
             if (error) {
-                SetClientes([]);
                 console.log("Error consiguiendo los datos del cliente", error);
             }
             if (data) {
-                // console.log("Recividos datos de clientes");
-                setAllCliente(data);
+                setAllCliente(data as any);
             }
         } catch (err) {
             console.log("Ocurrió un error al realizar la operacó", err);
+        }
+    };
+
+    const filtrarClientesFromUrl = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const clienteParam = params.get("cliente");
+        const tipoParam = params.get("tipo");
+        const busquedaParam = params.get("busqueda");
+        const pageParam = params.get("currentPage");
+        const page = pageParam ? Number(pageParam) : currentPage;
+
+        try {
+            let query = supabase
+                .from("Clientes")
+                .select("*", { count: "exact" })
+                .filter("organizacion", "eq", props.organizacion)
+                .range((page - 1) * itemsPerPage, page * itemsPerPage);
+
+            if (clienteParam) {
+                query = query.eq("id", Number(clienteParam));
+            } else if (tipoParam) {
+                query = query.eq("tipo_cliente", tipoParam);
+            } else if (busquedaParam) {
+                const search = busquedaParam.trimEnd();
+                query = query.or(`apellidos.ilike.%${search}%,nombre.ilike.%${search}%`);
+            }
+
+            const { data: cliente, count } = await query;
+            const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+            setTotalPages(totalPages);
+
+            if (cliente) {
+                SetClientes(cliente);
+            }
+        } catch (error) {
+            console.log("Error restaurando filtros desde URL", error);
         }
     };
 
@@ -199,12 +264,18 @@ const Clientes: React.FC<clientesProps> = props => {
                 filtroQuery = "id";
                 parametros = clientId;
                 setBarraBusqueda("");
+                clearQueryParam("busqueda");
+                clearQueryParam("tipo");
+                if (clientId) setQueryParam("cliente", clientId.toString());
                 break;
 
             case "Tipo":
                 filtroQuery = "tipo_cliente";
                 parametros = selectedOptions;
                 setBarraBusqueda("");
+                clearQueryParam("busqueda");
+                clearQueryParam("cliente");
+                if (selectedOptions) setQueryParam("tipo", selectedOptions);
                 break;
 
             default:
@@ -238,7 +309,13 @@ const Clientes: React.FC<clientesProps> = props => {
     };
 
     useEffect(() => {
-        filtrarClientes();
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        if (currentPage > 1) setQueryParam("currentPage", currentPage.toString());
+        else clearQueryParam("currentPage");
+        filtrarClientesFromUrl();
     }, [currentPage]);
 
     useEffect(() => {
@@ -432,7 +509,17 @@ const Clientes: React.FC<clientesProps> = props => {
                                         </ModalContentTop>
                                         <ModalContentBottom open={modalVisible}>
                                             <div className="filtroActionButtons">
-                                                <button className="actionButtonsStyles" id="limpiar">
+                                                <button
+                                                    className="actionButtonsStyles"
+                                                    id="limpiar"
+                                                    onClick={() => {
+                                                        setClientId(null);
+                                                        clearQueryParam("cliente");
+                                                        fetchClientes2();
+                                                        setModalVisible(false);
+                                                        setIsRotated(false);
+                                                    }}
+                                                >
                                                     Limpiar
                                                 </button>
                                                 <button
@@ -538,7 +625,17 @@ const Clientes: React.FC<clientesProps> = props => {
                                         </ModalContentTop>
                                         <ModalContentBottom open={modalVisible}>
                                             <div className="filtroActionButtons">
-                                                <button className="actionButtonsStyles" id="limpiar">
+                                                <button
+                                                    className="actionButtonsStyles"
+                                                    id="limpiar"
+                                                    onClick={() => {
+                                                        setSelectedOptions("");
+                                                        clearQueryParam("tipo");
+                                                        fetchClientes2();
+                                                        setModalVisible(false);
+                                                        setIsRotated2(false);
+                                                    }}
+                                                >
                                                     Limpiar
                                                 </button>
                                                 <button

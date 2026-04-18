@@ -18,7 +18,7 @@ interface ResponsableCardProps {
     updaterPass?: boolean;
     onStateChange?: () => void;
     justCreatedResponsable?: boolean;
-    justUpdatedSender?: () => void
+    justUpdatedSender?: () => void;
 }
 
 type Responsables = Tables<"Responsables">;
@@ -29,8 +29,34 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
     padding-bottom: 1rem;
     margin: unset;
     width: 30%;
+    @media (max-width: 900px) {
+        width: 100%;
+        max-height: none;
+        box-sizing: border-box;
+        background: transparent;
+        box-shadow: none;
+        border-radius: 0;
+        padding: 0;
+        .addButton {
+            width: 100%;
+            margin-right: 0;
+            
+        }
+        &.direccionesRegistros {
+            width: 100%;
+            box-sizing: border-box;
+            background:red;
+        }
+        .direccionesRegistrosContainer {
+            overflow-y: visible;
+        }
+    }
 
     .direccionesRegistros {
+    @media (max-width: 900px) {
+        width: 100%;
+        box-sizing: border-box;
+        }
         cursor: pointer;
         color: #838383;
         display: flex;
@@ -66,7 +92,7 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
     }
 
     .direccionesOpen {
-        width: 100;
+        width: 100%;
         background: #0d4e80;
         border-radius: 0.718rem;
         margin-right: 24px;
@@ -75,6 +101,11 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
         font-weight: bolder;
     }
     .addButton {
+    @media (max-width: 900px) {
+        width: 100%;
+        margin-right: 0;
+        box-sizing: border-box;
+    }
         width: 45%;
         align-self: flex-end;
         margin-right: 24px;
@@ -121,9 +152,10 @@ export const ResCardInputs = styled(CardInputs) /*style*/ `
     &.textInputs {
         width: 80%;
     }
+  
 `;
 
-const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
+const DireccionCard: React.FC<ResponsableCardProps> = props => {
     const { id } = useParams();
     const [calle, setCalle] = useState<string>("");
     const [numeExt, setNumExt] = useState<string | null>("");
@@ -275,7 +307,7 @@ const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
             let query = supabase
                 .from("Responsables")
                 .select("*") // Specify the relationship name
-                .eq("cliente_id",id)
+                .eq("cliente_id", id)
                 .order("id");
             const { data, error } = await query;
             if (data && data.length > 0) {
@@ -303,11 +335,9 @@ const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
         console.log(cancelarButton);
     }, [calle, ciudad, zipCode, colonia, estado, numInt, numeExt, piso]);
 
-    useEffect(()=>{
-        
-            fetcResponsableDeDireccion()
-  
-    },[props.justCreatedResponsable])
+    useEffect(() => {
+        fetcResponsableDeDireccion();
+    }, [props.justCreatedResponsable]);
 
     const upsertDireccion = async () => {
         if (direccionFormOpen && !cancelarButton) {
@@ -354,7 +384,10 @@ const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
                 <DirerccionModal
                     direccionId={direccionId}
                     closeModal={handleOpenModa}
-                    fetchNewDir={() =>{FetchDireccion(); props.justUpdatedSender()}}
+                    fetchNewDir={() => {
+                        FetchDireccion();
+                        props.justUpdatedSender();
+                    }}
                     renderStat={deleteRenderStatus}
                 ></DirerccionModal>
             )}
@@ -378,7 +411,15 @@ const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
                 {direccionFormOpen && !direccionesRegistro && (
                     <>
                         <DetallesTitulo>Dirección del cliente</DetallesTitulo>
-                        <div style={{ overflowY: "scroll", display: "flex", flexDirection: "column", gap: "1rem" , height:"20.5rem"}}>
+                        <div
+                            style={{
+                                overflowY: "scroll",
+                                display: "flex",
+                                flexDirection: "column",
+                                gap: "1rem",
+                                height: "20.5rem",
+                            }}
+                        >
                             <InputsContainer style={{ width: "100%" }}>
                                 <DetailsTitle>Calle</DetailsTitle>
                                 <ResCardInputs
@@ -481,7 +522,7 @@ const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
                             <InputsContainer style={{ width: "100%" }}>
                                 <DetailsTitle>Apodo</DetailsTitle>
                                 <ResCardInputs
-                                    onChange={(e) => setApodo(e.target.value)}
+                                    onChange={e => setApodo(e.target.value)}
                                     value={apodo}
                                     id="ApodoInput"
                                     name="apodoDireccion"
@@ -493,12 +534,12 @@ const DireccionCard: React.FC<ResponsableCardProps> = (props) => {
                                 <DetailsTitle>Responsable de dirección</DetailsTitle>
                                 <StyledSelect
                                     value={responsableId}
-                                    onChange={(e) => setResponsableId(parseInt(e.target.value))}
-                                    style={{ width: "80%", boxSizing:"unset" , textAlign:"center"}}
+                                    onChange={e => setResponsableId(parseInt(e.target.value))}
+                                    style={{ width: "80%", boxSizing: "unset", textAlign: "center" }}
                                     width={"80%"}
                                 >
                                     <option value="">Seleccione al responsable de esta dirección</option>
-                                    {responsabledeDireccion?.map((responsable) => (
+                                    {responsabledeDireccion?.map(responsable => (
                                         <option key={responsable?.id} value={responsable?.id}>
                                             {responsable?.nombre}
                                         </option>

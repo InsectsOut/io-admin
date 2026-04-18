@@ -135,10 +135,8 @@ export const ReturnButton = styled.button`
     font-weight: normal;
     position: absolute;
     bottom: 0;
-    right: 12%;
+    right: calc(9.62rem + 1.75rem + 1rem);
     margin-bottom: 0.5rem;
-    margin-right: 1rem;
-    left: 75%;
     width: 9.62rem;
     border-radius: 0.359rem;
     border: 0.075rem solid #0d4e80;
@@ -478,7 +476,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                             direccion_id: direccion_id,
                             folio: servicios[0]?.folio > 0 ? servicios[0]?.folio : folio_perm,
                             precio: precio,
-                            responsable_id:responsable_direccion_id
+                            responsable_id: responsable_direccion_id,
                         },
                     ] as any)
                     .filter("id", "eq", `${servicios[0].id}`);
@@ -520,7 +518,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                             tipo_plaga_id: tipoPlaga,
                             direccion_id: direccion_id,
                             precio: precio,
-                            responsable_id:responsable_direccion_id
+                            responsable_id: responsable_direccion_id,
                         },
                     ] as any)
                     .filter("id", "eq", `${servicios[0].id}`);
@@ -722,12 +720,10 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                 <Titulo>Servicios</Titulo>
                 <div className="cardsSeconddContainer">
                     <div className="CardContainerDiv" style={screenWidth > 900 ? { width: "100%" } : { width: "90%" }}>
-                        <CardContainer
-                        style={screenWidth > 900 ? {marginLeft: "0"} : {marginLeft: "0"}}
-                        >
+                        <CardContainer style={screenWidth > 900 ? { marginLeft: "0" } : { marginLeft: "0" }}>
                             <DetallesTitulo>Detalles del Servicio</DetallesTitulo>
                             {selectTag(infoTab)}
-                            {(infoTab === "general" ) && (
+                            {infoTab === "general" && (
                                 <>
                                     <div className="detailsContainer">
                                         <InputsContainer width={90}>
