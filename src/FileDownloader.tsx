@@ -1,56 +1,66 @@
 import styled from "styled-components";
 import { FaFileDownload } from "react-icons/fa";
-import { MdEditSquare } from "react-icons/md";
 import { FaEdit } from "react-icons/fa";
-import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { MdFileUpload } from "react-icons/md";
-
+import { BsFileEarmarkText } from "react-icons/bs";
+import { RiDeleteBin6Line } from "react-icons/ri";
+import { FaExchangeAlt } from "react-icons/fa";
 import { supabase } from "./utils/ClientSupabase";
+import DelModal from "./DeleteModal";
 
 type DownloaderProps = {
     editable?: boolean;
 };
 
-const DownloaderContainer = styled.div<DownloaderProps> /*style*/ `
-    width: 95%;
-    max-width: 85%;
-    background: ${props => (props.editable ? "rgb(211,211,211)" : "white")};
-    color: black;
+const DownloaderContainer = styled.div<DownloaderProps>`
+    width: 100%;
+    box-sizing: border-box;
+    background: ${props => (props.editable ? "#eef3fc" : "white")};
+    color: #1a1a1a;
     display: flex;
     align-items: center;
-    height: 2rem;
+    min-height: 2.75rem;
     justify-content: space-between;
-    padding-right: 1rem;
-    box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
-    border-radius: 0.25rem;
+    padding-right: 0.75rem;
+    border-radius: 0.4rem;
+    border-left: 4px solid #0d4e80;
+    box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
+    gap: 0.5rem;
+    .fileIconWrapper {
+        display: flex;
+        align-items: center;
+        padding: 0 0.5rem;
+        color: #0d4e80;
+        flex-shrink: 0;
+    }
     .iconsContainer {
         display: flex;
-        width: 5rem;
-        justify-content: flex-end;
-        gap: 1rem;
+        gap: 0.75rem;
         align-items: center;
+        flex-shrink: 0;
     }
-    position: relative;
     .editorInput {
+        flex: 1;
         background: white;
+        border: 1px solid #0d4e80;
         border-radius: 0.25rem;
-        margin-left: 0.5rem;
+        padding: 0.2rem 0.5rem;
         color: black;
-        font-size: 1rem;
+        font-size: 0.95rem;
+        outline: none;
     }
-`;
-const FileName = styled.p /*style*/ `
-    margin: 0;
-    width: 100%;
-    margin-left: 0.5rem;
 `;
 
-const EditorContainer = styled.div /*style*/ `
-    background: red;
-    position: absolute;
-    width: 100%;
+const FileName = styled.p`
+    margin: 0;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.95rem;
 `;
+
 type styledDownloaderProps = {
     file_url: string;
     file_name: string;
@@ -58,102 +68,126 @@ type styledDownloaderProps = {
     triggerFunction: () => void;
     onclick?: () => void;
     openUploader?: () => void;
+    onDelete?: () => void;
+    onReplace?: (file: File) => Promise<void>;
 };
 
 const FileDownloader: React.FC<styledDownloaderProps> = props => {
     const [editorOpen, setEditorOpen] = useState<boolean>(false);
     const [fileNombre, setFileNombre] = useState<string>("");
+    const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+    const replaceInputRef = useRef<HTMLInputElement>(null);
 
     const openEditor = () => {
         setEditorOpen(prev => !prev);
     };
 
     const handleNameChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        let cambio = event.target.value;
-        setFileNombre(cambio);
-    };
-
-    const downloadFile = (url: string) => {
-        // if (!editorOpen) {
-        //     window.open(url, "_blank"); // Opens the URL in a new tab
-        // }
+        setFileNombre(event.target.value);
     };
 
     const editFileName = async () => {
+        if (!fileNombre.trim()) {
+            openEditor();
+            return;
+        }
         try {
-            let query = supabase;
-            const { data, error } = await query
-                .from("Documentos_empleados")
-                .update([
-                    {
-                        nombre: fileNombre,
-                    },
-                ] as any)
+            const { error } = await supabase
+                .from("DocumentosEmpleados")
+                .update({ nombre: fileNombre } as any)
                 .filter("id", "eq", props.file_id)
                 .select();
             openEditor();
             if (error) {
-                window.alert(`Error al actualizar el dato error`);
                 console.log(error);
             }
-
-            //location.reload()
         } catch (err) {
             console.error(err);
         }
     };
+
+    const handleReplaceFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (!file || !props.onReplace) return;
+        await props.onReplace(file);
+        e.target.value = "";
+    };
+
     return (
         <>
+            {deleteConfirmOpen && props.onDelete && (
+                <DelModal
+                    titulo="¿Seguro que quieres eliminar este documento?"
+                    btnText="Eliminar"
+                    nombre={props.file_name}
+                    closeModal={() => setDeleteConfirmOpen(false)}
+                    del={() => {
+                        props.onDelete!();
+                        setDeleteConfirmOpen(false);
+                    }}
+                />
+            )}
+            <input ref={replaceInputRef} type="file" style={{ display: "none" }} onChange={handleReplaceFileChange} />
             <DownloaderContainer editable={editorOpen}>
-                {/* {editorOpen && 
-                <EditorContainer>
-                    <p>Editor de documentos</p>
+                <div className="fileIconWrapper">
+                    <BsFileEarmarkText size={18} />
+                </div>
+                {editorOpen ? (
                     <input
-                    placeholder="Nombre del Archivo"
+                        className="editorInput"
+                        type="text"
+                        placeholder={props.file_name}
+                        autoFocus
+                        onChange={handleNameChange}
+                        onBlur={async () => {
+                            await editFileName();
+                            props.triggerFunction();
+                        }}
+                        onKeyDown={async e => {
+                            if (e.key === "Enter") {
+                                await editFileName();
+                                props.triggerFunction();
+                            }
+                            if (e.key === "Escape") {
+                                openEditor();
+                            }
+                        }}
                     />
-                </EditorContainer>
-            } */}
-                {editorOpen && (
-                    <>
-                        <input
-                            className="editorInput"
-                            type="text"
-                            placeholder={props.file_name}
-                            onChange={handleNameChange}
-                            onBlur={async () => {
-                                try {
-                                    await editFileName();
-                                    props.triggerFunction();
-                                } catch (error) {
-                                    // Handle the error
-                                    console.error("Error:", error);
-                                }
-                            }}
-                        />
-                    </>
+                ) : (
+                    <FileName>{props.file_name}</FileName>
                 )}
-                {!editorOpen && <FileName>{props.file_name}</FileName>}
                 <div className="iconsContainer">
-                    {props.file_name !== "Firma" && (
-                        <FaEdit size={25} style={{ color: "black", cursor: "pointer" }} onClick={openEditor}></FaEdit>
-                    )}
-                    {props.file_name === "Firma" && (
+                    {props.file_name === "Firma" ? (
                         <MdFileUpload
-                            size={25}
-                            style={{ color: "black", cursor: "pointer" }}
+                            size={22}
+                            style={{ color: "#0d4e80", cursor: "pointer" }}
                             onClick={props.openUploader}
-                        ></MdFileUpload>
+                        />
+                    ) : (
+                        <FaEdit size={19} style={{ color: "#0d4e80", cursor: "pointer" }} onClick={openEditor} />
+                    )}
+                    {props.file_name !== "Firma" && props.onReplace && (
+                        <FaExchangeAlt
+                            size={17}
+                            title="Reemplazar archivo"
+                            style={{ color: "#0d4e80", cursor: "pointer" }}
+                            onClick={() => replaceInputRef.current?.click()}
+                        />
                     )}
                     <FaFileDownload
+                        size={19}
+                        style={{ color: "#0d4e80", cursor: "pointer" }}
                         onClick={() => {
-                            Promise.resolve(props.onclick?.()) // Wrap in Promise to allow `.then()`
-                                .then(() => {
-                                    downloadFile(props.file_url);
-                                });
+                            props.onclick?.();
                         }}
-                        size={23}
-                        style={{ color: "black", cursor: "pointer" }}
                     />
+                    {props.file_name !== "Firma" && props.onDelete && (
+                        <RiDeleteBin6Line
+                            size={20}
+                            style={{ color: "#c1716e", cursor: "pointer" }}
+                            onClick={() => setDeleteConfirmOpen(true)}
+                        />
+                    )}
                 </div>
             </DownloaderContainer>
         </>

@@ -54,7 +54,8 @@ export const ButtonComponents = styled.div<StyledButtonProps>`
     }
 `;
 const ClientCardContainer = styled(CardContainer)`
-    height: 30.625rem;
+    height: fit-content;
+    padding-bottom: 2rem;
 `;
 export const BodyContainer = styled.div`
     display: flex;
@@ -136,6 +137,29 @@ export const BodyContainer = styled.div`
         display: flex;
         gap: 0.5rem;
     }
+    @media (max-width: 900px) {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
+        .selectTag {
+            width: 100%;
+        }
+        .infoButtons {
+            flex: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 0.5rem 0;
+        }
+        .licencias {
+            flex-direction: column;
+            align-items: stretch;
+        }
+        .licenciasInputsFormat1,
+        .licenciasInputsFormat2 {
+            width: 100%;
+        }
+    }
 `;
 const NumberInputs = styled(CardInputs)`
     &::-webkit-inner-spin-button,
@@ -216,6 +240,13 @@ const EmpleadosCard = () => {
     const [fileUrl, setFileUrl] = useState<string>("");
     const [firmaSelected, setFirmaSelected] = useState<boolean>(false);
     const [FirmaUrl, setFirmaUrl] = useState<string>("");
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const handleMostrarCapacitaciones = () => {
         setMostrarCapacitaciones(prev => !prev);
@@ -567,6 +598,35 @@ const EmpleadosCard = () => {
         fetchDocs(id);
     };
 
+    const deleteDoc = async (docId: number, docUrl: string) => {
+        try {
+            const { error } = await supabase.from("DocumentosEmpleados").delete().eq("id", docId);
+            if (error) {
+                console.error("Error al eliminar documento:", error);
+                return;
+            }
+            await supabase.storage.from("documentos_empleados").remove([docUrl]);
+            fetchDocs(id);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const replaceDoc = async (docId: number, oldUrl: string, newFile: File) => {
+        try {
+            const { error: uploadError } = await supabase.storage
+                .from("documentos_empleados")
+                .upload(oldUrl, newFile, { upsert: true });
+            if (uploadError) {
+                console.error("Error al reemplazar archivo:", uploadError);
+                return;
+            }
+            fetchDocs(id);
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
     useEffect(() => {
         fetchEmpleados(id);
     }, []);
@@ -644,11 +704,13 @@ const EmpleadosCard = () => {
                     {infoTab === "general" && (
                         <>
                             <InputsContainer>
-                                <div style={{ display: "inline-flex", width: "26.124rem" }}>
-                                    <div style={{ width: "23.456rem" }}>
+                                <div
+                                    style={{ display: "inline-flex", width: screenWidth <= 900 ? "100%" : "26.124rem" }}
+                                >
+                                    <div style={{ width: screenWidth <= 900 ? "100%" : "23.456rem" }}>
                                         <DetailsTitle>Nombre</DetailsTitle>
                                         <CardInputs
-                                            style={{ ...inputWidthStyle, width: "85%" }}
+                                            style={{ width: screenWidth <= 900 ? "100%" : "85%" }}
                                             id="textInputs"
                                             className="textInputs"
                                             onChange={handleNameChange}
@@ -660,7 +722,7 @@ const EmpleadosCard = () => {
                             <InputsContainer>
                                 <DetailsTitle>Teléfono</DetailsTitle>
                                 <NumberInputs
-                                    style={inputWidthStyle}
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     id="textInputs"
                                     className="textInputs"
                                     type="string"
@@ -672,20 +734,21 @@ const EmpleadosCard = () => {
                                 <DetailsTitle>Fecha de nacimiento</DetailsTitle>
                                 <div
                                     style={{
-                                        width: "20.003rem",
+                                        width: screenWidth <= 900 ? "100%" : "20.003rem",
                                         background: "white",
                                         border: " 0.071793rem solid #727272",
                                         borderRadius: "0.215379rem",
+                                        boxSizing: "border-box",
                                     }}
                                 >
                                     <DateInput
                                         wrapperClassName="datepicker"
                                         //@ts-ignore
-                                        wid="20.003rem"
+                                        wid={screenWidth <= 900 ? "100%" : "20.003rem"}
                                         dateFormat="YYYY-MM-dd"
-                                        showYearDropdown // enables a year dropdown
-                                        scrollableYearDropdown // allows scrolling through years
-                                        yearDropdownItemNumber={100} // how many years to show
+                                        showYearDropdown
+                                        scrollableYearDropdown
+                                        yearDropdownItemNumber={100}
                                         onChange={date => {
                                             handleFechaDeNacimeintoChange(date);
                                         }}
@@ -696,7 +759,7 @@ const EmpleadosCard = () => {
                             <InputsContainer>
                                 <DetailsTitle>Puesto</DetailsTitle>
                                 <CardInputs
-                                    style={inputWidthStyle}
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     className="textInputs"
                                     type="text"
                                     value={puesto}
@@ -706,7 +769,7 @@ const EmpleadosCard = () => {
                             <InputsContainer>
                                 <DetailsTitle>Estatus</DetailsTitle>
                                 <select
-                                    style={inputWidthStyle}
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     className="textInputs"
                                     value={empladoStatusString}
                                     onChange={e => {
@@ -722,11 +785,13 @@ const EmpleadosCard = () => {
                     {infoTab === "trabajo" && (
                         <>
                             <InputsContainer>
-                                <div style={{ display: "inline-flex", width: "26.124rem" }}>
-                                    <div style={{ width: "23.456rem" }}>
+                                <div
+                                    style={{ display: "inline-flex", width: screenWidth <= 900 ? "100%" : "26.124rem" }}
+                                >
+                                    <div style={{ width: screenWidth <= 900 ? "100%" : "23.456rem" }}>
                                         <DetailsTitle>INE</DetailsTitle>
                                         <CardInputs
-                                            style={{ ...inputWidthStyle, width: "85%" }}
+                                            style={{ width: screenWidth <= 900 ? "100%" : "85%" }}
                                             id="textInputs"
                                             className="textInputs"
                                             onChange={handleIneChange}
@@ -738,7 +803,7 @@ const EmpleadosCard = () => {
                             <InputsContainer>
                                 <DetailsTitle>CURP</DetailsTitle>
                                 <NumberInputs
-                                    style={inputWidthStyle}
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     id="textInputs"
                                     className="textInputs"
                                     type="text"
@@ -749,7 +814,7 @@ const EmpleadosCard = () => {
                             <InputsContainer>
                                 <DetailsTitle>Alta del IMSS </DetailsTitle>
                                 <CardInputs
-                                    style={inputWidthStyle}
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     className="textInputs"
                                     type="text"
                                     onChange={handleImssChange}
@@ -759,7 +824,7 @@ const EmpleadosCard = () => {
                             <InputsContainer>
                                 <DetailsTitle>Cuenta bancaria </DetailsTitle>
                                 <CardInputs
-                                    style={inputWidthStyle}
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     className="textInputs"
                                     type="number"
                                     onChange={handleNumCuentaChange}
@@ -783,7 +848,7 @@ const EmpleadosCard = () => {
                                         <div className="dateInputFormat">
                                             <div
                                                 style={{
-                                                    width: "45%",
+                                                    width: screenWidth <= 900 ? "100%" : "45%",
                                                     background: "white",
                                                     border: " 0.071793rem solid #727272",
                                                     borderRadius: "0.215379rem",
@@ -791,17 +856,18 @@ const EmpleadosCard = () => {
                                                     margin: 0,
                                                     display: "flex",
                                                     alignItems: "center",
+                                                    boxSizing: "border-box",
                                                 }}
                                             >
                                                 <DateInput
                                                     //@ts-ignore //@ts-ignore
-                                                    wid="6.91rem"
+                                                    wid={screenWidth <= 900 ? "100%" : "6.91rem"}
                                                     height="2.638rem"
                                                     wrapperClassName="datepicker"
                                                     dateFormat="YYYY-MM-dd"
-                                                    showYearDropdown // enables a year dropdown
-                                                    scrollableYearDropdown // allows scrolling through years
-                                                    yearDropdownItemNumber={100} // how many years to show
+                                                    showYearDropdown
+                                                    scrollableYearDropdown
+                                                    yearDropdownItemNumber={100}
                                                     onChange={date => {
                                                         handleVigenciaDeConducirStart(date);
                                                     }}
@@ -810,12 +876,13 @@ const EmpleadosCard = () => {
                                             </div>
                                             <div
                                                 style={{
-                                                    width: "45%",
+                                                    width: screenWidth <= 900 ? "100%" : "45%",
                                                     background: "white",
                                                     border: " 0.071793rem solid #727272",
                                                     borderRadius: "0.215379rem",
                                                     height: "2.638rem",
                                                     margin: 0,
+                                                    boxSizing: "border-box",
                                                 }}
                                             >
                                                 <DateInput
@@ -824,9 +891,9 @@ const EmpleadosCard = () => {
                                                     onChange={date => {
                                                         handleVigenciaDeConducirEnd(date);
                                                     }}
-                                                    showYearDropdown // enables a year dropdown
-                                                    scrollableYearDropdown // allows scrolling through years
-                                                    yearDropdownItemNumber={100} // how many years to show
+                                                    showYearDropdown
+                                                    scrollableYearDropdown
+                                                    yearDropdownItemNumber={100}
                                                     selected={vigencia_conducir_end}
                                                 />
                                             </div>
@@ -872,6 +939,7 @@ const EmpleadosCard = () => {
                                     }}
                                     onValueChange={handleValueChange}
                                     onDocTypeChange={handleDocTypeChange}
+                                    onClose={() => setUploaderOpen(false)}
                                 />
                             )}
                             <FileContainer>
@@ -903,6 +971,8 @@ const EmpleadosCard = () => {
                                                     key={docs.id}
                                                     file_url={fileUrl}
                                                     file_name={docs.nombre as string}
+                                                    onDelete={() => deleteDoc(docs.id, docs.url ?? "")}
+                                                    onReplace={file => replaceDoc(docs.id, docs.url ?? "", file)}
                                                 />
                                             )
                                     )}

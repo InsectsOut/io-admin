@@ -1,26 +1,39 @@
 import styled from "styled-components";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { CardInputs } from "./rehusableComponents/CardInputs";
+import useBodyClick from "./UseBodyClick";
 
 type styledInputButton = {
     background?: string;
 };
 // Container for the file upload section
-const UploadContainer = styled.div /*style*/ `
+const UploadOverlay = styled.div`
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 500;
+    background: rgba(0, 0, 0, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+`;
+
+const UploadContainer = styled.div`
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     border: 2px dashed #727272;
     border-radius: 8px;
-    padding: 20px;
+    padding: 2rem 1.5rem;
     background-color: #fafafa;
-    width: 66%;
+    width: 90%;
+    max-width: 28rem;
     color: #333;
     font-family: Arial, sans-serif;
-    position: absolute;
-    left: 11%;
-    bottom: 5%;
+    position: relative;
 `;
 
 // Title for the section
@@ -63,11 +76,19 @@ const FileLabel = styled.label<styledInputButton> /*style*/ `
 type UploadProps = {
     onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     onValueChange: (value: string) => void;
-    onDocTypeChange: (isCapacitacion: boolean) => void; // New prop for the parent callback
+    onDocTypeChange: (isCapacitacion: boolean) => void;
     firmaSelected: boolean;
+    onClose: () => void;
 };
 
 const FileUpload: React.FC<UploadProps> = props => {
+    const containerRef = useRef<HTMLDivElement>(null);
+    const [listenerActive, setListenerActive] = useState(false);
+    useEffect(() => {
+        const t = setTimeout(() => setListenerActive(true), 50);
+        return () => clearTimeout(t);
+    }, []);
+    useBodyClick(props.onClose, [containerRef], listenerActive);
     const [disabled, setDisabled] = useState<boolean>(true);
     const [nameValue, setNameValue] = useState<string>("");
     const [es_capacitacion, setEs_capacitacion] = useState<boolean>(false);
@@ -106,77 +127,81 @@ const FileUpload: React.FC<UploadProps> = props => {
 
     // Pass the value to the parent component };
     return (
-        <UploadContainer style={{ bottom: props.firmaSelected ? "30%" : "5%" }}>
-            <Title>{!props.firmaSelected ? "Subir archivo" : "Subir Firma"}</Title>
-            {!props.firmaSelected && (
-                <>
-                    <CardInputs
-                        style={{
-                            background: "none",
-                            width: "85%",
-                            color: "black",
-                            marginBottom: "1rem",
-                        }}
-                        type="text"
-                        placeholder="Nombra el archivo antes de subirlo"
-                        value={nameValue}
-                        onChange={handleChange}
-                    ></CardInputs>
-                    <div
-                        style={{
-                            display: "flex",
-                            flexDirection: "column",
-                            background: "none",
-                            color: "black",
-                            width: "85%",
-                        }}
-                    >
-                        <label style={{ marginBottom: "8px" }}>
-                            <CardInputs
-                                type="radio"
-                                value="capacitacion"
-                                name="option"
-                                onChange={handleDocTypeChange}
-                                style={{
-                                    marginRight: "8px",
-                                    width: "16px", // Adjust size here
-                                    height: "16px", // Adjust size here
+        <UploadOverlay>
+            <UploadContainer ref={containerRef}>
+                <Title>{!props.firmaSelected ? "Subir archivo" : "Subir Firma"}</Title>
+                {!props.firmaSelected && (
+                    <>
+                        <CardInputs
+                            style={{
+                                background: "none",
+                                width: "85%",
+                                color: "black",
+                                marginBottom: "1rem",
+                            }}
+                            type="text"
+                            placeholder="Nombra el archivo antes de subirlo"
+                            value={nameValue}
+                            onChange={handleChange}
+                        ></CardInputs>
+                        <div
+                            style={{
+                                display: "flex",
+                                flexDirection: "column",
+                                background: "none",
+                                color: "black",
+                                width: "85%",
+                            }}
+                        >
+                            <label style={{ marginBottom: "8px" }}>
+                                <CardInputs
+                                    type="radio"
+                                    value="capacitacion"
+                                    name="option"
+                                    onChange={handleDocTypeChange}
+                                    style={{
+                                        marginRight: "8px",
+                                        width: "16px", // Adjust size here
+                                        height: "16px", // Adjust size here
 
-                                    // Remove default styling if needed
-                                    borderRadius: "50%", // Make it a circle if it's not by default
-                                    border: "2px solid black", // Border style for the circle
-                                }}
-                            />
-                            Capacitación
-                        </label>
-                        <label>
-                            <CardInputs
-                                type="radio"
-                                value="documento"
-                                name="option"
-                                onChange={handleDocTypeChange}
-                                style={{
-                                    marginRight: "8px",
-                                    width: "16px", // Adjust size here
-                                    height: "16px", // Adjust size here  // Remove default styling if needed
-                                    borderRadius: "50%", // Make it a circle if it's not by default
-                                    border: "2px solid black", // Border style for the circle
-                                }}
-                            />
-                            Documento
-                        </label>
-                    </div>
-                </>
-            )}
+                                        // Remove default styling if needed
+                                        borderRadius: "50%", // Make it a circle if it's not by default
+                                        border: "2px solid black", // Border style for the circle
+                                    }}
+                                />
+                                Capacitación
+                            </label>
+                            <label>
+                                <CardInputs
+                                    type="radio"
+                                    value="documento"
+                                    name="option"
+                                    onChange={handleDocTypeChange}
+                                    style={{
+                                        marginRight: "8px",
+                                        width: "16px", // Adjust size here
+                                        height: "16px", // Adjust size here  // Remove default styling if needed
+                                        borderRadius: "50%", // Make it a circle if it's not by default
+                                        border: "2px solid black", // Border style for the circle
+                                    }}
+                                />
+                                Documento
+                            </label>
+                        </div>
+                    </>
+                )}
 
-            <Message>Selecciona o arrastra un archivo</Message>
-            <FileInput disabled={disabled} onChange={props.onChange} type="file" id="file-upload" />
-            <FileLabel
-            //@ts-ignore
-             background={disabled} htmlFor="file-upload">
-                Elegir archivo
-            </FileLabel>
-        </UploadContainer>
+                <Message>Selecciona o arrastra un archivo</Message>
+                <FileInput disabled={disabled} onChange={props.onChange} type="file" id="file-upload" />
+                <FileLabel
+                    //@ts-ignore
+                    background={disabled}
+                    htmlFor="file-upload"
+                >
+                    Elegir archivo
+                </FileLabel>
+            </UploadContainer>
+        </UploadOverlay>
     );
 };
 

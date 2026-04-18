@@ -1,22 +1,26 @@
 import { useEffect, useState } from "react";
+import styled from "styled-components";
 import { FaUserCog, FaWarehouse, FaLaptop, FaCar, FaPlus } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import SubInventarioList from "./SubInventarioList";
 import SubInventarioDetalle, {
     EntryItem,
     EntryList,
     EntryRow,
     EntryText,
+    EntryTableHeader,
+    EntryHeaderCell,
     FormRow,
     Icono,
     SectionContainer,
     SectionTitle,
     StyledLabel,
+    DeleteBtn,
 } from "./SubInventarioDetalle";
 import { Database, Enums, Tables } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import { supabase } from "./utils/ClientSupabase";
 import {
-    CreateButton,
     FiltrosLeft,
     FiltrosLista,
     FlechaAbajo,
@@ -24,7 +28,13 @@ import {
     ModalContentBottom,
     ModalContentTop,
 } from "./Servicios";
-import { ModalButton, ModalContent, ModalForm, ModalOverlay } from "./rehusableComponents/CreateInventariosModal";
+import {
+    CreateButton,
+    ModalButton,
+    ModalContent,
+    ModalForm,
+    ModalOverlay,
+} from "./rehusableComponents/CreateInventariosModal";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import PaginationComponent from "./PaginationComponent";
@@ -35,6 +45,30 @@ import Switch from "./rehusableComponents/ToggleSwitch";
 import EquipoCreateModal from "./rehusableComponents/EquipoVehiculoCreateModal";
 type TipoEquipoControlOption = Database["public"]["Enums"]["TipoEquipo"];
 
+const ToolbarWrapper = styled.div`
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    gap: 1rem;
+    flex-wrap: wrap;
+`;
+const ToolbarLeft = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    flex: 1;
+    min-width: 0;
+    overflow-x: auto;
+`;
+const ToolbarRight = styled.div`
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    flex-shrink: 0;
+`;
+
 interface ProductosProps {
     organizacion: string;
 }
@@ -42,8 +76,8 @@ interface ProductosProps {
 enum ProductoOption {
     Plaguicidas = "Plaguicidas",
     EquiposDeControl = "Equipos de control",
-    Computo="Computo",
-    Otros="Otros",
+    Computo = "Computo",
+    Otros = "Otros",
 }
 
 const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
@@ -247,28 +281,28 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             console.error("Error fetching productos:", error);
         }
     };
-    const fetchEquipos = async (equipoOption:ProductoOption) => {
-        let filtro = [""]
+    const fetchEquipos = async (equipoOption: ProductoOption) => {
+        let filtro = [""];
         switch (equipoOption) {
             case "Equipos de control":
-            filtro = ["bomba_ulv", "termo_nebulizadora", "estacion_control"];
-            break;
+                filtro = ["bomba_ulv", "termo_nebulizadora", "estacion_control"];
+                break;
             case "Computo":
-            filtro = ["computo"];
-            break;
+                filtro = ["computo"];
+                break;
             case "Otros":
-            filtro = ["otro"];
-            break;
+                filtro = ["otro"];
+                break;
             default:
-            filtro = [""];
+                filtro = [""];
         }
-        
+
         try {
             const { data, error, count } = await supabase
                 .from("Equipos")
                 .select("*", { count: "exact" })
                 .eq("organizacion", organizacion)
-                .in("tipo_equipo",filtro)
+                .in("tipo_equipo", filtro)
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
             const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
             setTotalPages(totalPages);
@@ -429,8 +463,6 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         }
     };
 
-    
-
     const renderProducto = (entry: Productos, index: number) => {
         return (
             <EntryItem key={index}>
@@ -475,17 +507,16 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 >
                     <Icono size={20} />
                 </EntryRow>
-                <button
+                <DeleteBtn
                     onClick={() => {
                         setProductoId(entry.id);
                         setProductoNombre(entry.nombre ?? "sin nombre");
                         setDeleteModalOpen(true);
                     }}
                     id="borrarServicio"
-                    style={{ fontWeight: "bold", fontSize: "105%" }}
                 >
-                    X
-                </button>
+                    ✕
+                </DeleteBtn>
             </EntryItem>
         );
     };
@@ -512,13 +543,13 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                         <strong>Modelo:</strong> {equipo.modelo ?? "—"}
                     </EntryText>
                 </EntryRow>
-            {selectedOption === ProductoOption.EquiposDeControl &&
-                <EntryRow className="entryFifthElement prod5">
-                    <EntryText>
-                        <strong>Estación de control:</strong> {equipo.estacion_de_control ?? "—"}
-                    </EntryText>
-                </EntryRow>
-    }
+                {selectedOption === ProductoOption.EquiposDeControl && (
+                    <EntryRow className="entryFifthElement prod5">
+                        <EntryText>
+                            <strong>Estación de control:</strong> {equipo.estacion_de_control ?? "—"}
+                        </EntryText>
+                    </EntryRow>
+                )}
 
                 {/* Acciones */}
                 <EntryRow
@@ -532,17 +563,16 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     <Icono size={20} />
                 </EntryRow>
 
-                <button
+                <DeleteBtn
                     onClick={() => {
                         setEquipoId(equipo.id);
                         setEquipoNombre(equipo.nombre ?? "sin nombre");
                         setDeleteModalOpen(true);
                     }}
                     id="borrarServicio"
-                    style={{ fontWeight: "bold", fontSize: "105%" }}
                 >
-                    X
-                </button>
+                    ✕
+                </DeleteBtn>
             </EntryItem>
         );
     };
@@ -633,24 +663,8 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 </ModalContainer>
             )}
             <div style={{}}>
-                <div
-                    style={{
-                        width: "100%",
-                        display: "flex",
-                        justifyContent: "right",
-                        marginBottom: "1rem",
-                        alignItems: "center",
-                    }}
-                >
-                    <div
-                        style={{
-                            display: "flex",
-                            alignSelf: "left",
-                            width: "50%",
-                            justifyContent:"left",
-                            gap:"1rem"
-                        }}
-                    >
+                <ToolbarWrapper>
+                    <ToolbarLeft>
                         <Switch
                             optionSender={option => {
                                 setSelectedOption(option);
@@ -676,63 +690,40 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                   : ""}
                             <FlechaAbajo />
                         </FiltrosLista>
-                    </div>
-                    <div
-                        style={{
-                            display: "flex",
-                            width: "50%",
-                            alignItems: "center",
-                            justifyContent: "right",
-                        }}
-                    >
-                        {selectedOption === ProductoOption.Plaguicidas && (
-                            <ModalButton
-                                onClick={() => {
-                                    setIsModalOpen(true);
-                                }}
-                                margin="0"
-                            >
-                                Nuevo Producto
-                            </ModalButton>
-                        )}
-                        {selectedOption === ProductoOption.EquiposDeControl && (
-                            <ModalButton
-                                onClick={() => {
-                                    setIsModalOpenEquipoVehiculo(true);
-                                }}
-                                margin="0"
-                            >
-                                Nuevo Equipo de control
-                            </ModalButton>
-                        )}
-                        {selectedOption === ProductoOption.Computo && (
-                            <ModalButton
-                                onClick={() => {
-                                    setIsModalOpenEquipoVehiculo(true);
-                                }}
-                                margin="0"
-                            >
-                                Nuevo Equipo de computo
-                            </ModalButton>
-                        )}
-                        {selectedOption === ProductoOption.Otros && (
-                            <ModalButton
-                                onClick={() => {
-                                    setIsModalOpenEquipoVehiculo(true);
-                                }}
-                                margin="0"
-                            >
-                                Nuevo Equipo general
-                            </ModalButton>
-                        )}
+                    </ToolbarLeft>
+                    <ToolbarRight>
                         <PaginationComponent
                             currentPage={currentPage}
                             totalPages={totalPages}
                             onPageChange={handlePageChange}
                         ></PaginationComponent>
-                    </div>
-                </div>
+                    </ToolbarRight>
+                </ToolbarWrapper>
             </div>
+            {selectedOption === ProductoOption.Plaguicidas && (
+                <EntryTableHeader>
+                    <EntryHeaderCell className="col-first">Producto</EntryHeaderCell>
+                    <EntryHeaderCell className="col-second">Tipo</EntryHeaderCell>
+                    <EntryHeaderCell className="col-third">Presentación</EntryHeaderCell>
+                    <EntryHeaderCell className="col-fourth">Dósis mín.</EntryHeaderCell>
+                    <EntryHeaderCell className="col-fifth">Dósis máx.</EntryHeaderCell>
+                    <EntryHeaderCell className="col-sixth">Edit</EntryHeaderCell>
+                    <EntryHeaderCell className="col-delete">Acción</EntryHeaderCell>
+                </EntryTableHeader>
+            )}
+            {selectedOption !== ProductoOption.Plaguicidas && (
+                <EntryTableHeader>
+                    <EntryHeaderCell className="col-first">Nombre</EntryHeaderCell>
+                    <EntryHeaderCell className="col-second">Tipo</EntryHeaderCell>
+                    <EntryHeaderCell className="col-third">Marca</EntryHeaderCell>
+                    <EntryHeaderCell className="col-fourth">Modelo</EntryHeaderCell>
+                    {selectedOption === ProductoOption.EquiposDeControl && (
+                        <EntryHeaderCell className="col-fifth">Estación ctrl.</EntryHeaderCell>
+                    )}
+                    <EntryHeaderCell className="col-sixth">Edit</EntryHeaderCell>
+                    <EntryHeaderCell className="col-delete">Acción</EntryHeaderCell>
+                </EntryTableHeader>
+            )}
             <EntryList>
                 {selectedOption === ProductoOption.Plaguicidas &&
                     productos?.map((entry, index) => renderProducto(entry, index))}
@@ -766,7 +757,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
 
             {isModalOpenEquipoVehiculo && (
                 <EquipoCreateModal
-                selectedOption={selectedOption}
+                    selectedOption={selectedOption}
                     equipoId={equipoId ?? null}
                     editable={editableEquipo}
                     fetchEquipos={() => {
@@ -1012,6 +1003,19 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     </ModalContent>
                 </ModalOverlay>
             )}
+            <CreateButton
+                onClick={() => {
+                    if (selectedOption === ProductoOption.Plaguicidas) {
+                        setEditable(false);
+                        setIsModalOpen(true);
+                    } else {
+                        setEditableEquipo(false);
+                        setIsModalOpenEquipoVehiculo(true);
+                    }
+                }}
+            >
+                <FaPlus />
+            </CreateButton>
         </SectionContainer>
     );
 };

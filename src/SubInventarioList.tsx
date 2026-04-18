@@ -40,6 +40,13 @@ const SectionContainer = styled.div`
     padding: 1.5rem;
     margin: 1rem auto;
     font-family: "Open Sans";
+    @media (max-width: 900px) {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        padding: 1rem 0.75rem;
+        box-sizing: border-box;
+    }
 `;
 
 const SectionTitle = styled.h2`
@@ -73,6 +80,13 @@ const EntryItem = styled.li`
         align-items: center;
         gap: 2rem;
     }
+    @media (max-width: 900px) {
+        padding: 1rem 0.75rem;
+        min-height: 3.5rem;
+        .iconsContainer {
+            gap: 1.25rem;
+        }
+    }
 `;
 
 const EntryText = styled.span`
@@ -82,16 +96,17 @@ const EntryText = styled.span`
 const EntryIcon = styled.span`
     font-size: 1.5rem;
     color: rgb(14, 78, 126);
+    @media (max-width: 900px) {
+        font-size: 1.75rem;
+        min-width: 2.75rem;
+        min-height: 2.75rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
 `;
 
-const SubInventarioList: React.FC<SubInventarioListProps> = ({
-    title,
-    icon,
-    onSelect,
-    onAdd,
-    flag,
-    organizacion,
-}) => {
+const SubInventarioList: React.FC<SubInventarioListProps> = ({ title, icon, onSelect, onAdd, flag, organizacion }) => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [tecnicoId, setTecnicoId] = useState<number | null>(null);
     const [empleados, setEmpleados] = useState<Empleados[]>([]);
@@ -100,15 +115,9 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
     const deleteRef = useRef<HTMLButtonElement>(null);
     const [inventarioId, setInventarioId] = useState<number>();
-    const [equipoType, setEquipoType] = useState<Enums<"TipoEquipoOptions">>("Equipos de control")
+    const [equipoType, setEquipoType] = useState<Enums<"TipoEquipoOptions">>("Equipos de control");
 
-    const equipoTypeObject: Enums<"TipoEquipoOptions">[] = [
-        "Equipos de control",
-        "Computo",
-        "Otros",
-    ];
-    
-
+    const equipoTypeObject: Enums<"TipoEquipoOptions">[] = ["Equipos de control", "Computo", "Otros"];
 
     const createInventario = async () => {
         try {
@@ -118,7 +127,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                     organizacion: organizacion,
                     tipo_inventario: flag,
                     inv_nombre: inventarioNombre,
-                    tipo_de_equipo: flag ==="equipo" ? equipoType : null
+                    tipo_de_equipo: flag === "equipo" ? equipoType : null,
                 },
             ] as Inventarios[]);
 
@@ -244,21 +253,22 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                                 onClick={async e => {
                                     e.stopPropagation();
 
-                                  
                                     const url = new URL(window.location.href);
                                     url.searchParams.set("flag", flag);
                                     url.searchParams.set("invNombre", inv.inv_nombre ?? "");
                                     await window.history.replaceState(null, "", url.toString());
 
-                                   
                                     setDeleteModalOpen(true);
 
-                                   
                                     setInventarioId(inv?.id);
-
                                 }}
                                 id="borrarServicio"
-                                style={{ fontWeight: "bold", fontSize: "105%" }}
+                                style={{
+                                    fontWeight: "bold",
+                                    fontSize: "105%",
+                                    minWidth: "2.75rem",
+                                    minHeight: "2.75rem",
+                                }}
                             >
                                 X
                             </button>
@@ -279,7 +289,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                         deleteInventario(inventarioId ?? -1);
                     }}
                     principal={["menu"]}
-                    invNombre={ new URL(window.location.href).searchParams.get("invNombre")! }
+                    invNombre={new URL(window.location.href).searchParams.get("invNombre")!}
                 ></DelModal>
             )}
             <CreateButton onClick={() => setIsModalOpen(true)}>Nuevo Inventario</CreateButton>
@@ -291,7 +301,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                             {flag === "empleado" && (
                                 <StyledSelect value={tecnicoId ? tecnicoId : ""} onChange={handleEmpleadoChange}>
                                     <option value={""} disabled>
-                                           Selecciona un técnico 
+                                        Selecciona un técnico
                                     </option>
                                     {empleados.map(empleado => (
                                         <option key={empleado.id} value={empleado.id}>
@@ -302,7 +312,9 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({
                             )}
                             {flag === "equipo" && (
                                 <StyledSelect
-                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) => setEquipoType(e.target.value as Enums<"TipoEquipoOptions">)}
+                                    onChange={(e: React.ChangeEvent<HTMLSelectElement>) =>
+                                        setEquipoType(e.target.value as Enums<"TipoEquipoOptions">)
+                                    }
                                 >
                                     <option value={""} disabled>
                                         Selecciona el tipo de equipo
