@@ -90,8 +90,12 @@ export const FiltrosContainer = styled.ul /*style*/ `
     justify-content: space-between;
     width: 85%;
     @media (max-width: 900px) {
-        max-width: 900px;
+        max-width: 100%;
+        width: 100%;
         margin-left: 0px;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 0.5rem;
     }
 `;
 export const FiltrosLista = styled.li /*style*/ `
@@ -480,7 +484,8 @@ export const FiltrosLeft = styled.div /*style*/ `
     gap: 0.5rem;
     width: 100%;
     @media (max-width: 900px) {
-        justify-content: space-between;
+        flex-wrap: wrap;
+        justify-content: center;
     }
 `;
 export const FiltrosRight = styled.div /*style*/ `
