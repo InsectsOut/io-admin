@@ -494,6 +494,112 @@ export const FiltrosRight = styled.div /*style*/ `
     }
 `;
 
+export const MobileCard = styled.div`
+    list-style: none;
+    background: white;
+    margin-bottom: 0.5rem;
+    padding: 0.85rem 1rem;
+    border-radius: 0.4rem;
+    border-left: 3px solid #0d4e80;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    color: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    font-family: "Open Sans", sans-serif;
+    transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease;
+    &:hover {
+        background: #f2f7fc;
+        box-shadow: 0 2px 10px rgba(14, 78, 126, 0.1);
+    }
+`;
+
+export const MobileCardTitle = styled.div`
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0 0 0.4rem 0;
+    color: #0d4e80;
+    a,
+    a:visited {
+        color: inherit;
+        text-decoration: none;
+    }
+`;
+
+export const MobileCardField = styled.div`
+    padding: 0.3rem 0;
+    border-bottom: 1px solid #eef2f7;
+    font-size: 0.88rem;
+    color: #2c3e50;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    strong {
+        color: #7a9bb5;
+        text-transform: uppercase;
+        font-size: 0.68rem;
+        letter-spacing: 0.05em;
+        font-weight: 700;
+        white-space: nowrap;
+    }
+`;
+
+export const MobileActionsRow = styled.div`
+    display: flex;
+    width: 100%;
+    gap: 0.6rem;
+    margin-top: 0.75rem;
+    padding-top: 0.6rem;
+    border-top: 1.5px solid #eef2f7;
+    align-items: center;
+`;
+
+export const MobileActionLink = styled(Link)`
+    all: unset;
+    flex: 1;
+    height: 2.5rem;
+    background: #eef5fb;
+    border: 1.5px solid #0d4e80;
+    border-radius: 0.45rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #0d4e80;
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+    &:hover {
+        background: #d9eaf8;
+    }
+`;
+
+export const MobileDeleteBtn = styled.button`
+    flex: 1;
+    height: 2.5rem;
+    background: #e74c3c;
+    border: none;
+    border-radius: 0.45rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: white;
+    cursor: pointer;
+    &:hover {
+        background: #c0392b;
+    }
+    &:active {
+        transform: scale(0.97);
+    }
+`;
+
 type QueryType = "Cliente" | "Tipo" | "fecha" | "estatus" | "" | "tecnico";
 
 interface serviciosProps {
@@ -1584,178 +1690,216 @@ export const Servicios: React.FC<serviciosProps> = props => {
                     </FiltrosRight>
                 )}
                 <ServiciosSelectContainer>
-                    {servicios.map(servicio => (
-                        <ServiciosElement
-                            onTouchStart={(e: any) => handleTouchStart(e, servicio.id)}
-                            onTouchMove={(e: any) => handleTouchMove(e, servicio.id)}
-                            onTouchEnd={() => handleTouchEnd(servicio.id)}
-                            key={servicio.id}
-                        >
-                            <ServiciosElement1
-                                style={{
-                                    textAlign: "left",
-                                    ...(screenWidth <= 900 && {
-                                        justifyContent: "flex-start",
-                                        gap: "0",
-                                        flex: "1",
-                                        width: "auto",
-                                        minWidth: 0,
-                                    }),
-                                }}
-                            >
-                                <div
-                                    style={{
-                                        textAlign: "left",
-                                        padding: "0",
-                                        display: "flex",
-                                        justifyContent: "left",
-                                        width: screenWidth <= 900 ? "auto" : "40%",
-                                        flexShrink: 0,
-                                    }}
-                                >
-                                    <FolioLink
-                                        className="primerSector"
-                                        style={{ maxHeight: "3.351rem", textAlign: "left" }}
-                                        setWidth={"85%"}
-                                        to={`${location.pathname}/${servicio.folio}`}
-                                    >
-                                        {screenWidth > 900 ? "#Folio:" : <strong>#</strong>}{" "}
-                                        {servicio.folio < 0 ? `FT-${servicio.folio * -1}` : servicio.folio}
+                    {servicios.map(servicio =>
+                        screenWidth < 600 ? (
+                            <MobileCard key={servicio.id}>
+                                <MobileCardTitle>
+                                    <FolioLink to={`${location.pathname}/${servicio.folio}`} setWidth="auto">
+                                        #Folio: {servicio.folio < 0 ? `FT-${servicio.folio * -1}` : servicio.folio}
                                     </FolioLink>
-                                </div>
-                                <div
-                                    onTouchStart={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
-                                    onTouchMove={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
-                                    onTouchEnd={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
-                                    style={{
-                                        textAlign: "left",
-                                        padding: "0",
-                                        display: "flex",
-                                        justifyContent: "left",
-                                        width: screenWidth <= 900 ? "42%" : "60%",
-                                        flex: screenWidth <= 900 ? "1" : undefined,
-                                        maxWidth: screenWidth <= 900 ? "20rem" : undefined,
-                                        overflowX: screenWidth <= 900 ? "auto" : "hidden",
-                                        overflowY: "hidden",
-                                    }}
-                                >
+                                </MobileCardTitle>
+                                <MobileCardField>
+                                    <strong>Cliente:</strong>
                                     <FolioLink
-                                        setWidth={"85%"}
                                         to={`/Clientes/${servicio?.Clientes?.id}`}
-                                        style={{
-                                            textAlign: "left",
-                                            padding: "0",
-                                            display: "block",
-                                            justifyContent: "left",
-                                            ...(screenWidth <= 900 && {
-                                                whiteSpace: "nowrap",
-                                            }),
-                                        }}
-                                        className="primerSector"
+                                        setWidth="auto"
+                                        style={{ color: "#2c3e50" }}
                                     >
-                                        {" "}
-                                        {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos}{" "}
+                                        {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos}
                                     </FolioLink>
-                                </div>
-                                {screenWidth > 900 && <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>}
-                                {screenWidth > 900 && (
-                                    <h3 className="primerSector" id="iconSector">
-                                        {" "}
-                                        <FaEdit />
-                                    </h3>
-                                )}
-                            </ServiciosElement1>
-                            <ServiciosElement2
-                                style={
-                                    screenWidth <= 900
-                                        ? {
-                                              width: "6rem",
-                                              flexShrink: 0,
-                                              justifyContent: "center",
-                                              gap: "0.3rem",
-                                              flexDirection: "row",
-                                              alignItems: "center",
-                                              marginRight: "2rems",
-                                          }
-                                        : {}
-                                }
-                            >
-                                <h3 className="primerSector" style={{ fontWeight: "bold" }}>
-                                    {screenWidth > 900 ? "Fecha" : <BsCalendarDate />}{" "}
-                                </h3>
-                                {screenWidth > 900 ? (
-                                    <h3 className="primerSector">{servicio.fecha_servicio}</h3>
-                                ) : (
-                                    <span style={{ fontSize: "1rem", color: "#727272", whiteSpace: "nowrap" }}>
-                                        {servicio.fecha_servicio}
-                                    </span>
-                                )}
-                            </ServiciosElement2>
-                            <ServiciosElement3
-                                style={
-                                    screenWidth <= 900
-                                        ? { width: "6rem", flexShrink: 0, justifyContent: "center", gap: "0.3rem" }
-                                        : {}
-                                }
-                            >
-                                <h3 className="primerSector" style={{ fontWeight: "bold", textAlign: "left" }}>
-                                    {screenWidth > 900 ? " Estatus :" : "Est."}
-                                </h3>
-                                <h3>
+                                </MobileCardField>
+                                <MobileCardField>
+                                    <strong>Fecha:</strong> {servicio.fecha_servicio}
+                                </MobileCardField>
+                                <MobileCardField>
+                                    <strong>Estatus:</strong>
                                     {servicio.realizado ? (
                                         <FaRegCheckCircle color="green" />
                                     ) : (
                                         <MdDoNotDisturb color="red" />
                                     )}
-                                </h3>
-                                {screenWidth > 900 && <h3 className="primerSector"> {servicio.tipo_servicio}</h3>}
-                            </ServiciosElement3>
-                            {screenWidth > 900 && (
-                                <ServiciosElement4 screen_width={screenWidth}>
-                                    <button
-                                        id="borrarServicio"
-                                        // onClick={() =>
-                                        //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
-                                        // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                                    {servicio.tipo_servicio}
+                                </MobileCardField>
+                                <MobileActionsRow>
+                                    <MobileActionLink to={`${location.pathname}/${servicio.folio}`}>
+                                        Ver servicio
+                                    </MobileActionLink>
+                                    <MobileDeleteBtn
                                         onClick={() => {
-                                            deleteServicioHandler(servicio).then(() => {
-                                                setDeleteModalVisible(true);
-                                            });
+                                            deleteServicioHandler(servicio).then(() => setDeleteModalVisible(true));
                                         }}
-                                        style={{ fontWeight: "bold", fontSize: "105%" }}
                                     >
-                                        X
-                                    </button>
-                                </ServiciosElement4>
-                            )}
-                            {screenWidth < 900 && (
-                                <ServiciosElement5
-                                    screen_width={screenWidth}
-                                    swipeActiator={swipedItems[servicio.id]}
-                                    onClick={() => {
-                                        deleteServicioHandler(servicio).then(() => {
-                                            setDeleteModalVisible(true);
-                                        });
+                                        ✕ Eliminar
+                                    </MobileDeleteBtn>
+                                </MobileActionsRow>
+                            </MobileCard>
+                        ) : (
+                            <ServiciosElement
+                                onTouchStart={(e: any) => handleTouchStart(e, servicio.id)}
+                                onTouchMove={(e: any) => handleTouchMove(e, servicio.id)}
+                                onTouchEnd={() => handleTouchEnd(servicio.id)}
+                                key={servicio.id}
+                            >
+                                <ServiciosElement1
+                                    style={{
+                                        textAlign: "left",
+                                        ...(screenWidth <= 900 && {
+                                            justifyContent: "flex-start",
+                                            gap: "0",
+                                            flex: "1",
+                                            width: "auto",
+                                            minWidth: 0,
+                                        }),
                                     }}
                                 >
-                                    <RiDeleteBin6Line />
-                                    <button
-                                        id="borrarServicio"
-                                        // onClick={() =>
-                                        //   {deleteServicio(servicio.id).then(()=>{window.location.reload()}) }}
-                                        // onClick={() => {setDeleteModalVisible(true),setDeletedServicio(servicio)}}
+                                    <div
+                                        style={{
+                                            textAlign: "left",
+                                            padding: "0",
+                                            display: "flex",
+                                            justifyContent: "left",
+                                            width: screenWidth <= 900 ? "auto" : "40%",
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        <FolioLink
+                                            className="primerSector"
+                                            style={{ maxHeight: "3.351rem", textAlign: "left" }}
+                                            setWidth={"85%"}
+                                            to={`${location.pathname}/${servicio.folio}`}
+                                        >
+                                            {screenWidth > 900 ? "#Folio:" : <strong>#</strong>}{" "}
+                                            {servicio.folio < 0 ? `FT-${servicio.folio * -1}` : servicio.folio}
+                                        </FolioLink>
+                                    </div>
+                                    <div
+                                        onTouchStart={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
+                                        onTouchMove={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
+                                        onTouchEnd={screenWidth <= 900 ? e => e.stopPropagation() : undefined}
+                                        style={{
+                                            textAlign: "left",
+                                            padding: "0",
+                                            display: "flex",
+                                            justifyContent: "left",
+                                            width: screenWidth <= 900 ? "42%" : "60%",
+                                            flex: screenWidth <= 900 ? "1" : undefined,
+                                            maxWidth: screenWidth <= 900 ? "20rem" : undefined,
+                                            overflowX: screenWidth <= 900 ? "auto" : "hidden",
+                                            overflowY: "hidden",
+                                        }}
+                                    >
+                                        <FolioLink
+                                            setWidth={"85%"}
+                                            to={`/Clientes/${servicio?.Clientes?.id}`}
+                                            style={{
+                                                textAlign: "left",
+                                                padding: "0",
+                                                display: "block",
+                                                justifyContent: "left",
+                                                ...(screenWidth <= 900 && {
+                                                    whiteSpace: "nowrap",
+                                                }),
+                                            }}
+                                            className="primerSector"
+                                        >
+                                            {" "}
+                                            {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos}{" "}
+                                        </FolioLink>
+                                    </div>
+                                    {screenWidth > 900 && <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>}
+                                    {screenWidth > 900 && (
+                                        <h3 className="primerSector" id="iconSector">
+                                            {" "}
+                                            <FaEdit />
+                                        </h3>
+                                    )}
+                                </ServiciosElement1>
+                                <ServiciosElement2
+                                    style={
+                                        screenWidth <= 900
+                                            ? {
+                                                  width: "6rem",
+                                                  flexShrink: 0,
+                                                  justifyContent: "center",
+                                                  gap: "0.3rem",
+                                                  flexDirection: "row",
+                                                  alignItems: "center",
+                                                  marginRight: "2rems",
+                                              }
+                                            : {}
+                                    }
+                                >
+                                    <h3 className="primerSector" style={{ fontWeight: "bold" }}>
+                                        {screenWidth > 900 ? "Fecha" : <BsCalendarDate />}{" "}
+                                    </h3>
+                                    {screenWidth > 900 ? (
+                                        <h3 className="primerSector">{servicio.fecha_servicio}</h3>
+                                    ) : (
+                                        <span style={{ fontSize: "1rem", color: "#727272", whiteSpace: "nowrap" }}>
+                                            {servicio.fecha_servicio}
+                                        </span>
+                                    )}
+                                </ServiciosElement2>
+                                <ServiciosElement3
+                                    style={
+                                        screenWidth <= 900
+                                            ? { width: "6rem", flexShrink: 0, justifyContent: "center", gap: "0.3rem" }
+                                            : {}
+                                    }
+                                >
+                                    <h3 className="primerSector" style={{ fontWeight: "bold", textAlign: "left" }}>
+                                        {screenWidth > 900 ? " Estatus :" : "Est."}
+                                    </h3>
+                                    <h3>
+                                        {servicio.realizado ? (
+                                            <FaRegCheckCircle color="green" />
+                                        ) : (
+                                            <MdDoNotDisturb color="red" />
+                                        )}
+                                    </h3>
+                                    {screenWidth > 900 && <h3 className="primerSector"> {servicio.tipo_servicio}</h3>}
+                                </ServiciosElement3>
+                                {screenWidth > 900 && (
+                                    <ServiciosElement4 screen_width={screenWidth}>
+                                        <button
+                                            id="borrarServicio"
+                                            onClick={() => {
+                                                deleteServicioHandler(servicio).then(() => {
+                                                    setDeleteModalVisible(true);
+                                                });
+                                            }}
+                                            style={{ fontWeight: "bold", fontSize: "105%" }}
+                                        >
+                                            X
+                                        </button>
+                                    </ServiciosElement4>
+                                )}
+                                {screenWidth < 900 && (
+                                    <ServiciosElement5
+                                        screen_width={screenWidth}
+                                        swipeActiator={swipedItems[servicio.id]}
                                         onClick={() => {
                                             deleteServicioHandler(servicio).then(() => {
                                                 setDeleteModalVisible(true);
                                             });
                                         }}
                                     >
-                                        X
-                                    </button>
-                                </ServiciosElement5>
-                            )}
-                        </ServiciosElement>
-                    ))}
+                                        <RiDeleteBin6Line />
+                                        <button
+                                            id="borrarServicio"
+                                            onClick={() => {
+                                                deleteServicioHandler(servicio).then(() => {
+                                                    setDeleteModalVisible(true);
+                                                });
+                                            }}
+                                        >
+                                            X
+                                        </button>
+                                    </ServiciosElement5>
+                                )}
+                            </ServiciosElement>
+                        )
+                    )}
 
                     {screenWidth < 900 && (
                         <LowerActionButtons className="lowerActionButtons">
