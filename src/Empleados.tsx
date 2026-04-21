@@ -25,6 +25,12 @@ import {
     ServiciosElement5,
     ServiciosSelectContainer,
     Titulo,
+    MobileCard,
+    MobileCardTitle,
+    MobileCardField,
+    MobileActionsRow,
+    MobileActionLink,
+    MobileDeleteBtn,
 } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
@@ -654,98 +660,125 @@ const Empleados: React.FC<empleadosProps> = props => {
                 )}
             </ServiciosContainer>
             <ServiciosSelectContainer>
-                {empleados?.map(empleado => (
-                    <ServiciosElement
-                        key={empleado?.id}
-                        onTouchStart={(e: any) => handleTouchStart(e, empleado.id)}
-                        onTouchMove={(e: any) => handleTouchMove(e, empleado.id)}
-                        onTouchEnd={() => handleTouchEnd(empleado.id)}
-                    >
-                        <ClientesElement1
-                            style={{
-                                minWidth: screenWidth >= 900 ? "15%" : "55%",
-                                maxWidth: screenWidth >= 900 ? "25%" : "60%",
-                            }}
-                        >
-                            <FolioLink
-                                to={`${location.pathname}/${empleado.id}`}
-                                className="primerSector"
-                                style={
-                                    screenWidth < 900
-                                        ? {
-                                              width: "100%",
-                                              maxWidth: "100%",
-                                              overflow: "hidden",
-                                              textOverflow: "ellipsis",
-                                              whiteSpace: "nowrap",
-                                              textAlign: "left",
-                                              paddingLeft: "0.75rem",
-                                          }
-                                        : {}
-                                }
-                            >
-                                {" "}
-                                {empleado.nombre}{" "}
-                            </FolioLink>
-                        </ClientesElement1>
-                        {screenWidth >= 900 && (
-                            <ServiciosElement2 style={{ justifyContent: "left" }}>
-                                <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
-                                    {" "}
-                                    <FaEdit size={20} />
-                                </h3>
-                            </ServiciosElement2>
-                        )}
-                        <ServiciosElement3 style={screenWidth < 900 ? { width: "35%", flexShrink: 0 } : {}}>
-                            <h3
-                                className="primerSector"
-                                style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                            >
-                                {" "}
-                                {screenWidth < 900 ? "" : "Estatus: "}
+                {empleados?.map(empleado =>
+                    screenWidth < 600 ? (
+                        <MobileCard key={empleado?.id}>
+                            <MobileCardTitle>
+                                <FolioLink to={`${location.pathname}/${empleado.id}`} setWidth="auto">
+                                    {empleado.nombre}
+                                </FolioLink>
+                            </MobileCardTitle>
+                            <MobileCardField>
+                                <strong>Estatus:</strong>
                                 {empleado.activo ? "Activo" : "Dado de baja"}
-                            </h3>
-                        </ServiciosElement3>
-                        {screenWidth >= 900 && (
-                            <ServiciosElement3>
+                            </MobileCardField>
+                            {empleado.puesto && (
+                                <MobileCardField>
+                                    <strong>Puesto:</strong> {empleado.puesto}
+                                </MobileCardField>
+                            )}
+                            <MobileActionsRow>
+                                <MobileActionLink to={`${location.pathname}/${empleado.id}`}>
+                                    Ver perfil
+                                </MobileActionLink>
+                                <MobileDeleteBtn onClick={() => deleteClienteHandler(empleado)}>
+                                    ✕ Eliminar
+                                </MobileDeleteBtn>
+                            </MobileActionsRow>
+                        </MobileCard>
+                    ) : (
+                        <ServiciosElement
+                            key={empleado?.id}
+                            onTouchStart={(e: any) => handleTouchStart(e, empleado.id)}
+                            onTouchMove={(e: any) => handleTouchMove(e, empleado.id)}
+                            onTouchEnd={() => handleTouchEnd(empleado.id)}
+                        >
+                            <ClientesElement1
+                                style={{
+                                    minWidth: screenWidth >= 900 ? "15%" : "55%",
+                                    maxWidth: screenWidth >= 900 ? "25%" : "60%",
+                                }}
+                            >
+                                <FolioLink
+                                    to={`${location.pathname}/${empleado.id}`}
+                                    className="primerSector"
+                                    style={
+                                        screenWidth < 900
+                                            ? {
+                                                  width: "100%",
+                                                  maxWidth: "100%",
+                                                  overflow: "hidden",
+                                                  textOverflow: "ellipsis",
+                                                  whiteSpace: "nowrap",
+                                                  textAlign: "left",
+                                                  paddingLeft: "0.75rem",
+                                              }
+                                            : {}
+                                    }
+                                >
+                                    {" "}
+                                    {empleado.nombre}{" "}
+                                </FolioLink>
+                            </ClientesElement1>
+                            {screenWidth >= 900 && (
+                                <ServiciosElement2 style={{ justifyContent: "left" }}>
+                                    <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
+                                        {" "}
+                                        <FaEdit size={20} />
+                                    </h3>
+                                </ServiciosElement2>
+                            )}
+                            <ServiciosElement3 style={screenWidth < 900 ? { width: "35%", flexShrink: 0 } : {}}>
                                 <h3
                                     className="primerSector"
                                     style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
                                 >
                                     {" "}
-                                    Puesto: {empleado?.puesto}
+                                    {screenWidth < 900 ? "" : "Estatus: "}
+                                    {empleado.activo ? "Activo" : "Dado de baja"}
                                 </h3>
                             </ServiciosElement3>
-                        )}
-                        {screenWidth >= 900 && (
-                            <ServiciosElement4
-                                style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
-                                screen_width={screenWidth}
-                            >
-                                <button
-                                    id="borrarServicio"
+                            {screenWidth >= 900 && (
+                                <ServiciosElement3>
+                                    <h3
+                                        className="primerSector"
+                                        style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
+                                    >
+                                        {" "}
+                                        Puesto: {empleado?.puesto}
+                                    </h3>
+                                </ServiciosElement3>
+                            )}
+                            {screenWidth >= 900 && (
+                                <ServiciosElement4
+                                    style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                                    screen_width={screenWidth}
+                                >
+                                    <button
+                                        id="borrarServicio"
+                                        onClick={() => {
+                                            deleteClienteHandler(empleado);
+                                        }}
+                                        style={{ fontWeight: "bold", fontSize: "105%" }}
+                                    >
+                                        X
+                                    </button>
+                                </ServiciosElement4>
+                            )}
+                            {screenWidth < 900 && (
+                                <ServiciosElement5
+                                    screen_width={screenWidth}
+                                    swipeActiator={swipedItems[empleado.id]}
                                     onClick={() => {
                                         deleteClienteHandler(empleado);
                                     }}
-                                    style={{ fontWeight: "bold", fontSize: "105%" }}
                                 >
-                                    X
-                                </button>
-                            </ServiciosElement4>
-                        )}
-                        {screenWidth < 900 && (
-                            <ServiciosElement5
-                                screen_width={screenWidth}
-                                swipeActiator={swipedItems[empleado.id]}
-                                onClick={() => {
-                                    deleteClienteHandler(empleado);
-                                }}
-                            >
-                                <RiDeleteBin6Line />
-                            </ServiciosElement5>
-                        )}
-                    </ServiciosElement>
-                ))}
+                                    <RiDeleteBin6Line />
+                                </ServiciosElement5>
+                            )}
+                        </ServiciosElement>
+                    )
+                )}
                 {screenWidth < 900 && (
                     <LowerActionButtons>
                         <div

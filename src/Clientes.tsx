@@ -25,6 +25,12 @@ import {
     ServiciosElement5,
     ServiciosSelectContainer,
     Titulo,
+    MobileCard,
+    MobileCardTitle,
+    MobileCardField,
+    MobileActionsRow,
+    MobileActionLink,
+    MobileDeleteBtn,
 } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
@@ -689,85 +695,107 @@ const Clientes: React.FC<clientesProps> = props => {
                 )}
             </ServiciosContainer>
             <ServiciosSelectContainer>
-                {clientes.map(cliente => (
-                    <ServiciosElement
-                        key={cliente.id}
-                        onTouchStart={(e: any) => handleTouchStart(e, cliente.id)}
-                        onTouchMove={(e: any) => handleTouchMove(e, cliente.id)}
-                        onTouchEnd={() => handleTouchEnd(cliente.id)}
-                    >
-                        <ClientesElement1
-                            style={{
-                                minWidth: screenWidth >= 900 ? "15%" : "55%",
-                                maxWidth: screenWidth >= 900 ? "25%" : "60%",
-                            }}
+                {clientes.map(cliente =>
+                    screenWidth < 600 ? (
+                        <MobileCard key={cliente.id}>
+                            <MobileCardTitle>
+                                <FolioLink to={`${location.pathname}/${cliente.id}`} setWidth="auto">
+                                    {cliente.nombre} {cliente.apellidos}
+                                </FolioLink>
+                            </MobileCardTitle>
+                            <MobileCardField>
+                                <strong>Tipo:</strong> {cliente.tipo_cliente}
+                            </MobileCardField>
+                            <MobileActionsRow>
+                                <MobileActionLink to={`${location.pathname}/${cliente.id}`}>
+                                    Ver perfil
+                                </MobileActionLink>
+                                <MobileDeleteBtn onClick={() => deleteClienteHandler(cliente)}>
+                                    ✕ Eliminar
+                                </MobileDeleteBtn>
+                            </MobileActionsRow>
+                        </MobileCard>
+                    ) : (
+                        <ServiciosElement
+                            key={cliente.id}
+                            onTouchStart={(e: any) => handleTouchStart(e, cliente.id)}
+                            onTouchMove={(e: any) => handleTouchMove(e, cliente.id)}
+                            onTouchEnd={() => handleTouchEnd(cliente.id)}
                         >
-                            <FolioLink
-                                to={`${location.pathname}/${cliente.id}`}
-                                className="primerSector"
-                                style={
-                                    screenWidth < 900
-                                        ? {
-                                              width: "100%",
-                                              maxWidth: "100%",
-                                              overflow: "hidden",
-                                              textOverflow: "ellipsis",
-                                              whiteSpace: "nowrap",
-                                              textAlign: "left",
-                                              paddingLeft: "0.75rem",
-                                          }
-                                        : {}
-                                }
+                            <ClientesElement1
+                                style={{
+                                    minWidth: screenWidth >= 900 ? "15%" : "55%",
+                                    maxWidth: screenWidth >= 900 ? "25%" : "60%",
+                                }}
                             >
-                                {" "}
-                                {cliente.nombre} {cliente.apellidos}{" "}
-                            </FolioLink>
-                        </ClientesElement1>
-                        {screenWidth >= 900 && (
-                            <ServiciosElement2 style={{ justifyContent: "left" }}>
-                                <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
+                                <FolioLink
+                                    to={`${location.pathname}/${cliente.id}`}
+                                    className="primerSector"
+                                    style={
+                                        screenWidth < 900
+                                            ? {
+                                                  width: "100%",
+                                                  maxWidth: "100%",
+                                                  overflow: "hidden",
+                                                  textOverflow: "ellipsis",
+                                                  whiteSpace: "nowrap",
+                                                  textAlign: "left",
+                                                  paddingLeft: "0.75rem",
+                                              }
+                                            : {}
+                                    }
+                                >
                                     {" "}
-                                    <FaEdit size={20} />
+                                    {cliente.nombre} {cliente.apellidos}{" "}
+                                </FolioLink>
+                            </ClientesElement1>
+                            {screenWidth >= 900 && (
+                                <ServiciosElement2 style={{ justifyContent: "left" }}>
+                                    <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
+                                        {" "}
+                                        <FaEdit size={20} />
+                                    </h3>
+                                </ServiciosElement2>
+                            )}
+                            <ServiciosElement3 style={screenWidth < 900 ? { width: "35%", flexShrink: 0 } : {}}>
+                                <h3
+                                    className="primerSector"
+                                    style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
+                                >
+                                    {screenWidth < 900 ? <FaTag size={14} /> : "Tipo de Cliente :"}{" "}
+                                    {cliente.tipo_cliente}
                                 </h3>
-                            </ServiciosElement2>
-                        )}
-                        <ServiciosElement3 style={screenWidth < 900 ? { width: "35%", flexShrink: 0 } : {}}>
-                            <h3
-                                className="primerSector"
-                                style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
-                            >
-                                {screenWidth < 900 ? <FaTag size={14} /> : "Tipo de Cliente :"} {cliente.tipo_cliente}
-                            </h3>
-                        </ServiciosElement3>
-                        {screenWidth >= 900 && (
-                            <ServiciosElement4
-                                style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
-                                screen_width={screenWidth}
-                            >
-                                <button
-                                    id="borrarServicio"
+                            </ServiciosElement3>
+                            {screenWidth >= 900 && (
+                                <ServiciosElement4
+                                    style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                                    screen_width={screenWidth}
+                                >
+                                    <button
+                                        id="borrarServicio"
+                                        onClick={() => {
+                                            deleteClienteHandler(cliente);
+                                        }}
+                                        style={{ fontWeight: "bold", fontSize: "105%" }}
+                                    >
+                                        X
+                                    </button>
+                                </ServiciosElement4>
+                            )}
+                            {screenWidth < 900 && (
+                                <ServiciosElement5
+                                    screen_width={screenWidth}
+                                    swipeActiator={swipedItems[cliente.id]}
                                     onClick={() => {
                                         deleteClienteHandler(cliente);
                                     }}
-                                    style={{ fontWeight: "bold", fontSize: "105%" }}
                                 >
-                                    X
-                                </button>
-                            </ServiciosElement4>
-                        )}
-                        {screenWidth < 900 && (
-                            <ServiciosElement5
-                                screen_width={screenWidth}
-                                swipeActiator={swipedItems[cliente.id]}
-                                onClick={() => {
-                                    deleteClienteHandler(cliente);
-                                }}
-                            >
-                                <RiDeleteBin6Line />
-                            </ServiciosElement5>
-                        )}
-                    </ServiciosElement>
-                ))}
+                                    <RiDeleteBin6Line />
+                                </ServiciosElement5>
+                            )}
+                        </ServiciosElement>
+                    )
+                )}
                 {screenWidth < 900 && (
                     <LowerActionButtons>
                         <div
