@@ -13,6 +13,7 @@ import { servicioOptions } from "./tipo_servicios";
 import Modal from "./ModalComponents";
 import RegistrosCard from "./RegistrosCard";
 import { supabase } from "./utils/ClientSupabase";
+import { useToast } from "./rehusableComponents/Toast";
 import { IoDownloadOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 import { ButtonComponents } from "./EmpleadosCard";
@@ -272,6 +273,7 @@ const PdfMailButton = styled.div<StyledButtonProps>`
 `;
 
 const ServiciosCard: React.FC<serviciosProps> = props => {
+    const { showToast } = useToast();
     const [readOnly, setReadOnly] = useState(true);
     const [nombreEditable, setNombreEditable] = useState(true);
     const [fechaEditable, setFechaEditable] = useState(true);
@@ -283,6 +285,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
     const [clienteId, setClienteId] = useState<number>(0);
     const [selectedDate, setSelectedDate] = useState<null | Date>(null);
     const [isClicked, setClicked] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [fechaIsClicked, setFechaClicked] = useState(false);
     const [servicioOptoins, SetServicioOptions] = useState("");
     const [tipoServicio, setTipoServicio] = useState<string>("");
@@ -307,6 +310,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
     const [folioModalOpen, setFolioModalOpen] = useState<boolean>(false);
     const [precio, setPrecio] = useState<number | null>(null);
     const [responsable_direccion_id, setResponsableDireccionId] = useState<number | null>(null);
+    const [registrosRefreshKey, setRegistrosRefreshKey] = useState<number>(0);
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null;
     };
@@ -483,14 +487,18 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                 if (error) {
                     console.log("error con estatus realizado");
                     console.error("Error updating data:", error.message);
+                    showToast("Error al guardar los cambios", "error");
+                    return false;
                 } else {
                     if (servicios[0]?.folio > 0) {
-                        location.reload();
-                        return;
+                        showToast("Cambios guardados correctamente", "success");
+                        await FetchServicios();
+                        return true;
                     }
                     console.log("Data updated successfully:", data);
+                    showToast("Cambios guardados correctamente", "success");
                     navigate(`/Servicios/${folio_perm}`);
-                    location.reload();
+                    return true;
                 }
             } catch (err) {
                 console.log("Error making the update request");
@@ -525,9 +533,13 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                 if (error) {
                     console.log("error con estatus no realizado");
                     console.error("Error updating data:", error.message);
+                    showToast("Error al guardar los cambios", "error");
+                    return false;
                 } else {
                     console.log("Data updated successfully:", data);
-                    location.reload();
+                    showToast("Cambios guardados correctamente", "success");
+                    await FetchServicios();
+                    return true;
                 }
             } catch (err) {
                 console.log("Error making the update request");
@@ -593,6 +605,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
 
     const closeModal = () => {
         setModalOpen(false);
+        setRegistrosRefreshKey(prev => prev + 1);
     };
 
     const handleNavigate = () => {
@@ -675,6 +688,18 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                     }}
                 >
                     <p>Registros</p>
+                </div>
+                <div
+                    className="workInfo infoButtons"
+                    onClick={e => {
+                        setInfoTag(e, "consumo");
+                    }}
+                    style={{
+                        background: infoTab === "consumo" ? "white" : "#0D4E80",
+                        color: infoTab === "consumo" ? "#0D4E80" : "white",
+                    }}
+                >
+                    <p>Consumo</p>
                 </div>
                 <div
                     className="workInfo infoButtons"
@@ -935,33 +960,46 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                     </div>
                                 </>
                             )}
-                            {infoTab === "registros" && (
-                                <div style={{ position: "relative" }}>
-                                    <ButtonComponents
-                                        background="white"
-                                        height="3rem"
-                                        color="#0D4E80"
-                                        justify="center"
-                                        gap={1}
-                                        onClick={() => {
-                                            hanldeSetData(null).then(() => {
-                                                setModalOpen(true);
-                                                setAddButtonClicked(true);
-                                            });
-                                        }}
-                                    >
-                                        <p>Añadir registro</p> <IoIosAddCircleOutline size={25} />
-                                    </ButtonComponents>
-
-                                    <RegistrosCard
-                                        sendDataParent={handleChildData}
-                                        openModal={() => {
+                            <div style={{ display: infoTab === "registros" ? "block" : "none", position: "relative" }}>
+                                <ButtonComponents
+                                    background="white"
+                                    height="3rem"
+                                    color={servicios[0]?.was_used ? "#aaa" : "#0D4E80"}
+                                    justify="center"
+                                    gap={1}
+                                    onClick={() => {
+                                        if (servicios[0]?.was_used) return;
+                                        hanldeSetData(null).then(() => {
                                             setModalOpen(true);
-                                        }}
-                                        servicioId={servicios[0]?.id}
-                                    ></RegistrosCard>
-                                </div>
-                            )}
+                                            setAddButtonClicked(true);
+                                        });
+                                    }}
+                                    style={{
+                                        cursor: servicios[0]?.was_used ? "not-allowed" : "pointer",
+                                        opacity: servicios[0]?.was_used ? 0.5 : 1,
+                                    }}
+                                >
+                                    <p>Añadir registro</p> <IoIosAddCircleOutline size={25} />
+                                </ButtonComponents>
+
+                                <RegistrosCard
+                                    sendDataParent={handleChildData}
+                                    openModal={() => {
+                                        setModalOpen(true);
+                                    }}
+                                    servicioId={servicios[0]?.id}
+                                    refreshKey={registrosRefreshKey}
+                                ></RegistrosCard>
+                            </div>
+                            <div style={{ display: infoTab === "consumo" ? "block" : "none", position: "relative" }}>
+                                <PlaguicidasCard
+                                    openModal={() => {
+                                        setModalOpen(true);
+                                    }}
+                                    servicioId={servicios[0]?.id}
+                                    title={"Plaguicidas Utilizados"}
+                                ></PlaguicidasCard>
+                            </div>
                             {infoTab === "constancia" && (
                                 <div>
                                     <PdfMailButton position="relative">
@@ -985,12 +1023,18 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
 
                         <div className="responsableCard">
                             <div style={{ display: "flex", flexDirection: "column", width: "70%" }}>
-                                <AddResponsableCard>
+                                <AddResponsableCard
+                                    style={{
+                                        opacity: servicios[0]?.was_used ? 0.5 : 1,
+                                        cursor: servicios[0]?.was_used ? "not-allowed" : "pointer",
+                                    }}
+                                >
                                     <div>
                                         <IoIosAddCircleOutline
                                             size={30}
-                                            style={{ color: "black" }}
+                                            style={{ color: servicios[0]?.was_used ? "#aaa" : "black" }}
                                             onClick={() => {
+                                                if (servicios[0]?.was_used) return;
                                                 setModalOpen(true);
                                                 setAddButtonClicked(true);
                                             }}
@@ -1004,6 +1048,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                         setModalOpen(true);
                                     }}
                                     servicioId={servicios[0]?.id}
+                                    refreshKey={registrosRefreshKey}
                                 ></RegistrosCard>
 
                                 <PlaguicidasCard
@@ -1079,16 +1124,23 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
             </ServiciosCardContainer>
             <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
             <StyledButton
-                disabled={!isClicked}
+                disabled={!isClicked || isSaving}
                 clicado={isClicked}
-                onClick={() => {
+                onClick={async () => {
+                    if (isSaving) return;
+                    setIsSaving(true);
                     toggleNombreEditable();
-                    updateServicios(confirmation, statusFlag, props.organizacion ?? "", estatus ?? false).then(
-                        () => {}
+                    const success = await updateServicios(
+                        confirmation,
+                        statusFlag,
+                        props.organizacion ?? "",
+                        estatus ?? false
                     );
+                    if (success) setClicked(false);
+                    setIsSaving(false);
                 }}
             >
-                Guardar Cambios
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
             </StyledButton>
         </>
     );

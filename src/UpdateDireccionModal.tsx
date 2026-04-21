@@ -9,6 +9,7 @@ import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { ResCardInputs } from "./DireccionCard";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
+import { useToast } from "./rehusableComponents/Toast";
 type Direccion = Tables<"Direcciones">;
 
 const ModalOverlay = styled(RegistroModal) /*style*/ `
@@ -141,6 +142,7 @@ interface UpdateDirProps {
 }
 const DirerccionModal: React.FC<UpdateDirProps> = props => {
     const { id } = useParams();
+    const { showToast } = useToast();
     const [calle, setCalle] = useState<string>("");
     const [numeExt, setNumExt] = useState<string | null>("");
     const [numInt, setNumInt] = useState<string | null>("");
@@ -251,8 +253,10 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                 .select();
             if (error) {
                 console.error("Error inserting data:", error.message);
+                showToast("Error al actualizar la dirección: " + error.message, "error");
             } else {
                 console.log("Data inserted successfully:", data);
+                showToast("Dirección actualizada correctamente", "success");
                 FetchDireccion();
             }
         } catch (err) {

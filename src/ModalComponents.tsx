@@ -7,6 +7,7 @@ import { supabase } from "./utils/ClientSupabase";
 import { aplicacionOptions } from "./tipo_servicios";
 import { useParams } from "react-router-dom";
 import { Database, Tables } from "./supabase/Database";
+import { useToast } from "./rehusableComponents/Toast";
 
 export const RegistroModal = styled.div`
     position: fixed;
@@ -142,6 +143,7 @@ enum TipoProductoEnum {
 }
 
 const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnClicked, organizacion }) => {
+    const { showToast } = useToast();
     const [tipoPlaga, setTipoPlaga] = useState<number | null>(null);
     const [producto, setProducto] = useState<Productos[]>();
     const [productoId, setProductoId] = useState<number>(0);
@@ -185,7 +187,6 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
     //     }
     // };
 
- 
     const handleTipoProductoChange = (tipo: TipoProductoEnum) => {
         setTipoProducto(tipo);
         if (tipo) {
@@ -306,9 +307,11 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     .select("*");
                 if (error) {
                     console.error("Error updating data:", error.message);
+                    showToast("Error al actualizar el registro: " + error.message, "error");
                 } else {
                     console.log("Data updated successfully:", data);
-                    window.location.reload();
+                    showToast("Registro actualizado correctamente", "success");
+                    closeModal?.();
                 }
             } else {
                 const { data, error } = await supabase
@@ -344,7 +347,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                     });
                 } else {
                     console.log("Data inserted successfully:", data);
-                    window.location.reload();
+                    showToast("Registro añadido correctamente", "success");
+                    closeModal?.();
                 }
             }
         } catch (err) {
@@ -397,8 +401,8 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                 console.log("productos", data[0].Productos);
 
                 setInventarioProductos(data);
-                if (!data[0].id){
-                    setInventarioProductoID(null)
+                if (!data[0].id) {
+                    setInventarioProductoID(null);
                 }
                 setProducto([]);
                 setProducto(data.map(item => item.Productos).filter((prod): prod is Productos => prod !== null));
@@ -522,17 +526,19 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                         }}
                                         onChange={e => {
                                             const selectedEntryId = +e.target.value;
-                                            
 
                                             if (selectedEntryId) {
                                                 setInventarioProductoID(selectedEntryId);
-                                                const selectedEntryProductId = inventarioProductos?.find(entry => entry.id === selectedEntryId)?.producto_id;
-                                                const selectedProduct = producto?.find(prod => prod.id === selectedEntryProductId);
-                                                setProductoId(selectedProduct?.id ?? 0);
-                                                const tipoProducto = selectedProduct?.tipo_de_producto as TipoProductoEnum;
-                                                handleTipoProductoChange(
-                                                    tipoProducto
+                                                const selectedEntryProductId = inventarioProductos?.find(
+                                                    entry => entry.id === selectedEntryId
+                                                )?.producto_id;
+                                                const selectedProduct = producto?.find(
+                                                    prod => prod.id === selectedEntryProductId
                                                 );
+                                                setProductoId(selectedProduct?.id ?? 0);
+                                                const tipoProducto =
+                                                    selectedProduct?.tipo_de_producto as TipoProductoEnum;
+                                                handleTipoProductoChange(tipoProducto);
                                             }
                                         }}
                                         value={inventarioProductoID ?? ""}
@@ -541,10 +547,7 @@ const Modal: React.FC<cardProps> = ({ closeModal, plagas, registroApId, addBtnCl
                                         {inventarioProductos
                                             ?.filter(product => product.producto_id !== null)
                                             .map(product => (
-                                                <option
-                                                    key={product.id}
-                                                    value={product.id as number}
-                                                >
+                                                <option key={product.id} value={product.id as number}>
                                                     {product.Productos?.nombre}{" "}
                                                     {product?.Lote ? `- Lote: ${product.Lote}` : ""}{" "}
                                                 </option>

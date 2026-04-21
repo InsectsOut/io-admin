@@ -10,6 +10,7 @@ import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import DirerccionModal from "./UpdateDireccionModal";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
+import { useToast } from "./rehusableComponents/Toast";
 type Cliente = Tables<"Clientes">;
 type Direccion = Tables<"Direcciones">;
 
@@ -40,12 +41,11 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
         .addButton {
             width: 100%;
             margin-right: 0;
-            
         }
         &.direccionesRegistros {
             width: 100%;
             box-sizing: border-box;
-            background:red;
+            background: red;
         }
         .direccionesRegistrosContainer {
             overflow-y: visible;
@@ -53,9 +53,9 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
     }
 
     .direccionesRegistros {
-    @media (max-width: 900px) {
-        width: 100%;
-        box-sizing: border-box;
+        @media (max-width: 900px) {
+            width: 100%;
+            box-sizing: border-box;
         }
         cursor: pointer;
         color: #838383;
@@ -101,11 +101,11 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
         font-weight: bolder;
     }
     .addButton {
-    @media (max-width: 900px) {
-        width: 100%;
-        margin-right: 0;
-        box-sizing: border-box;
-    }
+        @media (max-width: 900px) {
+            width: 100%;
+            margin-right: 0;
+            box-sizing: border-box;
+        }
         width: 45%;
         align-self: flex-end;
         margin-right: 24px;
@@ -152,11 +152,11 @@ export const ResCardInputs = styled(CardInputs) /*style*/ `
     &.textInputs {
         width: 80%;
     }
-  
 `;
 
 const DireccionCard: React.FC<ResponsableCardProps> = props => {
     const { id } = useParams();
+    const { showToast } = useToast();
     const [calle, setCalle] = useState<string>("");
     const [numeExt, setNumExt] = useState<string | null>("");
     const [numInt, setNumInt] = useState<string | null>("");
@@ -360,8 +360,10 @@ const DireccionCard: React.FC<ResponsableCardProps> = props => {
                 ] as any);
                 if (error) {
                     console.error("Error inserting data:", error.message);
+                    showToast("Error al crear la dirección: " + error.message, "error");
                 } else {
                     console.log("Data inserted successfully:", data);
+                    showToast("Dirección creada correctamente", "success");
                     FetchDireccion();
                 }
             } catch (err) {

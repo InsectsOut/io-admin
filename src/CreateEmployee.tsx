@@ -4,6 +4,7 @@ import { Titulo } from "./Servicios";
 import { useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "./rehusableComponents/Toast";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { supabase } from "./utils/ClientSupabase";
 import { DateInput } from "./CreateServiceForm";
@@ -187,9 +188,13 @@ const CreateEmployee: React.FC<createEmployeeProps> = props => {
     const [nombre, setNombre] = useState<string>("");
     const [apellido, setApellido] = useState<string>("");
     const navigate = useNavigate();
+    const { showToast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
     const [fecha_nacimiento, setFechaDeNacimiento] = useState<Date | null>();
 
     const addEmpleado = async () => {
+        if (isLoading) return;
+        setIsLoading(true);
         try {
             const { data, error } = await supabase
                 .from("Empleados")
@@ -206,9 +211,11 @@ const CreateEmployee: React.FC<createEmployeeProps> = props => {
 
             if (error) {
                 console.error("Error inserting data:", error.message);
+                showToast("Error al crear el empleado: " + error.message, "error");
+                setIsLoading(false);
             } else {
                 console.log("Data inserted successfully:", data);
-
+                showToast("Empleado creado correctamente", "success");
                 let empleadoId = data?.[0]?.id;
                 if (empleadoId) {
                     navigate(`/empleados/${empleadoId}`);
@@ -218,6 +225,7 @@ const CreateEmployee: React.FC<createEmployeeProps> = props => {
             }
         } catch (err) {
             console.error("Error adding servicio:", err);
+            setIsLoading(false);
         }
     };
 
@@ -347,8 +355,8 @@ const CreateEmployee: React.FC<createEmployeeProps> = props => {
                             marginBottom: "1rem",
                         }}
                     >
-                        <SearchButtonLink type="button" onClick={addEmpleado}>
-                            Registrar
+                        <SearchButtonLink type="button" onClick={addEmpleado} disabled={isLoading}>
+                            {isLoading ? "Registrando..." : "Registrar"}
                         </SearchButtonLink>
                     </div>
                 </CreateServicioForm>

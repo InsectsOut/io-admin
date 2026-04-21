@@ -16,6 +16,7 @@ import { supabase } from "./utils/ClientSupabase";
 import FileUpload from "./Uploader";
 import FileDownloader from "./FileDownloader";
 import { DateInput } from "./CreateServiceForm";
+import { useToast } from "./rehusableComponents/Toast";
 
 type Empleado = Tables<"Empleados">;
 type DocsEmpleado = Tables<"DocumentosEmpleados">;
@@ -216,6 +217,8 @@ const EmpleadosCard = () => {
     const { id } = useParams<string>();
     const [, setResponsable] = useState<string>("");
     const [isClicked, setClicked] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState(false);
+    const { showToast } = useToast();
     const [responsableExists] = useState<boolean | null>(false);
     const [updater, setUpdater] = useState(false);
     const [infoTab, setInfoTab] = useState<string>("general");
@@ -383,7 +386,6 @@ const EmpleadosCard = () => {
                 try {
                     const query = supabase.from("DocumentosEmpleados");
                     const { error } = await query
-
                         .insert([
                             {
                                 nombre: file_title,
@@ -392,11 +394,14 @@ const EmpleadosCard = () => {
                                 es_capacitacion: capacitacion,
                             },
                         ] as any)
-
                         .select();
 
                     if (error) {
                         console.log(error);
+                        showToast("Error al subir el documento: " + error.message, "error");
+                    } else {
+                        showToast("Documento subido correctamente", "success");
+                        fetchEmpleados(id);
                     }
                     setUploaderOpen(false);
                 } catch (err) {
@@ -410,7 +415,6 @@ const EmpleadosCard = () => {
                 try {
                     const query = supabase.from("Empleados");
                     const { error } = await query
-
                         .update([
                             {
                                 Firma: data?.path,
@@ -421,10 +425,12 @@ const EmpleadosCard = () => {
 
                     if (error) {
                         console.log(error);
+                        showToast("Error al subir la firma: " + error.message, "error");
+                    } else {
+                        showToast("Firma actualizada correctamente", "success");
                     }
                     setUploaderOpen(false);
                     fetchEmpleados(id);
-                    //   await setFirmaSelected(false)
                 } catch (err) {
                     console.log(err);
                 }
@@ -514,13 +520,16 @@ const EmpleadosCard = () => {
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
                 .select();
-            location.reload();
 
             if (error) {
                 console.log(error);
+                showToast("Error al guardar el empleado: " + error.message, "error");
+                return false;
             }
+            return true;
         } catch (err) {
             console.error("Error trying to run ", err);
+            return false;
         }
     };
     const updateWorkEmployeeData = async () => {
@@ -541,26 +550,29 @@ const EmpleadosCard = () => {
                 ] as Empleado | any)
                 .filter("id", "eq", `${id}`)
                 .select();
-            location.reload();
 
             if (error) {
                 console.log(error);
+                showToast("Error al guardar el empleado: " + error.message, "error");
+                return false;
             }
+            return true;
         } catch (err) {
             console.error("Error trying to run ", err);
+            return false;
         }
     };
 
     const updaterFunction = async () => {
-        updateGeneralEmployeeData();
         if (infoTab === "general") {
             console.log("geni");
-            updateGeneralEmployeeData();
+            return await updateGeneralEmployeeData();
         }
         if (infoTab === "trabajo") {
             console.log("siendi");
-            updateWorkEmployeeData();
+            return await updateWorkEmployeeData();
         }
+        return false;
     };
 
     const handleFechaDeNacimeintoChange = (date: Date | null) => {
@@ -990,20 +1002,23 @@ const EmpleadosCard = () => {
             </BodyContainer>
             <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
             <StyledButton
-                disabled={!isClicked}
+                disabled={!isClicked || isSaving}
                 clicado={isClicked}
-                onClick={() => {
+                onClick={async () => {
+                    if (isSaving) return;
+                    setIsSaving(true);
                     updateOrInsert();
-                    updaterFunction()
-                        .then(() => {
-                            location.reload();
-                        })
-                        .catch(error => {
-                            console.error("Error during update:", error);
-                        });
+                    const success = await updaterFunction();
+                    if (success) {
+                        showToast("Empleado guardado correctamente", "success");
+                        fetchEmpleados(id);
+                        setClicked(false);
+                        setUpdater(false);
+                    }
+                    setIsSaving(false);
                 }}
             >
-                Guardar Cambios
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
             </StyledButton>
         </>
     );

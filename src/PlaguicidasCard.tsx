@@ -7,6 +7,7 @@ import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import ConfirmModal from "./rehusableComponents/ConfirmationModal";
+import { useToast } from "./rehusableComponents/Toast";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 type RegistroConProducto = Tables<"RegistroAplicacion"> & {
@@ -82,14 +83,34 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
     }
 
     @media (max-width: 900px) {
+        transition: none;
+        width: 100%;
+        height: auto;
+        max-height: none;
+
         .topContent {
             display: none;
         }
         .bottomContent {
+            transition: none;
             overflow-x: hidden;
+            overflow-y: visible;
+            height: auto;
+            max-height: none;
+
+            ul {
+                height: auto;
+            }
+            li {
+                width: 100%;
+                font-size: 100%;
+            }
         }
-        width: 100%;
-        height: 53vh;
+        .listElement {
+            transition: none;
+            font-size: 100%;
+            color: black;
+        }
     }
 
     .deleteButton {
@@ -130,6 +151,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
     const [cantidades, setCantidades] = useState<Record<number, number>>({});
     const navigate = useNavigate();
     const { folio } = useParams();
+    const { showToast } = useToast();
     const [enableConfirm, setEnableConfirm] = useState<boolean>(false);
     const [disableInputs, setDisableInputs] = useState<boolean>(false);
 
@@ -208,7 +230,6 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                 return false;
             }
             if (data) {
-
                 return data.was_used;
             }
         } catch (err) {
@@ -343,7 +364,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
             const { data, error } = await supabase.from("Movimientos").insert({
                 item_type: "producto",
                 inventario_id: registro.inventario_id ?? 0,
-                quantity: registro.cantidad_usada ?? 0,
+                quantity: cantidad,
                 type: "servicio",
                 servicio_id: props.servicioId ?? 0,
                 item_id: registro.inventario_producto_id ?? 0,
@@ -397,28 +418,22 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                 return;
             }
 
-            if (registro.cantidad_usada === undefined) {
-                window.alert(`No se encontró la cantidad usada para el registro ID ${registro.id}`);
-                return;
-            }
-
-            if (registro.cantidad_usada === 0) {
-                window.alert("La cantidad usada para este registro es 0, no se restará del inventario.");
-                return;
-            }
-
             if (!unidadDeGasto) {
                 window.alert("No se pudo obtener la unidad de gasto para este producto. No se restará del inventario.");
                 return;
             }
 
             switch (true) {
+                case unidadDeGasto === "ml" && presentacionUnidad === "ml":
+                    cantidadGastada = cantidad;
+                    break;
+
                 case unidadDeGasto === "ml" && presentacionUnidad === "L":
                     cantidadGastada = cantidad / 1000;
-                    window.alert(
-                        `La cantidad gastada se ha convertido de ${cantidad} ml a ${cantidadGastada} L para restar del inventario.`
-                    );
+                    break;
 
+                case unidadDeGasto === "g" && presentacionUnidad === "g":
+                    cantidadGastada = cantidad;
                     break;
 
                 case unidadDeGasto === "g" && presentacionUnidad === "kg":
@@ -430,6 +445,9 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                     break;
 
                 default:
+                    console.warn(
+                        `Combinación no soportada: gasto=${unidadDeGasto}, presentación=${presentacionUnidad}`
+                    );
                     cantidadGastada = cantidad;
             }
 
@@ -606,25 +624,39 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                             onConfirm={async () => {
                                 setOpen(false);
                                 const runner = async () => {
-                                    for (const registro of registros) {
+                                    const registrosFiltrados = [...registros]
+                                        .sort((a, b) => a.id - b.id)
+                                        .filter(
+                                            (data, index, self) =>
+                                                index ===
+                                                self.findIndex(
+                                                    item =>
+                                                        item.Inventario_productos?.[0]?.Lote ===
+                                                        data.Inventario_productos?.[0]?.Lote
+                                                )
+                                        );
+                                    for (const registro of registrosFiltrados) {
                                         const success = await restInventarioProductos(
                                             registro,
                                             cantidades[registro.id] ?? 0,
                                             registro.Inventario_productos?.[0]?.stock ?? 0
                                         );
-                                        if (!success) return;
+                                        if (!success) {
+                                            showToast("Error al confirmar el consumo", "error");
+                                            return;
+                                        }
                                     }
                                     await handleConfirmConsumption();
                                     await updateServicioWasUsed(props.servicioId ?? 0);
                                     await FetchWasUsedFromServicio().then(wasUsed => {
                                         if (wasUsed === true) {
                                             setEnableConfirm(false);
-                                            setDisableInputs(true
-                                            );
+                                            setDisableInputs(true);
                                         }
                                     });
+                                    showToast("Consumo confirmado correctamente", "success");
                                 };
-                                runner();
+                                await runner();
                             }}
                             onCancel={() => setOpen(false)}
                             btnConfirmText="Aceptar"

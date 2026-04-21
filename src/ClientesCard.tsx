@@ -16,6 +16,7 @@ import ResponsableCard from "./ResponsableCard";
 import { StyledButton } from "./ServiciosCard";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import DireccionCard from "./DireccionCard";
+import { useToast } from "./rehusableComponents/Toast";
 
 type Cliente = Tables<"Clientes">;
 interface serviciosProps {
@@ -33,6 +34,18 @@ const ModalOverlay = styled.div`
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    padding: 1rem;
+    box-sizing: border-box;
+`;
+
+const ModalContent = styled.div`
+    background: #fff;
+    border-radius: 0.75rem;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 `;
 
 const ClientCardContainer = styled(CardContainer) /*style*/ `
@@ -100,6 +113,7 @@ const TextoAddCard = styled.h1 /*style*/ `
 `;
 
 const ClientesCard: React.FC<serviciosProps> = props => {
+    const { showToast } = useToast();
     const [cliente, setCliente] = useState<Cliente[] | null>([]);
     const [nombre, setNombre] = useState<string>("");
     const [telefono, setTelefono] = useState<string>("");
@@ -109,6 +123,7 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     const [tipoCliente, setTipoCliente] = useState<string>("");
     const [responsable, setResponsable] = useState<string>("");
     const [isClicked, setClicked] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [responsableExists, setResponsableExists] = useState<boolean | null>(false);
     const [, setResponsableId] = useState<number | null>();
     const [updater, setUpdater] = useState(false);
@@ -166,7 +181,7 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     };
 
     const handleChildStateChange = () => {
-        setClicked(true);
+        if (!showModal) setClicked(true);
     };
 
     const handleChildValue = (nuevoValor: string) => {
@@ -267,12 +282,16 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                 .filter("id", "eq", `${id}`);
             if (error) {
                 console.error("Error updating data:", error.message);
+                showToast("Error al guardar el cliente: " + error.message, "error");
+                return false;
             } else {
                 console.log("Data updated successfully:", data);
             }
             updateOrInsert();
+            return true;
         } catch (err) {
             console.log("Error making the update request");
+            return false;
         }
     };
 
@@ -322,14 +341,16 @@ const ClientesCard: React.FC<serviciosProps> = props => {
             {showModal && (
                 <>
                     <ModalOverlay>
-                        <ResponsableCard
-                            updaterPass={updater}
-                            onValueChange={handleChildValue}
-                            onStateChange={handleChildStateChange}
-                            newResponsableFlag={newResponsableFlag}
-                            modalCloser={() => setShowModal(false)}
-                            justCreated={() => justCreatedHandler()}
-                        ></ResponsableCard>
+                        <ModalContent>
+                            <ResponsableCard
+                                updaterPass={updater}
+                                onValueChange={handleChildValue}
+                                onStateChange={handleChildStateChange}
+                                newResponsableFlag={newResponsableFlag}
+                                modalCloser={() => setShowModal(false)}
+                                justCreated={() => justCreatedHandler()}
+                            ></ResponsableCard>
+                        </ModalContent>
                     </ModalOverlay>
                 </>
             )}
@@ -535,15 +556,22 @@ const ClientesCard: React.FC<serviciosProps> = props => {
             </BodyContainer>
             <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
             <StyledButton
-                disabled={!isClicked}
+                disabled={!isClicked || isSaving}
                 clicado={isClicked}
                 onClick={async () => {
-                    await updateOrInsert();
-                    await updateCliente();
-                    window.location.reload();
+                    if (isSaving) return;
+                    setIsSaving(true);
+                    const success = await updateCliente();
+                    if (success) {
+                        showToast("Cliente guardado correctamente", "success");
+                        await fetchClientes();
+                        setClicked(false);
+                        setUpdater(false);
+                    }
+                    setIsSaving(false);
                 }}
             >
-                Guardar Cambios
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
             </StyledButton>
         </>
     );

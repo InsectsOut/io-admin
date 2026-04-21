@@ -5,6 +5,7 @@ import { Enums, Tables } from "../src/supabase/Database";
 import { useEffect, useRef, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "./rehusableComponents/Toast";
 import { supabase } from "./utils/ClientSupabase";
 import PeriodicidadModal from "./PeriodicidadMOdal";
 import Spinner from "./rehusableComponents/Spinner";
@@ -326,6 +327,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
     const [numDeServicios, setNumDeServicios] = useState<number | null>(1);
     const [periodModalOpen, setPeriodModalOpen] = useState<boolean>(false);
     const navigate = useNavigate();
+    const { showToast } = useToast();
     const frecuenciaInputRef = useRef<HTMLSelectElement | null>(null);
     const tagRef = useRef<HTMLDivElement | null>(null);
     const [fechas_recomendadas, set_fechas_recomendadas] = useState<Date[]>([]);
@@ -674,11 +676,13 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
 
                 if (i === cantidadServicios - 1) {
                     console.log(folioGuardados);
+                    showToast("Servicio(s) creado(s) correctamente", "success");
                     navigate(`/Servicios/${folioGuardados[0]}`);
                 }
             }
         } else if (frecuencia === "Ninguna") {
             const folioGuardado = await addServicio(date);
+            showToast("Servicio creado correctamente", "success");
             navigate(`/Servicios/${folioGuardado}`);
         }
     };

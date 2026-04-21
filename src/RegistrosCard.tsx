@@ -5,6 +5,7 @@ import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
 import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
+import { useToast } from "./rehusableComponents/Toast";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 
@@ -76,14 +77,34 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
     }
 
     @media (max-width: 900px) {
+        transition: none;
+        width: 100%;
+        height: auto;
+        max-height: none;
+
         .topContent {
             display: none;
         }
         .bottomContent {
+            transition: none;
             overflow-x: hidden;
+            overflow-y: visible;
+            height: auto;
+            max-height: none;
+
+            ul {
+                height: auto;
+            }
+            li {
+                width: 100%;
+                font-size: 100%;
+            }
         }
-        width: 100%;
-        height: 53vh;
+        .listElement {
+            transition: none;
+            font-size: 100%;
+            color: black;
+        }
     }
 
     .deleteButton {
@@ -111,9 +132,11 @@ interface registrosProps {
     openModal: () => void;
     sendDataParent: any;
     title?: string | null;
+    refreshKey?: number;
 }
 
 const RegistrosCard: React.FC<registrosProps> = props => {
+    const { showToast } = useToast();
     const [clicked, setClicked] = useState<boolean>(false);
     const [registros, setRegistros] = useState<RegistroAplicacion[]>([]);
     const [modalOpen, setOpen] = useState<boolean>(false);
@@ -146,7 +169,7 @@ const RegistrosCard: React.FC<registrosProps> = props => {
     };
 
     const fetchRegistros = async () => {
-        if (props?.servicioId === null || registros.length > 0) {
+        if (props?.servicioId === null) {
             return;
         }
         try {
@@ -160,7 +183,6 @@ const RegistrosCard: React.FC<registrosProps> = props => {
                 setRegistros(data);
                 setClicked(true);
                 return data;
-                
             }
 
             if (error) {
@@ -180,7 +202,6 @@ const RegistrosCard: React.FC<registrosProps> = props => {
             try {
                 if (props?.servicioId !== null) {
                     await fetchRegistros();
-                   
                 }
             } catch (err) {
                 console.error("Error al obtener registros:", err);
@@ -189,6 +210,12 @@ const RegistrosCard: React.FC<registrosProps> = props => {
 
         obtenerRegistros();
     }, [props?.servicioId]);
+
+    useEffect(() => {
+        if (props.refreshKey === undefined || props.refreshKey === 0) return;
+        setRegistros([]);
+        fetchRegistros();
+    }, [props.refreshKey]);
     // useEffect(() => {
     //     const obtenerRegistros = async () => {
     //         try {
@@ -220,21 +247,20 @@ const RegistrosCard: React.FC<registrosProps> = props => {
         props.sendDataParent(number);
     };
 
-    const deleteRegistros = async (servicioId: string) => {
+    const deleteRegistros = async (registroId: string) => {
         try {
-            let query = supabase.from("RegistroAplicacion").delete().eq("id", servicioId);
-
-            const { error, data: registros } = await query;
-
+            const { error } = await supabase.from("RegistroAplicacion").delete().eq("id", registroId);
             if (error) {
                 console.log("Error borrando el registro de aplicación ", error);
-            }
-            if (!error) {
-                navigate(`/Servicios/${folio}`);
-                window.location.reload();
+                showToast("Error al eliminar el registro", "error");
+            } else {
+                setRegistros(prev => prev.filter(r => r.id !== Number(registroId)));
+                setOpenDeleteModal(false);
+                showToast("Registro eliminado correctamente", "success");
             }
         } catch (err) {
             console.log(err);
+            showToast("Error inesperado al eliminar", "error");
         }
     };
 
@@ -281,7 +307,7 @@ const RegistrosCard: React.FC<registrosProps> = props => {
                             </div>
                         ))}
                 </div>
-            
+
                 {openDeleteModal && (
                     <DelModal
                         btnText={"Eliminar registro"}

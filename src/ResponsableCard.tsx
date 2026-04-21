@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import { FaEdit } from "react-icons/fa";
+import { useToast } from "./rehusableComponents/Toast";
 
 type Cliente = Tables<"Clientes">;
 type Responsable = Tables<"Responsables">;
@@ -27,20 +28,18 @@ const SaveButton = styled.button /*style*/ `
     display: flex;
     justify-content: center;
     align-items: center;
-    padding: 0;
+    padding: 0.6rem 0;
     font-weight: bold;
     box-sizing: border-box;
-
-    width: 95%;
-    height: 2.226rem;
-    margin-bottom: 0.5rem;
-    margin-right: 12px;
-    font-size: 0.8rem;
+    flex: 1;
+    height: 2.5rem;
+    font-size: 0.85rem;
     border-radius: 0.359rem;
+    color: #fff;
+    cursor: pointer;
     &:hover {
-        cursor: pointer;
         background-color: #2980b9;
-        transform: scale(1.05);
+        transform: scale(1.02);
     }
 `;
 
@@ -57,19 +56,21 @@ interface ResponsableCardProps {
 
 const ResponsableCardContainer = styled(CardContainer) /*style*/ `
     height: fit-content;
-    padding-bottom: 2rem;
+    padding: 1.5rem 1.5rem 1rem;
     margin: unset;
-    padding-right: 1.5rem;
+    width: 100%;
+    box-sizing: border-box;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
     .bottomActionButtons {
         display: flex;
         justify-content: space-around;
+        gap: 0.75rem;
+        margin-top: 1rem;
     }
     @media (max-width: 900px) {
-        background: transparent;
-        box-shadow: none;
-        border-radius: 0;
-        padding: 0;
-        width: 100%;
+        padding: 1rem;
         min-height: unset;
     }
 `;
@@ -79,7 +80,8 @@ const inputWidthStyle = {
 
 const ResCardInputs = styled(CardInputs) /*style*/ `
     &.textInputs {
-        width: 80%;
+        width: 100%;
+        box-sizing: border-box;
     }
     @media (max-width: 900px) {
         &.textInputs {
@@ -112,6 +114,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
     const [direccion, setDireccion] = useState<Direccion[]>();
     const [direccionId, setDireccionId] = useState<number | null>(null);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const { showToast } = useToast();
     useEffect(() => {
         const handleResize = () => setScreenWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
@@ -168,7 +171,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
         handleResponsableChange(selectedResponsable);
     }, [selectedResponsable]);
 
-    const upsertResponsable = async () => {
+    const upsertResponsable = async (silent = false) => {
         if (responsableId) {
             try {
                 const { data, error } = await supabase
@@ -186,8 +189,10 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
                     .select();
                 if (error) {
                     console.log("Error while trying to update ", error);
+                    if (!silent) showToast("Error al actualizar el responsable: " + error.message, "error");
                 } else {
                     console.log("data updated succesfully ", data);
+                    if (!silent) showToast("Responsable actualizado correctamente", "success");
                     //setResponsable_id(() => );
                 }
             } catch (err) {
@@ -211,8 +216,10 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
 
                 if (error) {
                     console.log("Error while trying to update ", error);
+                    if (!silent) showToast("Error al crear el responsable: " + error.message, "error");
                 } else {
                     console.log("data updated succesfully ", data);
+                    if (!silent) showToast("Responsable creado correctamente", "success");
                 }
             } catch (err) {
                 console.log("Error while fetching", err);
@@ -222,7 +229,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
 
     useEffect(() => {
         if (updaterPass) {
-            upsertResponsable();
+            upsertResponsable(true);
         }
     }, [updaterPass]);
 
@@ -308,8 +315,8 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
                                             responsable.find(r => r.id === parseInt(e.target.value)) ?? null
                                         );
                                     }}
-                                    width="80%"
-                                    style={{ boxSizing: "border-box", width: screenWidth <= 900 ? "100%" : "83%" }}
+                                    width="100%"
+                                    style={{ boxSizing: "border-box", width: "100%" }}
                                 >
                                     <option value="">Seleccione al responsable</option>
                                     {responsable?.map(responsable => (
@@ -371,8 +378,8 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
                         <StyledSelect
                             value={direccionId ?? ""}
                             onChange={e => setDireccionId(parseInt(e.target.value))}
-                            width="80%"
-                            style={{ boxSizing: "border-box", width: screenWidth <= 900 ? "100%" : "83%" }}
+                            width="100%"
+                            style={{ boxSizing: "border-box", width: "100%" }}
                         >
                             <option value="">Seleccione al responsable</option>
                             {direccion?.map(dir => (

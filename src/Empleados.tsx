@@ -31,6 +31,7 @@ import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import DelModal from "./DeleteModal";
+import { useToast } from "./rehusableComponents/Toast";
 import { supabase } from "./utils/ClientSupabase";
 import { FiltrosLeft, FiltrosRight } from "./Servicios";
 
@@ -73,6 +74,7 @@ const Empleados: React.FC<empleadosProps> = props => {
     const [allClientes] = useState<Cliente[]>([]);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deletedEmpleado, setDeletedEmpleado] = useState<any>([]);
+    const { showToast } = useToast();
     const [empleados, setEmpleados] = useState<Empleados[]>();
     const [empleadosFijos, setEmpleadosFijos] = useState<Empleados[]>();
     const [estatus, setEstatus] = useState<boolean>();
@@ -392,30 +394,27 @@ const Empleados: React.FC<empleadosProps> = props => {
         setDeleteModalVisible(false);
     };
 
-    const deleteClienteHandler = async (empleado: any) => {
+    const deleteClienteHandler = (empleado: any) => {
         setDeletedEmpleado(empleado);
-        //console.log(servicio)
-        console.log("deleted", deletedEmpleado);
+        setDeleteModalVisible(true);
     };
 
     const deleteEmpleado = async (empleadoId: number) => {
         try {
-            let query = supabase
+            const { error } = await supabase
                 .from("Empleados")
                 .delete()
                 .eq("id", empleadoId)
                 .eq("organizacion", props.organizacion ?? "");
 
-            const { error, data: clientes } = await query;
-
             if (error) {
                 console.log("There was an error ", error);
+                return false;
             }
-
-            if (clientes) {
-                console.log("Empleado eliminado", clientes);
-            }
-        } catch (err) {}
+            return true;
+        } catch (err) {
+            return false;
+        }
     };
 
     useEffect(() => {
@@ -432,8 +431,15 @@ const Empleados: React.FC<empleadosProps> = props => {
                     closeModal={handleModalClose}
                     nombre={deletedEmpleado?.nombre}
                     puesto={deletedEmpleado?.puesto}
-                    del={() => {
-                        deleteEmpleado(deletedEmpleado.id).then(() => window.location.reload());
+                    del={async () => {
+                        const success = await deleteEmpleado(deletedEmpleado.id);
+                        if (success) {
+                            showToast("Empleado eliminado correctamente", "success");
+                            FetchEmpleados();
+                            setDeleteModalVisible(false);
+                        } else {
+                            showToast("Error al eliminar el empleado", "error");
+                        }
                     }}
                     titulo="¿Seguro quiere eliminar al empleado?"
                     btnText="Eliminar Empleado"
@@ -719,9 +725,7 @@ const Empleados: React.FC<empleadosProps> = props => {
                                 <button
                                     id="borrarServicio"
                                     onClick={() => {
-                                        deleteClienteHandler(empleado).then(() => {
-                                            setDeleteModalVisible(true);
-                                        });
+                                        deleteClienteHandler(empleado);
                                     }}
                                     style={{ fontWeight: "bold", fontSize: "105%" }}
                                 >
@@ -734,9 +738,7 @@ const Empleados: React.FC<empleadosProps> = props => {
                                 screen_width={screenWidth}
                                 swipeActiator={swipedItems[empleado.id]}
                                 onClick={() => {
-                                    deleteClienteHandler(empleado).then(() => {
-                                        setDeleteModalVisible(true);
-                                    });
+                                    deleteClienteHandler(empleado);
                                 }}
                             >
                                 <RiDeleteBin6Line />

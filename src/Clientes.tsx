@@ -31,6 +31,7 @@ import styled from "styled-components";
 import { FaEdit, FaTag } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import DelModal from "./DeleteModal";
+import { useToast } from "./rehusableComponents/Toast";
 import { LowerActionButtons, FiltrosRight } from "./Servicios";
 import { FiltrosLeft } from "./Servicios";
 
@@ -75,6 +76,7 @@ const Clientes: React.FC<clientesProps> = props => {
     const [allClientes, setAllCliente] = useState<Cliente[]>([]);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deletedClient, setDeletedCliente] = useState<any>([]);
+    const { showToast } = useToast();
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const [swipedItems, setSwipedItems] = useState<{ [key: number]: boolean }>({});
     const [swipeData, setSwipeData] = useState<{
@@ -337,10 +339,9 @@ const Clientes: React.FC<clientesProps> = props => {
         setDeleteModalVisible(false);
     };
 
-    const deleteClienteHandler = async (cliente: any) => {
+    const deleteClienteHandler = (cliente: any) => {
         setDeletedCliente(cliente);
-        //console.log(servicio)
-        console.log("deleted", deletedClient);
+        setDeleteModalVisible(true);
     };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
@@ -389,21 +390,20 @@ const Clientes: React.FC<clientesProps> = props => {
 
     const deleteCliente = async (clienteId: number) => {
         try {
-            let query = supabase
+            const { error } = await supabase
                 .from("Clientes")
                 .delete()
                 .eq("id", clienteId)
                 .eq("organizacion", props.organizacion ?? "");
 
-            const { error, data: clientes } = await query;
-
             if (error) {
                 console.log("There was an error ", error);
-                return;
+                return false;
             }
-            console.log("cliente eliminado", clientes);
-            location.reload();
-        } catch (err) {}
+            return true;
+        } catch (err) {
+            return false;
+        }
     };
 
     useEffect(() => {
@@ -428,8 +428,15 @@ const Clientes: React.FC<clientesProps> = props => {
                     nombre={deletedClient?.nombre}
                     apellido={deletedClient?.apellidos}
                     fecha={deletedClient?.fecha_servicio}
-                    del={() => {
-                        deleteCliente(deletedClient.id).then(() => window.location.reload());
+                    del={async () => {
+                        const success = await deleteCliente(deletedClient.id);
+                        if (success) {
+                            showToast("Cliente eliminado correctamente", "success");
+                            fetchClientes();
+                            setDeleteModalVisible(false);
+                        } else {
+                            showToast("Error al eliminar el cliente", "error");
+                        }
                     }}
                     // del={() => deleteCliente(deletedClient?.id)}
                     titulo="¿Seguro quiere eliminar al cliente?"
@@ -740,9 +747,7 @@ const Clientes: React.FC<clientesProps> = props => {
                                 <button
                                     id="borrarServicio"
                                     onClick={() => {
-                                        deleteClienteHandler(cliente).then(() => {
-                                            setDeleteModalVisible(true);
-                                        });
+                                        deleteClienteHandler(cliente);
                                     }}
                                     style={{ fontWeight: "bold", fontSize: "105%" }}
                                 >
@@ -755,9 +760,7 @@ const Clientes: React.FC<clientesProps> = props => {
                                 screen_width={screenWidth}
                                 swipeActiator={swipedItems[cliente.id]}
                                 onClick={() => {
-                                    deleteClienteHandler(cliente).then(() => {
-                                        setDeleteModalVisible(true);
-                                    });
+                                    deleteClienteHandler(cliente);
                                 }}
                             >
                                 <RiDeleteBin6Line />
