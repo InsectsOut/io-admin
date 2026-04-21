@@ -264,6 +264,50 @@ export const DeleteBtn = styled.button`
         font-size: 1.1rem;
     }
 `;
+
+const ActionsRow = styled.div`
+    display: contents;
+    @media (max-width: 600px) {
+        display: flex;
+        width: 100%;
+        gap: 0.6rem;
+        margin-top: 0.75rem;
+        padding-top: 0.6rem;
+        border-top: 1.5px solid #eef2f7;
+        align-items: center;
+
+        .entrySixthElement {
+            flex: 1;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            width: auto;
+            height: 2.5rem;
+            background: #eef5fb;
+            border: 1.5px solid #0d4e80;
+            border-radius: 0.45rem;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #0d4e80;
+        }
+
+        ${DeleteBtn} {
+            flex: 1;
+            width: auto;
+            height: 2.5rem;
+            border-radius: 0.45rem;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-left: 0;
+            align-self: auto;
+        }
+    }
+`;
 const AddForm = styled.form`
     display: flex;
     gap: 0.5rem;
@@ -887,61 +931,63 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         <strong>Valor:</strong> ${entry?.stock * (entry?.Productos?.precio ?? 0)}
                                     </EntryText>
                                 </EntryRow>
-                                {flag === "principal" && (
-                                    <EntryRow
-                                        onClick={async () => {
-                                            if (entry) {
-                                                await fetchSingleEntry(entry.id);
-                                                await setEditable(true);
-                                                await setIsModalOpen(true);
-                                                await setEntryId(entry.id);
-                                            }
-                                        }}
-                                        style={{ alignSelf: "left" }}
-                                        className="entrySixthElement"
-                                        id="entrySixthElement"
-                                    >
-                                        {" "}
-                                        <Icono size={20} />
-                                    </EntryRow>
-                                )}
-                                {flag === "empleado" && (
-                                    <EntryRow
-                                        onClick={async () => {
-                                            if (entry) {
-                                                await fetchSingleEntry(entry.item_de_origen!);
-                                                await setEditable(true);
-
-                                                try {
+                                <ActionsRow>
+                                    {flag === "principal" && (
+                                        <EntryRow
+                                            onClick={async () => {
+                                                if (entry) {
+                                                    await fetchSingleEntry(entry.id);
+                                                    await setEditable(true);
                                                     await setIsModalOpen(true);
                                                     await setEntryId(entry.id);
-                                                    await setStockFromEmpleados(entry.stock);
-                                                    await setEntryOrigen(entry.item_de_origen);
-                                                    await setCantidad(1);
-                                                } catch (error) {
-                                                    console.error("Error fetching data:", error);
                                                 }
-                                            }
+                                            }}
+                                            style={{ alignSelf: "left" }}
+                                            className="entrySixthElement"
+                                            id="entrySixthElement"
+                                        >
+                                            <Icono size={16} />
+                                            <span>Editar</span>
+                                        </EntryRow>
+                                    )}
+                                    {flag === "empleado" && (
+                                        <EntryRow
+                                            onClick={async () => {
+                                                if (entry) {
+                                                    await fetchSingleEntry(entry.item_de_origen!);
+                                                    await setEditable(true);
+
+                                                    try {
+                                                        await setIsModalOpen(true);
+                                                        await setEntryId(entry.id);
+                                                        await setStockFromEmpleados(entry.stock);
+                                                        await setEntryOrigen(entry.item_de_origen);
+                                                        await setCantidad(1);
+                                                    } catch (error) {
+                                                        console.error("Error fetching data:", error);
+                                                    }
+                                                }
+                                            }}
+                                            style={{ alignSelf: "left" , display:"flex", justifyContent:"center"}}
+                                            className="entrySixthElement"
+                                            id="entrySixthElement"
+                                        >
+                                            <Edit size={16} />
+                                            <span>Editar</span>
+                                        </EntryRow>
+                                    )}
+                                    <DeleteBtn
+                                        onClick={async () => {
+                                            await setDeleteModalOpen(true);
+                                            await setEntryId(entry.id);
+                                            await fetchSingleEntry(entry.id);
+                                            await setStockFromEmpleados(entry.stock);
                                         }}
-                                        style={{ alignSelf: "left" }}
-                                        className="entrySixthElement"
-                                        id="entrySixthElement"
+                                        id="borrarServicio"
                                     >
-                                        {" "}
-                                        <Edit size={20} />
-                                    </EntryRow>
-                                )}
-                                <DeleteBtn
-                                    onClick={async () => {
-                                        await setDeleteModalOpen(true);
-                                        await setEntryId(entry.id);
-                                        await fetchSingleEntry(entry.id);
-                                        await setStockFromEmpleados(entry.stock);
-                                    }}
-                                    id="borrarServicio"
-                                >
-                                    ✕
-                                </DeleteBtn>
+                                        ✕ 
+                                    </DeleteBtn>
+                                </ActionsRow>
                             </EntryItem>
                         ))}
                     </EntryList>
@@ -1006,37 +1052,39 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         <strong>Valor:</strong> ${entry.stock * (entry?.precio ?? 0)}
                                     </EntryText>
                                 </EntryRow>
-                                {flag === "equipo" && (
-                                    <EntryRow
+                                <ActionsRow>
+                                    {flag === "equipo" && (
+                                        <EntryRow
+                                            onClick={async () => {
+                                                await fetchSingleEntry(entry.id);
+                                                await setEditable(true);
+                                                await setIsModalOpen(true);
+                                                await setEntryId(entry.id);
+                                            }}
+                                            style={{ alignSelf: "left" }}
+                                            className="entrySixthElement"
+                                            id="entrySixthElement"
+                                        >
+                                            <Icono size={16} />
+                                            <span>Editar</span>
+                                        </EntryRow>
+                                    )}
+                                    <DeleteBtn
                                         onClick={async () => {
+                                            const queryParams = new URLSearchParams(window.location.search);
+                                            queryParams.set("stock", entry.stock?.toString() ?? "");
+                                            queryParams.set("equipoId", entry.id?.toString() ?? "");
+                                            // ✅ Update the search bar without reloading or removing other params
+                                            window.history.replaceState(null, "", `?${queryParams.toString()}`);
                                             await fetchSingleEntry(entry.id);
-                                            await setEditable(true);
-                                            await setIsModalOpen(true);
+                                            await setDeleteModalOpen(true);
                                             await setEntryId(entry.id);
                                         }}
-                                        style={{ alignSelf: "left" }}
-                                        className="entrySixthElement"
-                                        id="entrySixthElement"
+                                        id="borrarServicio"
                                     >
-                                        {" "}
-                                        <Icono size={20} />
-                                    </EntryRow>
-                                )}
-                                <DeleteBtn
-                                    onClick={async () => {
-                                        const queryParams = new URLSearchParams(window.location.search);
-                                        queryParams.set("stock", entry.stock?.toString() ?? "");
-                                        queryParams.set("equipoId", entry.id?.toString() ?? "");
-                                        // ✅ Update the search bar without reloading or removing other params
-                                        window.history.replaceState(null, "", `?${queryParams.toString()}`);
-                                        await fetchSingleEntry(entry.id);
-                                        await setDeleteModalOpen(true);
-                                        await setEntryId(entry.id);
-                                    }}
-                                    id="borrarServicio"
-                                >
-                                    ✕
-                                </DeleteBtn>
+                                        ✕ <span>Eliminar</span>
+                                    </DeleteBtn>
+                                </ActionsRow>
                             </EntryItem>
                         ))}
                     </EntryList>
