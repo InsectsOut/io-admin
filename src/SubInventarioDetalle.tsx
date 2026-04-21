@@ -57,6 +57,9 @@ export const SectionContainer = styled.div`
         box-sizing: border-box;
         overflow-x: auto;
     }
+    @media (max-width: 600px) {
+        overflow-x: hidden;
+    }
 `;
 
 export const FormRow = styled.div`
@@ -102,6 +105,9 @@ export const EntryTableHeader = styled.div`
     border-bottom: 2px solid #d0dce8;
     margin-bottom: 0.25rem;
     min-width: 540px;
+    @media (max-width: 600px) {
+        display: none;
+    }
 `;
 
 export const EntryHeaderCell = styled.span`
@@ -161,6 +167,14 @@ export const EntryItem = styled.li`
         background: #f2f7fc;
         box-shadow: 0 2px 10px rgba(14, 78, 126, 0.1);
     }
+    @media (max-width: 600px) {
+        min-width: unset;
+        flex-wrap: wrap;
+        gap: 0;
+        padding: 0.85rem 1rem;
+        margin-bottom: 0.75rem;
+        align-items: flex-start;
+    }
 `;
 
 export const EntryText = styled.span`
@@ -184,6 +198,17 @@ export const EntryText = styled.span`
         white-space: normal;
         strong {
             display: inline; /* visible en mobile sin header */
+        }
+    }
+    @media (max-width: 600px) {
+        flex-direction: row;
+        align-items: baseline;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+        font-size: 0.88rem;
+        strong {
+            font-size: 0.75rem;
+            color: #0d4e80;
         }
     }
 `;
@@ -228,6 +253,11 @@ export const DeleteBtn = styled.button`
     }
     &:active {
         transform: scale(0.95);
+    }
+    @media (max-width: 600px) {
+        margin-top: 0.65rem;
+        margin-left: 0.5rem;
+        align-self: flex-end;
     }
 `;
 const AddForm = styled.form`
@@ -285,6 +315,29 @@ export const EntryRow = styled.div`
     &.prod4,
     &.prod5,
     &.prod6 {
+    }
+    @media (max-width: 600px) {
+        &.entryFirstElement,
+        &.entrySecondElement,
+        &.entryThirdElement,
+        &.entryFourthElement,
+        &.entryFifthElement {
+            width: 100%;
+            padding: 0.3rem 0;
+            border-bottom: 1px solid #eef2f7;
+        }
+        &.entryFirstElement {
+            border-bottom: none;
+            padding-bottom: 0;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+        &.entrySixthElement {
+            width: auto;
+            margin-top: 0.65rem;
+            margin-left: auto;
+            justify-content: flex-end;
+        }
     }
 `;
 

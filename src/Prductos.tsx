@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import styled from "styled-components";
 import { FaUserCog, FaWarehouse, FaLaptop, FaCar, FaPlus } from "react-icons/fa";
 import { RiDeleteBin6Line } from "react-icons/ri";
@@ -54,6 +54,9 @@ const ToolbarWrapper = styled.div`
     margin-bottom: 1rem;
     gap: 1rem;
     flex-wrap: wrap;
+    @media (max-width: 600px) {
+        gap: 0.5rem;
+    }
 `;
 const ToolbarLeft = styled.div`
     display: flex;
@@ -62,12 +65,47 @@ const ToolbarLeft = styled.div`
     flex: 1;
     min-width: 0;
     overflow-x: auto;
+    @media (max-width: 600px) {
+        overflow-x: hidden;
+        width: 100%;
+        flex: 0 0 100%;
+    }
 `;
 const ToolbarRight = styled.div`
     display: flex;
     align-items: center;
     gap: 0.75rem;
     flex-shrink: 0;
+    @media (max-width: 600px) {
+        width: 100%;
+        justify-content: center;
+    }
+`;
+
+const MobileSelect = styled.select`
+    display: none;
+    @media (max-width: 600px) {
+        display: block;
+        flex: 1;
+        padding: 0.6rem 1rem;
+        border: 2px solid #0d4e80;
+        border-radius: 0.5rem;
+        font-size: 1rem;
+        font-weight: 600;
+        color: #0d4e80;
+        background: #fff;
+        cursor: pointer;
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%230d4e80' stroke-width='2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+        background-repeat: no-repeat;
+        background-position: right 1rem center;
+    }
+`;
+
+const SwitchHideOnMobile = styled.div`
+    @media (max-width: 600px) {
+        display: none;
+    }
 `;
 
 interface ProductosProps {
@@ -121,6 +159,29 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
     const [equipoId, setEquipoId] = useState<number | null>(null);
     const [equipoNombre, setEquipoNombre] = useState<string>("");
     const [editableEquipo, setEditableEquipo] = useState<boolean>(false);
+    const [tipoProductoFiltro, setTipoProductoFiltro] = useState<TipoProducto | undefined>(undefined);
+    const [tipoProductoFiltroTemp, setTipoProductoFiltroTemp] = useState<TipoProducto | undefined>(undefined);
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+
+    useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const handleOptionChange = useCallback((option: ProductoOption) => {
+        setSelectedOption(option);
+    }, []);
+
+    const switchOptions = useMemo(
+        () => [
+            ProductoOption.Plaguicidas,
+            ProductoOption.EquiposDeControl,
+            ProductoOption.Computo,
+            ProductoOption.Otros,
+        ],
+        []
+    );
 
     const handleNombreProductoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setNombreProducto(e.target.value);
@@ -229,7 +290,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 showToast("Producto creado correctamente", "success");
             }
             setIsModalOpen(false);
-            fetchproductos();
+            fetchproductos(tipoProductoFiltro);
         } catch (error) {}
     };
     const updateProduct = async (productoId: number) => {
@@ -263,16 +324,20 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 showToast("Producto actualizado correctamente", "success");
             }
             setIsModalOpen(false);
-            fetchproductos();
+            fetchproductos(tipoProductoFiltro);
         } catch (error) {}
     };
 
-    const fetchproductos = async () => {
+    const fetchproductos = async (filtroTipo?: TipoProducto) => {
         try {
-            const { data, error, count } = await supabase
-                .from("Productos")
-                .select("*", { count: "exact" })
-                .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
+            let query = supabase.from("Productos").select("*", { count: "exact" });
+            if (filtroTipo) {
+                query = query.eq("tipo_de_producto", filtroTipo);
+            }
+            const { data, error, count } = await query.range(
+                (currentPage - 1) * itemsPerPage,
+                currentPage * itemsPerPage
+            );
             const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
             setTotalPages(totalPages);
             if (error) {
@@ -383,12 +448,12 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
 
     useEffect(() => {
         if (selectedOption === "Plaguicidas") {
-            fetchproductos();
+            fetchproductos(tipoProductoFiltro);
         }
         if (selectedOption !== "Plaguicidas") {
             fetchEquipos(selectedOption);
         }
-    }, [currentPage, selectedOption]);
+    }, [currentPage, selectedOption, tipoProductoFiltro]);
 
     const deleteProduct = async (productoId: number) => {
         try {
@@ -400,7 +465,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 console.log("Deleted entry", data);
                 showToast("Producto eliminado correctamente", "success");
                 setDeleteModalOpen(false);
-                fetchproductos();
+                fetchproductos(tipoProductoFiltro);
             }
         } catch (err) {
             console.log(err);
@@ -428,9 +493,14 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
         const { top, left, height } = target.getBoundingClientRect();
         console.log(target.id);
 
+        const modalWidth = 274;
+        const margin = 8;
+        const rawLeft = left + window.scrollX;
+        const clampedLeft = Math.min(rawLeft, window.innerWidth - modalWidth - margin);
+
         const newPosition = {
             top: top + height + window.scrollY,
-            left: left + window.scrollX,
+            left: clampedLeft,
         };
 
         // If the modal is currently visible and the same element is clicked, hide the modal
@@ -633,8 +703,8 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                             type="radio"
                                             name="tipoProductoFiltro"
                                             value="cebo"
-                                            checked={tipoProducto === "cebo"}
-                                            onChange={() => setTipoProducto("cebo")}
+                                            checked={tipoProductoFiltroTemp === "cebo"}
+                                            onChange={() => setTipoProductoFiltroTemp("cebo")}
                                         />
                                         Cebo
                                     </label>
@@ -643,8 +713,8 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                             type="radio"
                                             name="tipoProductoFiltro"
                                             value="gel"
-                                            checked={tipoProducto === "gel"}
-                                            onChange={() => setTipoProducto("gel")}
+                                            checked={tipoProductoFiltroTemp === "gel"}
+                                            onChange={() => setTipoProductoFiltroTemp("gel")}
                                         />
                                         Gel
                                     </label>
@@ -653,19 +723,44 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                             type="radio"
                                             name="tipoProductoFiltro"
                                             value="plaguicida"
-                                            checked={tipoProducto === "plaguicida"}
-                                            onChange={() => setTipoProducto("plaguicida")}
+                                            checked={tipoProductoFiltroTemp === "plaguicida"}
+                                            onChange={() => setTipoProductoFiltroTemp("plaguicida")}
                                         />
                                         Plaguicida
+                                    </label>
+                                    <label style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                        <input
+                                            type="radio"
+                                            name="tipoProductoFiltro"
+                                            value="trampa"
+                                            checked={tipoProductoFiltroTemp === "trampa"}
+                                            onChange={() => setTipoProductoFiltroTemp("trampa")}
+                                        />
+                                        Trampa
                                     </label>
                                 </div>
                             </ModalContentTop>
                             <ModalContentBottom open={modalVisible}>
                                 <div className="filtroActionButtons">
-                                    <button className="actionButtonsStyles" id="limpiar" onClick={() => {}}>
+                                    <button
+                                        className="actionButtonsStyles"
+                                        id="limpiar"
+                                        onClick={() => {
+                                            setTipoProductoFiltroTemp(undefined);
+                                            setTipoProductoFiltro(undefined);
+                                            setModalVisible(false);
+                                        }}
+                                    >
                                         Limpiar
                                     </button>
-                                    <button className="actionButtonsStyles" id="aplicar" onClick={() => {}}>
+                                    <button
+                                        className="actionButtonsStyles"
+                                        id="aplicar"
+                                        onClick={() => {
+                                            setTipoProductoFiltro(tipoProductoFiltroTemp);
+                                            setModalVisible(false);
+                                        }}
+                                    >
                                         Aplicar
                                     </button>
                                 </div>
@@ -677,29 +772,29 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             <div style={{}}>
                 <ToolbarWrapper>
                     <ToolbarLeft>
-                        <Switch
-                            optionSender={option => {
-                                setSelectedOption(option);
-                            }}
-                            options={[
-                                ProductoOption.Plaguicidas,
-                                ProductoOption.EquiposDeControl,
-                                ProductoOption.Computo,
-                                ProductoOption.Otros,
-                            ]}
-                        />
+                        <SwitchHideOnMobile>
+                            <Switch optionSender={handleOptionChange} options={switchOptions} />
+                        </SwitchHideOnMobile>
+                        <MobileSelect
+                            value={selectedOption}
+                            onChange={e => setSelectedOption(e.target.value as ProductoOption)}
+                        >
+                            <option value={ProductoOption.Plaguicidas}>Plaguicidas</option>
+                            <option value={ProductoOption.EquiposDeControl}>Equipos de control</option>
+                            <option value={ProductoOption.Computo}>Computo</option>
+                            <option value={ProductoOption.Otros}>Otros</option>
+                        </MobileSelect>
                         <FiltrosLista
                             // id="estatusFilter"
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                 handleFiltrosClick(event);
                                 handleRotation();
                             }}
+                            style={{ display: selectedOption !== ProductoOption.Plaguicidas ? "none" : undefined }}
                         >
-                            {selectedOption === "Plaguicidas"
-                                ? "Plaguicidas"
-                                : selectedOption === "Equipos de control"
-                                  ? "Equipos de control"
-                                  : ""}
+                            {tipoProductoFiltro
+                                ? tipoProductoFiltro.charAt(0).toUpperCase() + tipoProductoFiltro.slice(1)
+                                : "Tipo"}
                             <FlechaAbajo />
                         </FiltrosLista>
                     </ToolbarLeft>

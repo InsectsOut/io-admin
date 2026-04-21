@@ -5,8 +5,7 @@ import pump from "./assets/pumpicon.png";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import logoGrande from "./assets/logoGrande.png";
 import { Link, useLocation } from "react-router-dom";
-import { FaSprayCan } from "react-icons/fa";
-import { PiNotebookDuotone } from "react-icons/pi";
+import { FaSprayCan, FaWarehouse, FaClipboardList } from "react-icons/fa";
 
 const shineAnimation = keyframes /*style*/ `
     0% {
@@ -27,12 +26,12 @@ const DashboardContainer = styled.div /*style*/ `
     gap: 3rem;
 
     .dashboard-content {
-            display: flex;
-            height: 100%;
-            flex-direction: column;
-            gap: 4rem;
-            justify-content: space-between;
-        }
+        display: flex;
+        height: 100%;
+        flex-direction: column;
+        gap: 4rem;
+        justify-content: space-between;
+    }
 
     @media (max-width: 768px) {
         flex-direction: column;
@@ -166,7 +165,7 @@ const InsectImage = styled.img /*style*/ `
     }
 
     @media (min-width: 768px) and (max-width: 1024px) {
-       width:60%;
+        width: 60%;
     }
 `;
 const ImgCont = styled.div /*style*/ `
@@ -197,7 +196,7 @@ const ImgCont = styled.div /*style*/ `
         order: 2;
         width: 100%;
         margin-top: 2rem;
-        box-shadow:none;
+        box-shadow: none;
     }
 `;
 
@@ -252,9 +251,10 @@ const OptionsCardsCont = styled.div /*style*/ `
         flex-wrap: wrap;
         max-height: 400px;
         box-sizing: border-box;
-        gap:2rem;
+        gap: 2rem;
         & h2 {
-        }font-size:.7rem;
+        }
+        font-size: 0.7rem;
     }
 `;
 
@@ -290,13 +290,13 @@ const Dashboard = () => {
                         </Link>
                         <Link to="/bitacoras ">
                             <OptionContainer className="bitacoras">
-                                <PiNotebookDuotone size={80}></PiNotebookDuotone>
+                                <FaClipboardList size={80}></FaClipboardList>
                                 <h2>Bitacoras</h2>
                             </OptionContainer>
                         </Link>
                         <Link to="/inventario ">
                             <OptionContainer className="inventario">
-                                <PiNotebookDuotone size={80}></PiNotebookDuotone>
+                                <FaWarehouse size={80}></FaWarehouse>
                                 <h2>Inventario</h2>
                             </OptionContainer>
                         </Link>

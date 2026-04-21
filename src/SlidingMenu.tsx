@@ -6,7 +6,7 @@ import logoGrande from "./assets/logoGrande.png";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { PumpIcon } from "./Inicio";
 import { GrLogout } from "react-icons/gr";
-import { FaSprayCan } from "react-icons/fa";
+import { FaSprayCan, FaWarehouse, FaClipboardList, FaUserCircle } from "react-icons/fa";
 import { supabase } from "./utils/ClientSupabase";
 import { BsPersonSquare } from "react-icons/bs";
 import { useEffect, useState } from "react";
@@ -133,6 +133,45 @@ const SlidingMenu: React.FC<menuProps> = ({ isOpen, closing }) => {
                         >
                             <BsPersonSquare size={40} />
                             Empleados
+                        </button>
+                    </div>
+                    <div className="servicios-button-container">
+                        <button
+                            style={{ fontSize: ".9rem" }}
+                            className="servicios-button"
+                            onClick={(event: React.MouseEvent) => {
+                                handleNavigate("/inventario");
+                                closing?.(event);
+                            }}
+                        >
+                            <FaWarehouse size={40} />
+                            Inventario
+                        </button>
+                    </div>
+                    <div className="servicios-button-container">
+                        <button
+                            style={{ fontSize: ".9rem" }}
+                            className="servicios-button"
+                            onClick={(event: React.MouseEvent) => {
+                                handleNavigate("/bitacoras");
+                                closing?.(event);
+                            }}
+                        >
+                            <FaClipboardList size={40} />
+                            Bitácoras
+                        </button>
+                    </div>
+                    <div className="servicios-button-container">
+                        <button
+                            style={{ fontSize: ".9rem" }}
+                            className="servicios-button"
+                            onClick={(event: React.MouseEvent) => {
+                                handleNavigate("/perfil");
+                                closing?.(event);
+                            }}
+                        >
+                            <FaUserCircle size={40} />
+                            Perfil
                         </button>
                     </div>
                     <div className="servicios-button-container">
