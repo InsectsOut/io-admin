@@ -258,6 +258,10 @@ export const DeleteBtn = styled.button`
         margin-top: 0.65rem;
         margin-left: 0.5rem;
         align-self: flex-end;
+        width: 2.6rem;
+        height: 2.6rem;
+        border-radius: 0.45rem;
+        font-size: 1.1rem;
     }
 `;
 const AddForm = styled.form`

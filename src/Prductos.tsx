@@ -108,6 +108,51 @@ const SwitchHideOnMobile = styled.div`
     }
 `;
 
+const ProdActionsRow = styled.div`
+    display: contents;
+    @media (max-width: 600px) {
+        display: flex;
+        width: 100%;
+        gap: 0.6rem;
+        margin-top: 0.75rem;
+        padding-top: 0.6rem;
+        border-top: 1.5px solid #eef2f7;
+        align-items: stretch;
+        align-items: center;
+
+        .entrySixthElement {
+            flex: 1;
+            margin-top: 0 !important;
+            margin-left: 0 !important;
+            width: auto;
+            height: 2.5rem;
+            background: #eef5fb;
+            border: 1.5px solid #0d4e80;
+            border-radius: 0.45rem;
+            justify-content: center;
+            align-items: center;
+            gap: 0.4rem;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #0d4e80;
+        }
+
+        ${DeleteBtn} {
+            flex: 1;
+            width: auto;
+            height: 2.5rem;
+            border-radius: 0.45rem;
+            gap: 0.4rem;
+            font-size: 0.82rem;
+            font-weight: 600;
+            margin-top: 0;
+            margin-left: 0;
+            align-self: auto;
+        }
+    }
+`;
+
 interface ProductosProps {
     organizacion: string;
 }
@@ -576,29 +621,34 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     </EntryText>
                 </EntryRow>
 
-                <EntryRow
-                    onClick={() => {
-                        fetchSingleProduct(entry.id);
-                        setEditable(true);
-                        setIsModalOpen(true);
-                        setProductoId(entry.id);
-                    }}
-                    style={{ alignSelf: "left" }}
-                    className="entrySixthElement prod6"
-                    id="entrySixthElement"
+                <ProdActionsRow
+                
                 >
-                    <Icono size={20} />
-                </EntryRow>
-                <DeleteBtn
-                    onClick={() => {
-                        setProductoId(entry.id);
-                        setProductoNombre(entry.nombre ?? "sin nombre");
-                        setDeleteModalOpen(true);
-                    }}
-                    id="borrarServicio"
-                >
-                    ✕
-                </DeleteBtn>
+                    <EntryRow
+                        onClick={() => {
+                            fetchSingleProduct(entry.id);
+                            setEditable(true);
+                            setIsModalOpen(true);
+                            setProductoId(entry.id);
+                        }}
+                        style={{ alignSelf: "left" }}
+                        className="entrySixthElement prod6"
+                        id="entrySixthElement"
+                    >
+                        <Icono size={16} />
+                        <span>Editar</span>
+                    </EntryRow>
+                    <DeleteBtn
+                        onClick={() => {
+                            setProductoId(entry.id);
+                            setProductoNombre(entry.nombre ?? "sin nombre");
+                            setDeleteModalOpen(true);
+                        }}
+                        id="borrarServicio"
+                    >
+                        ✕
+                    </DeleteBtn>
+                </ProdActionsRow>
             </EntryItem>
         );
     };
@@ -634,27 +684,30 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 )}
 
                 {/* Acciones */}
-                <EntryRow
-                    onClick={() => {
-                        setEditableEquipo(true);
-                        setIsModalOpenEquipoVehiculo(true);
-                        setEquipoId(equipo.id);
-                    }}
-                    className="entrySixthElement "
-                >
-                    <Icono size={20} />
-                </EntryRow>
+                <ProdActionsRow>
+                    <EntryRow
+                        onClick={() => {
+                            setEditableEquipo(true);
+                            setIsModalOpenEquipoVehiculo(true);
+                            setEquipoId(equipo.id);
+                        }}
+                        className="entrySixthElement"
+                    >
+                        <Icono size={16} />
+                        <span>Editar</span>
+                    </EntryRow>
 
-                <DeleteBtn
-                    onClick={() => {
-                        setEquipoId(equipo.id);
-                        setEquipoNombre(equipo.nombre ?? "sin nombre");
-                        setDeleteModalOpen(true);
-                    }}
-                    id="borrarServicio"
-                >
-                    ✕
-                </DeleteBtn>
+                    <DeleteBtn
+                        onClick={() => {
+                            setEquipoId(equipo.id);
+                            setEquipoNombre(equipo.nombre ?? "sin nombre");
+                            setDeleteModalOpen(true);
+                        }}
+                        id="borrarServicio"
+                    >
+                        ✕
+                    </DeleteBtn>
+                </ProdActionsRow>
             </EntryItem>
         );
     };
@@ -748,6 +801,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                         onClick={() => {
                                             setTipoProductoFiltroTemp(undefined);
                                             setTipoProductoFiltro(undefined);
+                                            setCurrentPage(1);
                                             setModalVisible(false);
                                         }}
                                     >
@@ -758,6 +812,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                                         id="aplicar"
                                         onClick={() => {
                                             setTipoProductoFiltro(tipoProductoFiltroTemp);
+                                            setCurrentPage(1);
                                             setModalVisible(false);
                                         }}
                                     >
