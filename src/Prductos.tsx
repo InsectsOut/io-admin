@@ -20,6 +20,7 @@ import SubInventarioDetalle, {
 import { Database, Enums, Tables } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import { supabase } from "./utils/ClientSupabase";
+import { useToast } from "./rehusableComponents/Toast";
 import {
     FiltrosLeft,
     FiltrosLista,
@@ -81,6 +82,7 @@ enum ProductoOption {
 }
 
 const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
+    const { showToast } = useToast();
     const [deleteModalOpen, setDeleteModalOpen] = useState(false);
     const [productoId, setProductoId] = useState<number | null>(null);
     const [inventarioEntry, setInventarioEntry] = useState<any[]>([]); // Adjust type as needed
@@ -222,6 +224,9 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             ] as Productos[]);
             if (error) {
                 console.log("Error creating a product", error);
+                showToast("Error al crear el producto", "error");
+            } else {
+                showToast("Producto creado correctamente", "success");
             }
             setIsModalOpen(false);
             fetchproductos();
@@ -253,6 +258,9 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                 .select();
             if (error) {
                 console.log("Error updating a product", error);
+                showToast("Error al actualizar el producto", "error");
+            } else {
+                showToast("Producto actualizado correctamente", "success");
             }
             setIsModalOpen(false);
             fetchproductos();
@@ -387,8 +395,10 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             const { error, data } = await supabase.from("Productos").delete().eq("id", productoId);
             if (error) {
                 console.error("Error trying to delete the entry", error);
+                showToast("Error al eliminar el producto", "error");
             } else {
                 console.log("Deleted entry", data);
+                showToast("Producto eliminado correctamente", "success");
                 setDeleteModalOpen(false);
                 fetchproductos();
             }
@@ -401,8 +411,10 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
             const { error, data } = await supabase.from("Equipos").delete().eq("id", equipoId);
             if (error) {
                 console.error("Error trying to delete the entry", error);
+                showToast("Error al eliminar el equipo", "error");
             } else {
                 console.log("Deleted entry", data);
+                showToast("Equipo eliminado correctamente", "success");
                 setDeleteModalOpen(false);
                 fetchEquipos(selectedOption);
             }

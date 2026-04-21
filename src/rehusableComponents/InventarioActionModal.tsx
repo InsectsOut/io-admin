@@ -6,6 +6,7 @@ import ReactDatePicker from "react-datepicker";
 import { Enums, Tables } from "../supabase/Database";
 import { useEffect, useState } from "react";
 import { supabase } from "../utils/ClientSupabase";
+import { useToast } from "./Toast";
 
 type Productos = Tables<"Productos">;
 type InventarioProducos = Tables<"Inventario_productos">;
@@ -37,6 +38,7 @@ interface InventarioActionModalProps {
 }
 
 const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
+    const { showToast } = useToast();
     const [productoId, setProductoId] = useState<number>(-1);
     const [stock, setStock] = useState<number>(props.stock ?? -1);
     const [productos, setProductos] = useState<Productos[]>([]);
@@ -90,7 +92,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             stock?: number;
             lote?: string;
             fechaDeCaducidad?: string;
-        }
+        },
+        silent = false
     ) => {
         try {
             const updateData: Partial<InventarioProducos> = {};
@@ -103,10 +106,12 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
 
             if (error) {
                 console.error("Error editando inventario:", error);
+                if (!silent) showToast("Error al editar el producto", "error");
             } else {
+                if (!silent) showToast("Producto actualizado correctamente", "success");
                 setProductoId(-1);
                 setStock(0);
-                props.closeModal();
+                if (!silent) props.closeModal();
             }
         } catch (err) {
             console.error("Error editing inventario:", err);
@@ -173,9 +178,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
             if (!inventarioId) return window.alert("Falta el Inventario destino");
             if (!productoId) return window.alert("Falta el Producto");
             if (!stock) return window.alert("Falta el Stock");
-            const grupoMovId  = await createGrupoDeMovimientos([]);
+            const grupoMovId = await createGrupoDeMovimientos([]);
 
-           const firstMovId =  await createMovimiento(
+            const firstMovId = await createMovimiento(
                 inventarioPrincipalId!,
                 "producto",
                 new Date(),
@@ -184,9 +189,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 cantidad < 1 ? cantidad * -1 : cantidad,
                 tecnicoId!
             );
-            if(!firstMovId) return window.alert("Error al crear el movimiento de salida");
-            await createGrupoDeMovimientos([firstMovId],grupoMovId);
-          const secondMovId =   await createMovimiento(
+            if (!firstMovId) return window.alert("Error al crear el movimiento de salida");
+            await createGrupoDeMovimientos([firstMovId], grupoMovId);
+            const secondMovId = await createMovimiento(
                 inventarioId!,
                 "producto",
                 new Date(),
@@ -195,28 +200,31 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 cantidad < 1 ? cantidad * -1 : cantidad,
                 tecnicoId!
             );
-            if(!secondMovId) return window.alert("Error al crear el movimiento de entrada");
-           await createGrupoDeMovimientos([secondMovId],grupoMovId);
+            if (!secondMovId) return window.alert("Error al crear el movimiento de entrada");
+            await createGrupoDeMovimientos([secondMovId], grupoMovId);
             if (inventarioEntry?.[0] && entryId) {
-                await editEntry(inventarioEntry[0].id, {
-                    stock: inventarioEntry[0].stock - cantidad,
-                });
+                await editEntry(
+                    inventarioEntry[0].id,
+                    {
+                        stock: inventarioEntry[0].stock - cantidad,
+                    },
+                    true
+                );
 
-                // if (inventarioEntry[0].stock - cantidad === 0) {
-                //     await deleteInventarioEntry(inventarioEntry[0].id);
-                //     return;
-                // }
-
-                await editEntry(entryId, {
-                    stock: stockFromEmpleados! + cantidad,
-                });
+                await editEntry(
+                    entryId,
+                    {
+                        stock: stockFromEmpleados! + cantidad,
+                    },
+                    true
+                );
 
                 if (stockFromEmpleados! + cantidad === 0) {
                     await deleteInventarioEntry(entryId);
-                    //regresarProductoAlnventarioPrincipal(stockFromEmpleados!,stock!,entryId);
                     return;
                 }
 
+                showToast("Consumo realizado correctamente", "success");
                 await props.fetchInventarioProductosConEntradasPorPrincipal(null);
                 await props.fetchInventarioProductosConEntradas();
                 await nullAllParameters();
@@ -283,7 +291,8 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         stock: number,
         fechaCad: Date,
         itemDeOrigen: number | null,
-        lote: string | null
+        lote: string | null,
+        silent = false
     ) => {
         try {
             const { data, error } = await supabase
@@ -302,14 +311,16 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
 
             if (error) {
                 console.error("Error creando inventario:", error);
+                if (!silent) showToast("Error al agregar el producto", "error");
             } else {
+                if (!silent) showToast("Producto agregado correctamente", "success");
                 await setEntryId(data?.[0]?.id ?? null);
                 setProductoId(-1);
                 setStock(0);
                 setLote("");
                 setFechaDeCaducidad(null);
-                props.closeModal();
-                props.fetchInventarioProductosConEntradas();
+                if (!silent) props.closeModal();
+                if (!silent) props.fetchInventarioProductosConEntradas();
                 return data?.[0];
             }
         } catch (err) {
@@ -379,9 +390,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                 console.error("Error trying to delete the entry", error);
             } else {
                 if (props.flag === "empleado") {
-                    const itemDeOrigen = await props.itemId ?? -1;
+                    const itemDeOrigen = (await props.itemId) ?? -1;
                     const movGruopoId = await createGrupoDeMovimientos([], null);
-                   const firstMovId = await  createMovimiento(
+                    const firstMovId = await createMovimiento(
                         inventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -390,17 +401,16 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                         stockFromEmpleados!,
                         null
                     );
-                    if(!firstMovId) return window.alert("Error al crear el movimiento de salida");
-                    createGrupoDeMovimientos([firstMovId],movGruopoId);
+                    if (!firstMovId) return window.alert("Error al crear el movimiento de salida");
+                    createGrupoDeMovimientos([firstMovId], movGruopoId);
                     const newEntry = await fetchSingleEntry(itemDeOrigen);
                     console.log(newEntry);
-                    const stockOrigen = await newEntry?.stock ?? 0;
-                    const entradaNuevaId = await newEntry?.id ?? -1;
-                    const nuevoInventarioPrincipalId = await newEntry?.inventario_id ?? -1;
-                   
+                    const stockOrigen = (await newEntry?.stock) ?? 0;
+                    const entradaNuevaId = (await newEntry?.id) ?? -1;
+                    const nuevoInventarioPrincipalId = (await newEntry?.inventario_id) ?? -1;
 
-                  //   await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
-                   const secondMovId =  await createMovimiento(
+                    //   await regresarProductoAlnventarioPrincipal(stockFromEmpleados!, stockOrigen!, itemDeOrigen);
+                    const secondMovId = await createMovimiento(
                         nuevoInventarioPrincipalId!,
                         "producto",
                         new Date(),
@@ -408,8 +418,9 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
                         "traspaso",
                         stockFromEmpleados!,
                         null
-                    );if(!secondMovId) return window.alert("Error al crear el movimiento de entrada");
-                    await createGrupoDeMovimientos([secondMovId],movGruopoId);
+                    );
+                    if (!secondMovId) return window.alert("Error al crear el movimiento de entrada");
+                    await createGrupoDeMovimientos([secondMovId], movGruopoId);
                 }
                 await props.fetchInventarioProductosConEntradas();
                 await nullAllParameters();
@@ -541,11 +552,11 @@ const InventarioActionModal: React.FC<InventarioActionModalProps> = props => {
         }
     }, []);
 
-    useEffect(()=>{
-if (props.flag ==="principal"){
-    fetchSingleEntry(props.entryId!);
-}
-    },[])
+    useEffect(() => {
+        if (props.flag === "principal") {
+            fetchSingleEntry(props.entryId!);
+        }
+    }, []);
 
     return (
         <ModalOverlay>
@@ -696,7 +707,7 @@ if (props.flag ==="principal"){
                     <FormRow style={{ justifyContent: "flex-end", gap: "1rem" }}>
                         {props.editable && entryId && props.flag === "principal" && (
                             <ModalButton
-                                onClick={ async () => {
+                                onClick={async () => {
                                     await editEntry(entryId, {
                                         stock: stock,
                                         lote: lote,
@@ -763,7 +774,8 @@ if (props.flag ==="principal"){
                                                 cantidad,
                                                 fechaDeCaducidad,
                                                 itemId,
-                                                inventarioEntry?.[0].Lote
+                                                inventarioEntry?.[0].Lote,
+                                                true
                                             );
 
                                             // 2. CREAR MOVIMIENTO DE ENTRADA
@@ -780,9 +792,15 @@ if (props.flag ==="principal"){
                                                 return window.alert("Error al crear el movimiento de salida");
                                             }
                                             await createGrupoDeMovimientos([secondMovId], grupoMovId);
-                                            await editEntry(inventarioEntry[0].id, {
-                                                stock: inventarioEntry[0].stock - cantidad,
-                                            });
+                                            await editEntry(
+                                                inventarioEntry[0].id,
+                                                {
+                                                    stock: inventarioEntry[0].stock - cantidad,
+                                                },
+                                                true
+                                            );
+                                            showToast("Traspaso realizado correctamente", "success");
+                                            await props.fetchInventarioProductosConEntradas();
                                             await props.closeModal();
                                         }
                                     } catch (error) {

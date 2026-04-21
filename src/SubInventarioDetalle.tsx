@@ -11,6 +11,7 @@ import DelModal from "./DeleteModal";
 import PaginationComponent from "./PaginationComponent";
 import InventarioActionModal from "./rehusableComponents/InventarioActionModal";
 import InventarioVehiculoEquipoModal from "./rehusableComponents/InventarioActionModalVehiculoEquipo";
+import { useToast } from "./rehusableComponents/Toast";
 
 interface SubInventarioDetalleProps {
     name?: string;
@@ -299,6 +300,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [editable, setEditable] = useState<boolean>(false);
     const [entryId, setEntryId] = useState<number | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const { showToast } = useToast();
     const [entradasConProductos, setEntradasConProductos] = useState<InventarioProductoEntradas[]>([]);
     const [entradasConProductosPrincipal, setEntradasConProductosPrincipal] = useState<InventarioProductoEntradas[]>(
         []
@@ -562,6 +564,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             }
             if (error) {
                 console.error("Error trying to delete the entry", error);
+                showToast("Error al eliminar la entrada", "error");
             } else {
                 if (flag === "empleado" || flag === "principal") {
                     const itemDeOrigen = (await inventarioEntry?.[0]?.item_de_origen) ?? -1;
@@ -599,10 +602,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     }
                     await createGrupoDeMovimientos([secondMovId], grupoMovId);
                     console.log("Deleted entry", data);
+                    showToast("Entrada eliminada correctamente", "success");
                     await fetchInventarioProductosConEntradas();
                     await nullAllParameters();
                 }
                 if (flag === "equipo") {
+                    showToast("Entrada eliminada correctamente", "success");
                     FetchInventarioEquipo();
                 }
             }
@@ -619,6 +624,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     .delete()
                     .eq("id", inventarioEquipoSingleEntry.id);
                 if (error) throw error;
+                showToast("Entrada eliminada correctamente", "success");
                 FetchInventarioEquipo();
                 setIsModalOpen(false);
             } else {
@@ -629,6 +635,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             }
         } catch (err) {
             console.error("Error eliminando inventario:", err);
+            showToast("Error al eliminar la entrada", "error");
         }
     };
     const handlePageChange = (page: number) => {

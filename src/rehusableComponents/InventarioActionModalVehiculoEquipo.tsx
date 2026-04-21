@@ -7,6 +7,7 @@ import { useEffect, useState } from "react";
 import { CardInputs } from "./CardInputs";
 import { TextAlign } from "./CardInputs";
 import { useLocation } from "react-router-dom";
+import { useToast } from "./Toast";
 interface Props {
     closeModal: () => void;
     flag: Enums<"TipoInventario">;
@@ -14,7 +15,7 @@ interface Props {
     fetchInventarioEquipo: () => void;
     inventarioEquipoEntry: InventarioEquipo | null;
     editable: boolean;
-    inventarioTiPoEquipo:Enums<"TipoEquipoOptions"> | undefined
+    inventarioTiPoEquipo: Enums<"TipoEquipoOptions"> | undefined;
 }
 type Equipo = Tables<"Equipos">;
 type TipoDeEquipo = Database["public"]["Enums"]["estaciondecontrol"];
@@ -34,14 +35,13 @@ const renderEquipoFields = (
     setNumSerie: (s: string) => void,
     precioEquipo: number,
     setPrecioEquipo: (n: number) => void,
-    inventarioEquipoOptioins:Enums<"TipoEquipoOptions"> | undefined
+    inventarioEquipoOptioins: Enums<"TipoEquipoOptions"> | undefined
 ) => {
     const handlePrecioChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const value = +e.target.value;
         setPrecioEquipo(value);
     };
     const allowedTypes = ["bomba_ulv", "estacion_control", "termo_nebulizadora"];
-
 
     return (
         <>
@@ -61,32 +61,33 @@ const renderEquipoFields = (
                         </option>
                     ))} */}
                     <option value="">Selecciona el equipo</option>
-                    {inventarioEquipoOptioins ==="Computo" ?  equipo.filter(item => item.tipo_equipo ==="computo").map(item => 
-                        <option
-                        
-                        key={item.id}
-                        value={item.id}
-                        >
-                        {item.nombre}
-                        </option>
-                    ) : inventarioEquipoOptioins ==="Equipos de control" ? equipo.filter(item => allowedTypes.includes(item.tipo_equipo)).map (item =>
-                        <option
-                        
-                        key={item.id}
-                        value={item.id}
-                        >
-                        {item.nombre}
-                        </option>
-                     ):inventarioEquipoOptioins === "Otros" ? equipo.filter (item => item.tipo_equipo ==="otro").map(item =>
-                        <option
-                        
-                        key={item.id}
-                        value={item.id}
-                        >
-                        {item.nombre}
-                        </option>
-                     ):<p>No hay equipo que mostrar</p>}
-                  
+                    {inventarioEquipoOptioins === "Computo" ? (
+                        equipo
+                            .filter(item => item.tipo_equipo === "computo")
+                            .map(item => (
+                                <option key={item.id} value={item.id}>
+                                    {item.nombre}
+                                </option>
+                            ))
+                    ) : inventarioEquipoOptioins === "Equipos de control" ? (
+                        equipo
+                            .filter(item => allowedTypes.includes(item.tipo_equipo))
+                            .map(item => (
+                                <option key={item.id} value={item.id}>
+                                    {item.nombre}
+                                </option>
+                            ))
+                    ) : inventarioEquipoOptioins === "Otros" ? (
+                        equipo
+                            .filter(item => item.tipo_equipo === "otro")
+                            .map(item => (
+                                <option key={item.id} value={item.id}>
+                                    {item.nombre}
+                                </option>
+                            ))
+                    ) : (
+                        <p>No hay equipo que mostrar</p>
+                    )}
                 </StyledSelect>
             </FormRow>
             <FormRow>
@@ -152,6 +153,7 @@ const renderEquipoFields = (
 };
 
 const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
+    const { showToast } = useToast();
     const [equipos, setEquipos] = useState<any[]>([]);
     const [stock, setStock] = useState<number>(0);
     const [equipoId, setEquipoId] = useState<number | null>(-1);
@@ -161,7 +163,6 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
     const location = useLocation();
     const queryParams = new URLSearchParams(window.location.search);
     const inventarioIdParam = queryParams.get("inventarioId");
-    
 
     const nullAllParameters = () => {
         setStock(0);
@@ -214,28 +215,32 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
         numSerie: string
     ) => {
         try {
-            const { data, error } = await supabase.from("Inventario_equipos").insert({
-                inventario_id: inventarioId,
-                equipo_id: equipoId,
-                stock: stock,
-                funcionales: funcional,
-                precio: precio,
-                num_de_serie: numSerie,
-            } as InventarioEquipo).select("*");
+            const { data, error } = await supabase
+                .from("Inventario_equipos")
+                .insert({
+                    inventario_id: inventarioId,
+                    equipo_id: equipoId,
+                    stock: stock,
+                    funcionales: funcional,
+                    precio: precio,
+                    num_de_serie: numSerie,
+                } as InventarioEquipo)
+                .select("*");
 
             if (error) {
                 throw error;
             }
-           
-                console.log("Inventario de equipo creado:", data);
-                props.fetchInventarioEquipo();
-                props.closeModal();
-                if (data) {
-                    return data[0].id
-                }
 
+            console.log("Inventario de equipo creado:", data);
+            showToast("Equipo agregado correctamente", "success");
+            props.fetchInventarioEquipo();
+            props.closeModal();
+            if (data) {
+                return data[0].id;
+            }
         } catch (error) {
             console.error("Error creando inventario de equipo:", error);
+            showToast("Error al agregar el equipo", "error");
         }
     };
 
@@ -263,15 +268,14 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
                     if (error) {
                         throw error;
                     }
-                   
-                        console.log("Inventario de equipo actualizado:", data);
-                        props.fetchInventarioEquipo();
-                        props.closeModal();
-                  
-                }
-                else {
-                    window.alert("No existe el equipo que se quiere actualizar")
-                    return
+
+                    console.log("Inventario de equipo actualizado:", data);
+                    showToast("Equipo actualizado correctamente", "success");
+                    props.fetchInventarioEquipo();
+                    props.closeModal();
+                } else {
+                    window.alert("No existe el equipo que se quiere actualizar");
+                    return;
                 }
             }
             if (flag === "vehiculo") {
@@ -281,125 +285,114 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
         }
     };
 
-     const createGrupoDeMovimientos = async (movimientoIds?: number[] | null, grupoId?: number | null) => {
-            try {
-                let existingIds: number[] = [];
-    
-                // If we already have a group, fetch its current movimientos_id
-                if (grupoId) {
-                    const { data: existing, error: fetchError } = await supabase
-                        .from("GrupoDeMovimientos")
-                        .select("movimientos_id")
-                        .eq("id", grupoId)
-                        .single();
-    
-                    if (fetchError) {
-                        console.error("Error fetching existing group:", fetchError);
-                        return null;
-                    }
-    
-                    if (existing?.movimientos_id) {
-                        existingIds = existing.movimientos_id;
-                    }
-                }
-    
-                // Merge old + new (avoid duplicates)
-                const mergedIds = [...new Set([...(existingIds || []), ...(movimientoIds || [])])];
-    
-                // Upsert with merged IDs
-                const { data, error } = await supabase
+    const createGrupoDeMovimientos = async (movimientoIds?: number[] | null, grupoId?: number | null) => {
+        try {
+            let existingIds: number[] = [];
+
+            // If we already have a group, fetch its current movimientos_id
+            if (grupoId) {
+                const { data: existing, error: fetchError } = await supabase
                     .from("GrupoDeMovimientos")
-                    .upsert([
-                        {
-                            ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
-                            movimientos_id: mergedIds,
-                            organizacion: props.organizacion,
-                        },
-                    ] as GrupoDeMovimientos[])
-                    .select("id");
-    
-                if (error) {
-                    console.error("Error in upsert:", error);
+                    .select("movimientos_id")
+                    .eq("id", grupoId)
+                    .single();
+
+                if (fetchError) {
+                    console.error("Error fetching existing group:", fetchError);
                     return null;
                 }
-    
-                return data?.[0]?.id ?? null;
-            } catch (err) {
-                console.error("Exception:", err);
+
+                if (existing?.movimientos_id) {
+                    existingIds = existing.movimientos_id;
+                }
+            }
+
+            // Merge old + new (avoid duplicates)
+            const mergedIds = [...new Set([...(existingIds || []), ...(movimientoIds || [])])];
+
+            // Upsert with merged IDs
+            const { data, error } = await supabase
+                .from("GrupoDeMovimientos")
+                .upsert([
+                    {
+                        ...(grupoId !== undefined && grupoId !== null && { id: grupoId }),
+                        movimientos_id: mergedIds,
+                        organizacion: props.organizacion,
+                    },
+                ] as GrupoDeMovimientos[])
+                .select("id");
+
+            if (error) {
+                console.error("Error in upsert:", error);
                 return null;
             }
-        };
 
-        const createMovimiento = async (
-                inventarioID: Number,
-                itemType: Enums<"TipoItem">,
-                fecha: Date,
-                ItemID: number,
-                type: Enums<"TipoMovimiento">,
-                quanity: number,
-                tecnicoID: number | null = null
-            ) => {
-                try {
-                    const { data, error } = await supabase
-                        .from("Movimientos")
-                        .insert([
-                            {
-                                inventario_id: inventarioID,
-                                item_type: itemType,
-                                date: fecha.toISOString(),
-                                item_id: ItemID,
-                                type: type,
-                                quantity: quanity,
-                                tecnico_id: tecnicoID,
-                                organizacion: props.organizacion,
-                            },
-                        ] as Movimientos[])
-                        .select("*");
-        
-                    if (error) {
-                        console.error("Error creando inventario:", error);
-                    } else {
-                        console.log("Inventario creado:", data);
-                        return data?.[0].id;
-                    }
-                } catch (err) {
-                    console.error("Error creating inventario:", err);
-                }
-            };
+            return data?.[0]?.id ?? null;
+        } catch (err) {
+            console.error("Exception:", err);
+            return null;
+        }
+    };
 
-   const inventarioEquipoFlujo = async () => {
-    try {
+    const createMovimiento = async (
+        inventarioID: Number,
+        itemType: Enums<"TipoItem">,
+        fecha: Date,
+        ItemID: number,
+        type: Enums<"TipoMovimiento">,
+        quanity: number,
+        tecnicoID: number | null = null
+    ) => {
+        try {
+            const { data, error } = await supabase
+                .from("Movimientos")
+                .insert([
+                    {
+                        inventario_id: inventarioID,
+                        item_type: itemType,
+                        date: fecha.toISOString(),
+                        item_id: ItemID,
+                        type: type,
+                        quantity: quanity,
+                        tecnico_id: tecnicoID,
+                        organizacion: props.organizacion,
+                    },
+                ] as Movimientos[])
+                .select("*");
 
-        createInventarioEquipo(
-            +inventarioIdParam!,
-            equipoId!,
-            stock,
-            equipoFuncional,
-            precioEquipo,
-            numSerie
-        ).then(async (res) => {
-            if (res) {
-                const movimientoId = await createMovimiento(
-                    +inventarioIdParam!,
-                    props.flag === "equipo" ? "equipo" : props.flag === "vehiculo" ? "vehiculo" : "equipo",
-                    new Date(),
-                    res,
-                    "entrada",
-                    stock,
-                    null
-                );
-                // if (movimientoId) {
-                //     createGrupoDeMovimientos([movimientoId], null);
-                // }
+            if (error) {
+                console.error("Error creando inventario:", error);
+            } else {
+                console.log("Inventario creado:", data);
+                return data?.[0].id;
             }
-        });
+        } catch (err) {
+            console.error("Error creating inventario:", err);
+        }
+    };
 
-    }
-    catch(err){
-
-    }
-
-   }
+    const inventarioEquipoFlujo = async () => {
+        try {
+            createInventarioEquipo(+inventarioIdParam!, equipoId!, stock, equipoFuncional, precioEquipo, numSerie).then(
+                async res => {
+                    if (res) {
+                        const movimientoId = await createMovimiento(
+                            +inventarioIdParam!,
+                            props.flag === "equipo" ? "equipo" : props.flag === "vehiculo" ? "vehiculo" : "equipo",
+                            new Date(),
+                            res,
+                            "entrada",
+                            stock,
+                            null
+                        );
+                        // if (movimientoId) {
+                        //     createGrupoDeMovimientos([movimientoId], null);
+                        // }
+                    }
+                }
+            );
+        } catch (err) {}
+    };
 
     useEffect(() => {
         fetchEquipos();
@@ -442,8 +435,7 @@ const InventarioVehiculoEquipoModal: React.FC<Props> = props => {
                             <ModalButton
                                 margin="0"
                                 onClick={() => {
-                                    inventarioEquipoFlujo()
-                                     
+                                    inventarioEquipoFlujo();
                                 }}
                             >
                                 Crear entrada

@@ -11,6 +11,7 @@ import { Enums } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import { EntryRow } from "./SubInventarioDetalle";
 import { useRef } from "react";
+import { useToast } from "./rehusableComponents/Toast";
 
 import {
     CreateButton,
@@ -116,6 +117,7 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({ title, icon, onSe
     const deleteRef = useRef<HTMLButtonElement>(null);
     const [inventarioId, setInventarioId] = useState<number>();
     const [equipoType, setEquipoType] = useState<Enums<"TipoEquipoOptions">>("Equipos de control");
+    const { showToast } = useToast();
 
     const equipoTypeObject: Enums<"TipoEquipoOptions">[] = ["Equipos de control", "Computo", "Otros"];
 
@@ -133,8 +135,10 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({ title, icon, onSe
 
             if (error) {
                 console.error("Error creando inventario:", error);
+                showToast("Error al crear el inventario", "error");
             } else {
                 console.log("Inventario creado:", data);
+                showToast("Inventario creado correctamente", "success");
                 fetchInventarios();
                 setIsModalOpen(false);
             }
@@ -210,9 +214,12 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({ title, icon, onSe
             const { error, data } = await supabase.from("Inventario").delete().eq("id", inventarioId);
             if (error) {
                 console.error("Error trying to delete the inventory", error);
+                showToast("Error al eliminar el inventario", "error");
             } else {
                 console.log("Deleted inventory", data);
+                showToast("Inventario eliminado correctamente", "success");
                 fetchInventarios();
+                setDeleteModalOpen(false);
             }
         } catch (err) {
             console.log(err);
