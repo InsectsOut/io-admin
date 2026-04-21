@@ -32,8 +32,19 @@ export const ModalContent = styled.div`
     background: white;
     padding: 2rem;
     border-radius: 0.5rem;
-    width: 30%;
+    width: 55%;
+    max-height: 90vh;
+    overflow-y: auto;
     box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
+
+    @media (max-width: 1100px) {
+        width: 75%;
+    }
+
+    @media (max-width: 900px) {
+        width: 92%;
+        padding: 1.25rem;
+    }
 `;
 
 export const ModalForm = styled.div`
@@ -48,13 +59,13 @@ export const ModalInput = styled.input`
     border-radius: 0.5rem;
 `;
 
-export const ModalButton = styled.button<{ margin?: string, disableFunction?: boolean }>`
+export const ModalButton = styled.button<{ margin?: string; disableFunction?: boolean }>`
     /* background: #0d4e80; */
-    background: ${(props) => props.disableFunction ? "#a0a0a0" : "#0d4e80"};
+    background: ${props => (props.disableFunction ? "#a0a0a0" : "#0d4e80")};
     color: white;
     border: none;
     padding: 0.5rem 1rem;
     border-radius: 0.5rem;
     cursor: pointer;
-    margin: ${(props) => props.margin ?? "1rem"};
+    margin: ${props => props.margin ?? "1rem"};
 `;

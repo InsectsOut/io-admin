@@ -13,6 +13,7 @@ import { BsCalendarDate } from "react-icons/bs";
 import { FaRegCheckCircle } from "react-icons/fa";
 import { MdDoNotDisturb } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
+import { useToast } from "./rehusableComponents/Toast";
 
 type Servicio = Tables<"Servicios">;
 type Cliente = Tables<"Clientes">;
@@ -66,6 +67,7 @@ export const Titulo = styled.h1 /*style*/ `
     @media (max-width: 900px) {
         margin-left: 0px;
         margin-bottom: 1rem;
+        text-align: center;
     }
 `;
 export const SearchBarForm = styled.form /*style*/ `
@@ -114,8 +116,7 @@ export const FiltrosLista = styled.li /*style*/ `
         transform: scale(1.05);
         cursor: pointer;
     }
-    &.TipoServFilt{
-
+    &.TipoServFilt {
     }
 `;
 export const FlechaAbajo = styled.div /*style*/ `
@@ -496,6 +497,7 @@ interface serviciosProps {
 
 export const Servicios: React.FC<serviciosProps> = props => {
     type TipoFiltro = "nombres" | "folio" | "";
+    const { showToast } = useToast();
 
     const [modalVisible, setModalVisible] = useState(false);
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
@@ -888,18 +890,21 @@ export const Servicios: React.FC<serviciosProps> = props => {
 
     const deleteServicio = async (servicioId: number) => {
         try {
-            let query = supabase
+            const { error } = await supabase
                 .from("Servicios")
                 .delete()
                 .eq("id", servicioId)
                 .eq("organizacion", props.organizacion ?? "");
 
-            const { error, data: servicios } = await query;
-
             if (error) {
                 console.log("There was an error ", error);
+                return false;
             }
-        } catch (err) {}
+            return true;
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
     };
 
     // useEffect(() => {
@@ -1128,11 +1133,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
         }
     };
 
-    const handleDelete = (servicio: Servicio) => {
-        // Perform the delete action here
-        deleteServicioHandler(servicio).then(() => {
-            setDeleteModalVisible(true);
-        });
+    const handleDelete = (servicio: any) => {
+        setDeletedServicio(servicio);
+        setDeleteModalVisible(true);
     };
 
     return (
@@ -1144,8 +1147,15 @@ export const Servicios: React.FC<serviciosProps> = props => {
                     nombre={deletedServicio?.Clientes.nombre}
                     apellido={deletedServicio?.Clientes.apellidos}
                     fecha={deletedServicio?.fecha_servicio}
-                    del={() => {
-                        deleteServicio(deletedServicio?.id).then(() => window.location.reload());
+                    del={async () => {
+                        const success = await deleteServicio(deletedServicio.id);
+                        if (success) {
+                            showToast("Servicio eliminado correctamente", "success");
+                            fetchServicios();
+                            setDeleteModalVisible(false);
+                        } else {
+                            showToast("Error al eliminar el servicio", "error");
+                        }
                     }}
                     titulo="¿Seguro quiere eliminar el servicio?"
                     btnText="Eliminar Servicio"
@@ -1183,13 +1193,14 @@ export const Servicios: React.FC<serviciosProps> = props => {
                             Cliente <FlechaAbajo className={isRotated ? "rotated" : ""} />{" "}
                         </FiltrosLista>
                         <FiltrosLista
-                        className="TipoServFilt"
+                            className="TipoServFilt"
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
                                 handleFiltrosClick(event);
                                 handleRotation2();
                             }}
                         >
-                            {screenWidth <= 900 ? "Tipo" : "Tipo de servicio"} <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />{" "}
+                            {screenWidth <= 900 ? "Tipo" : "Tipo de servicio"}{" "}
+                            <FlechaAbajo className={isRotated2 ? "rotated2" : ""} />{" "}
                         </FiltrosLista>
                         <FiltrosLista
                             onClick={(event: React.MouseEvent<HTMLLIElement, MouseEvent>) => {
@@ -1659,7 +1670,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                               gap: "0.3rem",
                                               flexDirection: "row",
                                               alignItems: "center",
-                                              marginRight:"2rems"
+                                              marginRight: "2rems",
                                           }
                                         : {}
                                 }

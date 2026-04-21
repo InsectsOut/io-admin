@@ -4,6 +4,7 @@ import { Titulo } from "./Servicios";
 import { useEffect, useState } from "react";
 import { StyledDatePicker } from "./Servicios";
 import { useNavigate } from "react-router-dom";
+import { useToast } from "./rehusableComponents/Toast";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { supabase } from "./utils/ClientSupabase";
 import { Tables } from "./supabase/Database";
@@ -268,8 +269,12 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
     const [modalVisible, setModalVisible] = useState(false);
     const [areaGubernamentalId, setAreaGubernamentalId] = useState<number | null>(-1);
     const navigate = useNavigate();
+    const { showToast } = useToast();
+    const [isLoading, setIsLoading] = useState(false);
 
     const addCliente = async () => {
+        if (isLoading) return;
+        setIsLoading(true);
         try {
             const { data, error } = await supabase
                 .from("Clientes")
@@ -289,9 +294,11 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
 
             if (error) {
                 console.error("Error inserting data:", error.message);
+                showToast("Error al crear el cliente: " + error.message, "error");
+                setIsLoading(false);
             } else {
                 console.log("Data inserted successfully:", data);
-
+                showToast("Cliente creado correctamente", "success");
                 let clienteId = data?.[0]?.id;
                 if (clienteId) {
                     navigate(`/Clientes/${clienteId}`);
@@ -301,13 +308,14 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
             }
         } catch (err) {
             console.error("Error adding servicio:", err);
+            setIsLoading(false);
         }
     };
 
     const handleAreaGubernamentalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const areaId = parseInt(event.target.value, 10);
         setAreaGubernamentalId(areaId);
-    }
+    };
 
     const fetchAreasGubernamentales = async () => {
         try {
@@ -407,7 +415,9 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                                 <option value="" disabled selected hidden>
                                     Elegir el tipo de servicio...
                                 </option>
-                                <option  value={-1} disabled>--Elige el tipo del área gubernamental--</option>
+                                <option value={-1} disabled>
+                                    --Elige el tipo del área gubernamental--
+                                </option>
                                 {areaGubernamental.map(area => (
                                     <option key={area.id} value={area.id}>
                                         {area.nombreAreaGob}
@@ -505,8 +515,8 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                             marginBottom: "1rem",
                         }}
                     >
-                        <SearchButtonLink type="button" onClick={addCliente}>
-                            Registrar
+                        <SearchButtonLink type="button" onClick={addCliente} disabled={isLoading}>
+                            {isLoading ? "Registrando..." : "Registrar"}
                         </SearchButtonLink>
                     </div>
                 </CreateServicioForm>

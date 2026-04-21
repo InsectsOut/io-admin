@@ -5,11 +5,13 @@ import { CreateButton } from "./rehusableComponents/CreateInventariosModal";
 import { Tables } from "./supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
 import { FaEdit } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import { Enums } from "./supabase/Database";
 import DelModal from "./DeleteModal";
 import PaginationComponent from "./PaginationComponent";
 import InventarioActionModal from "./rehusableComponents/InventarioActionModal";
 import InventarioVehiculoEquipoModal from "./rehusableComponents/InventarioActionModalVehiculoEquipo";
+import { useToast } from "./rehusableComponents/Toast";
 
 interface SubInventarioDetalleProps {
     name?: string;
@@ -47,6 +49,14 @@ export const SectionContainer = styled.div`
     padding: 1.5rem;
     margin: 1rem auto;
     font-family: "Open Sans";
+    @media (max-width: 900px) {
+        width: 100%;
+        margin: 0;
+        border-radius: 0;
+        padding: 1rem 0.5rem;
+        box-sizing: border-box;
+        overflow-x: auto;
+    }
 `;
 
 export const FormRow = styled.div`
@@ -54,6 +64,10 @@ export const FormRow = styled.div`
     align-items: center;
     margin-bottom: 1rem;
     gap: 0.75rem;
+    @media (max-width: 900px) {
+        flex-direction: column;
+        align-items: flex-start;
+    }
 `;
 
 export const StyledLabel = styled.label`
@@ -62,6 +76,10 @@ export const StyledLabel = styled.label`
     color: #0d4e80;
     font-size: 0.9rem;
     text-align: left;
+    @media (max-width: 900px) {
+        min-width: unset;
+        width: 100%;
+    }
 `;
 
 export const SectionTitle = styled.h2`
@@ -75,26 +93,99 @@ export const EntryList = styled.ul`
     margin: 0;
 `;
 
+export const EntryTableHeader = styled.div`
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 1rem 0.3rem 1.15rem;
+    gap: 1rem;
+    font-family: "Open Sans", sans-serif;
+    border-bottom: 2px solid #d0dce8;
+    margin-bottom: 0.25rem;
+    min-width: 540px;
+`;
+
+export const EntryHeaderCell = styled.span`
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.07em;
+    color: #7a9bb5;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    &.col-first {
+        width: 20%;
+    }
+    &.col-second {
+        width: 15%;
+    }
+    &.col-third {
+        width: 15%;
+    }
+    &.col-fourth {
+        width: 15%;
+    }
+    &.col-fifth {
+        width: 15%;
+    }
+    &.col-sixth {
+        width: 5%;
+        margin-left: auto;
+    }
+    &.col-delete {
+        width: 8%;
+    }
+`;
+
 export const EntryItem = styled.li`
     background: white;
-    margin-bottom: 0.75rem;
-    padding: 1rem;
-    border-radius: 0.5rem;
-    box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.1);
-    color: #333;
+    margin-bottom: 0.3rem;
+    padding: 0.55rem 1rem 0.55rem 1.1rem;
+    border-radius: 0.4rem;
+    border-left: 3px solid #0d4e80;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+    color: #2c3e50;
     display: flex;
     justify-content: space-between;
     align-items: center;
     gap: 1rem;
+    min-width: 540px;
     font-family: "Open Sans", sans-serif;
+    transition:
+        background 0.15s ease,
+        box-shadow 0.15s ease;
     .h3 {
         cursor: pointer;
+    }
+    &:hover {
+        background: #f2f7fc;
+        box-shadow: 0 2px 10px rgba(14, 78, 126, 0.1);
     }
 `;
 
 export const EntryText = styled.span`
-    font-size: 1rem;
+    font-size: 0.9rem;
     text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    strong {
+        font-size: 0.68rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        color: #7a9bb5;
+        font-weight: 700;
+        display: none; /* oculto en desktop — el header lo cubre */
+    }
+    @media (max-width: 900px) {
+        white-space: normal;
+        strong {
+            display: inline; /* visible en mobile sin header */
+        }
+    }
 `;
 export const Icono = styled(FaEdit)`
     &:hover {
@@ -109,6 +200,34 @@ export const Edit = styled(FaEdit)`
 export const Minus = styled(FaMinus)`
     &:hover {
         color: #2395ff;
+    }
+`;
+
+export const DeleteBtn = styled.button`
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2rem;
+    height: 2rem;
+    border-radius: 50%;
+    background: #e74c3c;
+    border: none;
+    cursor: pointer;
+    color: white;
+    font-weight: 700;
+    font-size: 1rem;
+    line-height: 1;
+    flex-shrink: 0;
+    align-self: center;
+    transition:
+        background 0.15s ease,
+        transform 0.1s ease;
+    &:hover {
+        background: #c0392b;
+        transform: scale(1.1);
+    }
+    &:active {
+        transform: scale(0.95);
     }
 `;
 const AddForm = styled.form`
@@ -181,6 +300,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
     const [editable, setEditable] = useState<boolean>(false);
     const [entryId, setEntryId] = useState<number | null>(null);
     const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false);
+    const { showToast } = useToast();
     const [entradasConProductos, setEntradasConProductos] = useState<InventarioProductoEntradas[]>([]);
     const [entradasConProductosPrincipal, setEntradasConProductosPrincipal] = useState<InventarioProductoEntradas[]>(
         []
@@ -444,6 +564,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             }
             if (error) {
                 console.error("Error trying to delete the entry", error);
+                showToast("Error al eliminar la entrada", "error");
             } else {
                 if (flag === "empleado" || flag === "principal") {
                     const itemDeOrigen = (await inventarioEntry?.[0]?.item_de_origen) ?? -1;
@@ -481,10 +602,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     }
                     await createGrupoDeMovimientos([secondMovId], grupoMovId);
                     console.log("Deleted entry", data);
+                    showToast("Entrada eliminada correctamente", "success");
                     await fetchInventarioProductosConEntradas();
                     await nullAllParameters();
                 }
                 if (flag === "equipo") {
+                    showToast("Entrada eliminada correctamente", "success");
                     FetchInventarioEquipo();
                 }
             }
@@ -501,6 +624,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                     .delete()
                     .eq("id", inventarioEquipoSingleEntry.id);
                 if (error) throw error;
+                showToast("Entrada eliminada correctamente", "success");
                 FetchInventarioEquipo();
                 setIsModalOpen(false);
             } else {
@@ -511,6 +635,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
             }
         } catch (err) {
             console.error("Error eliminando inventario:", err);
+            showToast("Error al eliminar la entrada", "error");
         }
     };
     const handlePageChange = (page: number) => {
@@ -663,6 +788,15 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                             onPageChange={handlePageChange}
                         ></PaginationComponent>
                     </div>
+                    <EntryTableHeader>
+                        <EntryHeaderCell className="col-first">Producto</EntryHeaderCell>
+                        <EntryHeaderCell className="col-second">Stock</EntryHeaderCell>
+                        <EntryHeaderCell className="col-third">Lote</EntryHeaderCell>
+                        <EntryHeaderCell className="col-fourth">Caducidad</EntryHeaderCell>
+                        <EntryHeaderCell className="col-fifth">Valor</EntryHeaderCell>
+                        <EntryHeaderCell className="col-sixth">Edit</EntryHeaderCell>
+                        <EntryHeaderCell className="col-delete">Acción</EntryHeaderCell>
+                    </EntryTableHeader>
                     <EntryList>
                         {entradasConProductos?.map((entry, index) => (
                             <EntryItem key={index}>
@@ -699,11 +833,11 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                 {flag === "principal" && (
                                     <EntryRow
                                         onClick={async () => {
-                                            if (entry) {   
-                                            await fetchSingleEntry(entry.id);
-                                            await setEditable(true);
-                                            await setIsModalOpen(true);
-                                            await setEntryId(entry.id);
+                                            if (entry) {
+                                                await fetchSingleEntry(entry.id);
+                                                await setEditable(true);
+                                                await setIsModalOpen(true);
+                                                await setEntryId(entry.id);
                                             }
                                         }}
                                         style={{ alignSelf: "left" }}
@@ -740,7 +874,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         <Edit size={20} />
                                     </EntryRow>
                                 )}
-                                <button
+                                <DeleteBtn
                                     onClick={async () => {
                                         await setDeleteModalOpen(true);
                                         await setEntryId(entry.id);
@@ -748,10 +882,9 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         await setStockFromEmpleados(entry.stock);
                                     }}
                                     id="borrarServicio"
-                                    style={{ fontWeight: "bold", fontSize: "105%" }}
                                 >
-                                    X
-                                </button>
+                                    ✕
+                                </DeleteBtn>
                             </EntryItem>
                         ))}
                     </EntryList>
@@ -774,6 +907,15 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                             onPageChange={handlePageChange}
                         ></PaginationComponent>
                     </div>
+                    <EntryTableHeader>
+                        <EntryHeaderCell className="col-first">Equipo</EntryHeaderCell>
+                        <EntryHeaderCell className="col-second">Stock</EntryHeaderCell>
+                        <EntryHeaderCell className="col-third">Funcional</EntryHeaderCell>
+                        <EntryHeaderCell className="col-fourth">Núm. serie</EntryHeaderCell>
+                        <EntryHeaderCell className="col-fifth">Valor</EntryHeaderCell>
+                        <EntryHeaderCell className="col-sixth">Edit</EntryHeaderCell>
+                        <EntryHeaderCell className="col-delete">Acción</EntryHeaderCell>
+                    </EntryTableHeader>
                     <EntryList>
                         {inventarioEquipos?.map((entry, index) => (
                             <EntryItem key={index}>
@@ -823,26 +965,21 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         <Icono size={20} />
                                     </EntryRow>
                                 )}
-                                <button
+                                <DeleteBtn
                                     onClick={async () => {
                                         const queryParams = new URLSearchParams(window.location.search);
-
-                                        // 🧩 Add or update the parameters
                                         queryParams.set("stock", entry.stock?.toString() ?? "");
                                         queryParams.set("equipoId", entry.id?.toString() ?? "");
-
                                         // ✅ Update the search bar without reloading or removing other params
                                         window.history.replaceState(null, "", `?${queryParams.toString()}`);
-
                                         await fetchSingleEntry(entry.id);
                                         await setDeleteModalOpen(true);
                                         await setEntryId(entry.id);
                                     }}
                                     id="borrarServicio"
-                                    style={{ fontWeight: "bold", fontSize: "105%" }}
                                 >
-                                    X
-                                </button>
+                                    ✕
+                                </DeleteBtn>
                             </EntryItem>
                         ))}
                     </EntryList>

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Tables } from "../src/supabase/Database";
 import {
     ClientList,
@@ -22,15 +22,18 @@ import {
     ServiciosElement2,
     ServiciosElement3,
     ServiciosElement4,
+    ServiciosElement5,
     ServiciosSelectContainer,
     Titulo,
 } from "./Servicios";
 import PaginationComponent from "./PaginationComponent";
 import styled from "styled-components";
 import { FaEdit } from "react-icons/fa";
+import { RiDeleteBin6Line } from "react-icons/ri";
 import DelModal from "./DeleteModal";
+import { useToast } from "./rehusableComponents/Toast";
 import { supabase } from "./utils/ClientSupabase";
-import { FiltrosLeft } from "./Servicios";
+import { FiltrosLeft, FiltrosRight } from "./Servicios";
 
 type Cliente = Tables<"Clientes">;
 type Empleados = Tables<"Empleados">;
@@ -54,25 +57,100 @@ const Empleados: React.FC<empleadosProps> = props => {
     const [modalPosition, setModalPosition] = useState({ top: 0, left: 0 });
     const [_, SetClientes] = useState<Cliente[]>([]);
     const [clientId, setClientId] = useState<number | null>();
-    const [selectedOptions, setSelectedOptions] = useState("");
+    const [selectedOptions, setSelectedOptions] = useState(() => {
+        return new URLSearchParams(window.location.search).get("estatus") ?? "";
+    });
     const [_fetchError] = useState("");
-    const [barraBusqueda, setBarraBusqueda] = useState("");
+    const [barraBusqueda, setBarraBusqueda] = useState(() => {
+        return new URLSearchParams(window.location.search).get("busqueda") ?? "";
+    });
     const [clientesFiltrados] = useState<Cliente[]>([]);
-    const [currentPage, setCurrentPage] = useState<number>(1);
+    const [currentPage, setCurrentPage] = useState<number>(() => {
+        const p = new URLSearchParams(window.location.search).get("currentPage");
+        return p ? Number(p) : 1;
+    });
     const [totalPages, setTotalPages] = useState<number>(1);
     const itemsPerPage: number = 8;
     const [allClientes] = useState<Cliente[]>([]);
     const [deleteModalVisible, setDeleteModalVisible] = useState(false);
     const [deletedEmpleado, setDeletedEmpleado] = useState<any>([]);
+    const { showToast } = useToast();
     const [empleados, setEmpleados] = useState<Empleados[]>();
     const [empleadosFijos, setEmpleadosFijos] = useState<Empleados[]>();
     const [estatus, setEstatus] = useState<boolean>();
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [swipedItems, setSwipedItems] = useState<{ [key: number]: boolean }>({});
+    const [swipeData, setSwipeData] = useState<{
+        [key: number]: { startX: number; startY: number; swipeDirection: string };
+    }>({});
+    const isFirstRender = useRef(true);
+
+    const setQueryParam = (key: string, value: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.set(key, value);
+        window.history.replaceState({}, "", url.toString());
+    };
+
+    const clearQueryParam = (key: string) => {
+        const url = new URL(window.location.href);
+        url.searchParams.delete(key);
+        window.history.replaceState({}, "", url.toString());
+    };
 
     // const [totalPages, setTotalPages] = useState<number>(1);
     // const [currentPage, setCurrentPage] = useState<number>(1);
     // const [totalPages, setTotalPages] = useState<number>(1);
     // const itemsPerPage: number = 8;
+
+    useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
+
+    const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
+        const touch = e.touches[0];
+        setSwipeData(prevState => ({
+            ...prevState,
+            [id]: { startX: touch.clientX, startY: touch.clientY, swipeDirection: "" },
+        }));
+    };
+
+    const handleTouchMove = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
+        const touch = e.touches[0];
+        const deltaX = touch.clientX - swipeData[id].startX;
+        const deltaY = touch.clientY - swipeData[id].startY;
+
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+            setSwipeData(prevState => ({
+                ...prevState,
+                [id]: { ...prevState[id], swipeDirection: deltaX > 0 ? "right" : "left" },
+            }));
+        } else {
+            setSwipeData(prevState => ({
+                ...prevState,
+                [id]: { ...prevState[id], swipeDirection: deltaY > 0 ? "down" : "up" },
+            }));
+        }
+    };
+
+    const handleTouchEnd = (id: number) => {
+        if (swipeData[id].swipeDirection === "left") {
+            setSwipedItems(prevState => ({
+                ...prevState,
+                [id]: true,
+            }));
+        } else if (swipeData[id].swipeDirection === "right") {
+            setSwipedItems(prevState => ({
+                ...prevState,
+                [id]: false,
+            }));
+        }
+        setSwipeData(prevState => ({
+            ...prevState,
+            [id]: { ...prevState[id], swipeDirection: "" },
+        }));
+    };
 
     const handleSearchChange = (e: any) => {
         const cambio = e.target.value;
@@ -132,10 +210,18 @@ const Empleados: React.FC<empleadosProps> = props => {
     };
 
     useEffect(() => {
-        FetchEmpleados();
+        filtrarEmpleadosFromUrl();
     }, []);
 
     const FetchEmpleados = async () => {
+        clearQueryParam("estatus");
+        clearQueryParam("puesto");
+        if (barraBusqueda) {
+            setQueryParam("busqueda", barraBusqueda);
+        } else {
+            clearQueryParam("busqueda");
+        }
+
         if (barraBusqueda === "") {
             const { data: empleado, count } = await supabase
                 .from("Empleados")
@@ -145,7 +231,9 @@ const Empleados: React.FC<empleadosProps> = props => {
             setTotalPages(totalPages || 0);
             if (empleado) {
                 setEmpleados(empleado);
+                setEmpleadosFijos(empleado);
             }
+            return;
         }
         try {
             let query = supabase
@@ -183,6 +271,42 @@ const Empleados: React.FC<empleadosProps> = props => {
         }
     };
 
+    const filtrarEmpleadosFromUrl = async () => {
+        const params = new URLSearchParams(window.location.search);
+        const estatusParam = params.get("estatus");
+        const puestoParam = params.get("puesto");
+        const busquedaParam = params.get("busqueda");
+        const pageParam = params.get("currentPage");
+        const page = pageParam ? Number(pageParam) : currentPage;
+
+        try {
+            let query = supabase
+                .from("Empleados")
+                .select("*", { count: "exact" })
+                .filter("organizacion", "eq", props.organizacion)
+                .range((page - 1) * itemsPerPage, page * itemsPerPage);
+
+            if (estatusParam) {
+                query = query.eq("activo", estatusParam);
+            } else if (puestoParam) {
+                query = query.eq("puesto", puestoParam);
+            } else if (busquedaParam) {
+                query = query.or(`nombre.ilike.%${busquedaParam.trimEnd()}%`);
+            }
+
+            const { data, count } = await query;
+            const totalPages = count ? Math.ceil(count / itemsPerPage) : 0;
+            setTotalPages(totalPages);
+
+            if (data) {
+                setEmpleados(data);
+                setEmpleadosFijos(data);
+            }
+        } catch (error) {
+            console.log("Error restaurando filtros desde URL", error);
+        }
+    };
+
     const filtrarEmpleados = async () => {
         let filtroQuery = "";
         let parametros = "";
@@ -192,6 +316,9 @@ const Empleados: React.FC<empleadosProps> = props => {
                 filtroQuery = "activo";
                 parametros = selectedOptions;
                 setBarraBusqueda("");
+                clearQueryParam("busqueda");
+                clearQueryParam("puesto");
+                if (selectedOptions) setQueryParam("estatus", selectedOptions);
                 break;
 
             case "Puesto":
@@ -199,6 +326,9 @@ const Empleados: React.FC<empleadosProps> = props => {
                 filtroQuery = "puesto";
                 parametros = selectedOptions;
                 setBarraBusqueda("");
+                clearQueryParam("busqueda");
+                clearQueryParam("estatus");
+                if (selectedOptions) setQueryParam("puesto", selectedOptions);
                 break;
 
             case "limpiar":
@@ -236,7 +366,13 @@ const Empleados: React.FC<empleadosProps> = props => {
     };
 
     useEffect(() => {
-        filtrarEmpleados();
+        if (isFirstRender.current) {
+            isFirstRender.current = false;
+            return;
+        }
+        if (currentPage > 1) setQueryParam("currentPage", currentPage.toString());
+        else clearQueryParam("currentPage");
+        filtrarEmpleadosFromUrl();
     }, [currentPage]);
 
     useEffect(() => {
@@ -258,30 +394,27 @@ const Empleados: React.FC<empleadosProps> = props => {
         setDeleteModalVisible(false);
     };
 
-    const deleteClienteHandler = async (empleado: any) => {
+    const deleteClienteHandler = (empleado: any) => {
         setDeletedEmpleado(empleado);
-        //console.log(servicio)
-        console.log("deleted", deletedEmpleado);
+        setDeleteModalVisible(true);
     };
 
     const deleteEmpleado = async (empleadoId: number) => {
         try {
-            let query = supabase
+            const { error } = await supabase
                 .from("Empleados")
                 .delete()
                 .eq("id", empleadoId)
                 .eq("organizacion", props.organizacion ?? "");
 
-            const { error, data: clientes } = await query;
-
             if (error) {
                 console.log("There was an error ", error);
+                return false;
             }
-
-            if (clientes) {
-                console.log("Empleado eliminado", clientes);
-            }
-        } catch (err) {}
+            return true;
+        } catch (err) {
+            return false;
+        }
     };
 
     useEffect(() => {
@@ -298,8 +431,15 @@ const Empleados: React.FC<empleadosProps> = props => {
                     closeModal={handleModalClose}
                     nombre={deletedEmpleado?.nombre}
                     puesto={deletedEmpleado?.puesto}
-                    del={() => {
-                        deleteEmpleado(deletedEmpleado.id).then(() => window.location.reload());
+                    del={async () => {
+                        const success = await deleteEmpleado(deletedEmpleado.id);
+                        if (success) {
+                            showToast("Empleado eliminado correctamente", "success");
+                            FetchEmpleados();
+                            setDeleteModalVisible(false);
+                        } else {
+                            showToast("Error al eliminar el empleado", "error");
+                        }
                     }}
                     titulo="¿Seguro quiere eliminar al empleado?"
                     btnText="Eliminar Empleado"
@@ -391,6 +531,8 @@ const Empleados: React.FC<empleadosProps> = props => {
                                                     className="actionButtonsStyles"
                                                     id="limpiar"
                                                     onClick={() => {
+                                                        clearQueryParam("estatus");
+                                                        clearQueryParam("busqueda");
                                                         FetchEmpleados().then(() => {
                                                             setCurrentPage(1);
                                                             setModalVisible(false);
@@ -459,6 +601,8 @@ const Empleados: React.FC<empleadosProps> = props => {
                                                     className="actionButtonsStyles"
                                                     id="limpiar"
                                                     onClick={() => {
+                                                        clearQueryParam("puesto");
+                                                        clearQueryParam("busqueda");
                                                         FetchEmpleados().then(() => {
                                                             setCurrentPage(1);
                                                             setModalVisible(false);
@@ -486,89 +630,136 @@ const Empleados: React.FC<empleadosProps> = props => {
                             </ModalContainer>
                         )}
                     </FiltrosLeft>
-                    <>
+                    {screenWidth >= 900 && (
                         <div style={{ display: "flex", alignItems: "center" }}>
                             <CreateButton style={{ position: "relative", width: "9.65rem" }} to="/nuevo-empleado">
                                 Nuevo Empleado
                             </CreateButton>
-
                             <PaginationComponent
                                 currentPage={currentPage}
                                 totalPages={totalPages}
                                 onPageChange={handlePageChange}
                             />
                         </div>
-                    </>
+                    )}
                 </FiltrosContainer>
+                {screenWidth < 900 && (
+                    <FiltrosRight>
+                        <PaginationComponent
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={handlePageChange}
+                        />
+                    </FiltrosRight>
+                )}
             </ServiciosContainer>
             <ServiciosSelectContainer>
                 {empleados?.map(empleado => (
-                    <ServiciosElement key={empleado?.id}>
-                        <ClientesElement1 style={{ minWidth: "15%", maxWidth: "25%" }}>
-                            <FolioLink to={`${location.pathname}/${empleado.id}`} className="primerSector">
+                    <ServiciosElement
+                        key={empleado?.id}
+                        onTouchStart={(e: any) => handleTouchStart(e, empleado.id)}
+                        onTouchMove={(e: any) => handleTouchMove(e, empleado.id)}
+                        onTouchEnd={() => handleTouchEnd(empleado.id)}
+                    >
+                        <ClientesElement1
+                            style={{
+                                minWidth: screenWidth >= 900 ? "15%" : "55%",
+                                maxWidth: screenWidth >= 900 ? "25%" : "60%",
+                            }}
+                        >
+                            <FolioLink
+                                to={`${location.pathname}/${empleado.id}`}
+                                className="primerSector"
+                                style={
+                                    screenWidth < 900
+                                        ? {
+                                              width: "100%",
+                                              maxWidth: "100%",
+                                              overflow: "hidden",
+                                              textOverflow: "ellipsis",
+                                              whiteSpace: "nowrap",
+                                              textAlign: "left",
+                                              paddingLeft: "0.75rem",
+                                          }
+                                        : {}
+                                }
+                            >
                                 {" "}
                                 {empleado.nombre}{" "}
                             </FolioLink>
                         </ClientesElement1>
-                        <ServiciosElement2 style={{ justifyContent: "left" }}>
-                            <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
-                                {" "}
-                                <FaEdit size={20} />
-                            </h3>
-                        </ServiciosElement2>
-                        <ServiciosElement3>
+                        {screenWidth >= 900 && (
+                            <ServiciosElement2 style={{ justifyContent: "left" }}>
+                                <h3 style={{ alignSelf: "left" }} className="primerSector" id="iconSector">
+                                    {" "}
+                                    <FaEdit size={20} />
+                                </h3>
+                            </ServiciosElement2>
+                        )}
+                        <ServiciosElement3 style={screenWidth < 900 ? { width: "35%", flexShrink: 0 } : {}}>
                             <h3
                                 className="primerSector"
                                 style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
                             >
                                 {" "}
-                                Estatus: {empleado.activo ? "Activo" : "Dado de baja"}
+                                {screenWidth < 900 ? "" : "Estatus: "}
+                                {empleado.activo ? "Activo" : "Dado de baja"}
                             </h3>
                         </ServiciosElement3>
-                        <ServiciosElement3>
-                            <h3
-                                className="primerSector"
-                                style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
+                        {screenWidth >= 900 && (
+                            <ServiciosElement3>
+                                <h3
+                                    className="primerSector"
+                                    style={{ fontWeight: "bold", minWidth: "42.67%", textAlign: "left" }}
+                                >
+                                    {" "}
+                                    Puesto: {empleado?.puesto}
+                                </h3>
+                            </ServiciosElement3>
+                        )}
+                        {screenWidth >= 900 && (
+                            <ServiciosElement4
+                                style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
+                                screen_width={screenWidth}
                             >
-                                {" "}
-                                Puesto: {empleado?.puesto}
-                            </h3>
-                        </ServiciosElement3>
-                        <ServiciosElement4
-                            style={{ flexGrow: "1", justifyContent: "right", paddingRight: "1rem" }}
-                            screen_width={screenWidth}
-                        >
-                            <button
-                                id="borrarServicio"
+                                <button
+                                    id="borrarServicio"
+                                    onClick={() => {
+                                        deleteClienteHandler(empleado);
+                                    }}
+                                    style={{ fontWeight: "bold", fontSize: "105%" }}
+                                >
+                                    X
+                                </button>
+                            </ServiciosElement4>
+                        )}
+                        {screenWidth < 900 && (
+                            <ServiciosElement5
+                                screen_width={screenWidth}
+                                swipeActiator={swipedItems[empleado.id]}
                                 onClick={() => {
-                                    deleteClienteHandler(empleado).then(() => {
-                                        setDeleteModalVisible(true);
-                                    });
+                                    deleteClienteHandler(empleado);
                                 }}
-                                style={{ fontWeight: "bold", fontSize: "105%" }}
                             >
-                                X
-                            </button>
-                        </ServiciosElement4>
+                                <RiDeleteBin6Line />
+                            </ServiciosElement5>
+                        )}
                     </ServiciosElement>
                 ))}
-                <LowerActionButtons>
-                    {screenWidth < 900 && (
+                {screenWidth < 900 && (
+                    <LowerActionButtons>
                         <div
                             style={{
-                                width: "82.485625rem",
+                                width: "100%",
                                 height: "2.25rem",
-                                position: "absolute",
-                                top: "90%",
-                                right: "9%",
+                                margin: "0 auto",
+                                position: "relative",
                             }}
                         >
-                            <CreateButton style={{ width: "11.5%" }} to="/nuevo-empleado">
-                                Nuevo Empleado
-                            </CreateButton>
+                            <CreateButton to="/nuevo-empleado">Nuevo Empleado</CreateButton>
                         </div>
-                    )}
-                </LowerActionButtons>
+                    </LowerActionButtons>
+                )}
             </ServiciosSelectContainer>
         </>
     );

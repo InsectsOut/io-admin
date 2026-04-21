@@ -9,10 +9,12 @@ import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { ResCardInputs } from "./DireccionCard";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
+import { useToast } from "./rehusableComponents/Toast";
 type Direccion = Tables<"Direcciones">;
 
 const ModalOverlay = styled(RegistroModal) /*style*/ `
     height: 100vh;
+    left: 0;
     .modalContainer {
         width: 40%;
         padding-bottom: 1rem;
@@ -27,8 +29,52 @@ const ModalOverlay = styled(RegistroModal) /*style*/ `
         overflow: hidden;
         position: relative;
     }
+    @media (max-width: 900px) {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        align-items: flex-start;
+        padding-top: 2rem;
+        box-sizing: border-box;
+        overflow-y: auto;
+        .modalContainer {
+            width: 92%;
+            max-width: 92%;
+            height: auto;
+            padding: 1.5rem 1.25rem 2.5rem 1.25rem;
+            border-radius: 0.718rem;
+            box-sizing: border-box;
+        }
+    }
     #title {
         margin-bottom: 2rem;
+    }
+    .inputsGrid {
+        display: flex;
+        flex-direction: row;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 100%;
+    }
+    .inputCol {
+        width: 45%;
+    }
+    @media (max-width: 900px) {
+        .inputsGrid {
+            flex-direction: column;
+            flex-wrap: nowrap;
+        }
+        .inputCol {
+            width: 100%;
+        }
+        .addButton {
+            width: 100%;
+            margin-right: 0;
+            text-align: center;
+        }
     }
     .textInputs {
         color: #838383;
@@ -58,7 +104,7 @@ const ModalOverlay = styled(RegistroModal) /*style*/ `
         color: inherit;
         background: none;
         color: black;
-        box-sizing:border-box;
+        box-sizing: border-box;
     }
     .addButton:hover {
         background-color: #0d4e80;
@@ -96,6 +142,7 @@ interface UpdateDirProps {
 }
 const DirerccionModal: React.FC<UpdateDirProps> = props => {
     const { id } = useParams();
+    const { showToast } = useToast();
     const [calle, setCalle] = useState<string>("");
     const [numeExt, setNumExt] = useState<string | null>("");
     const [numInt, setNumInt] = useState<string | null>("");
@@ -206,8 +253,10 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                 .select();
             if (error) {
                 console.error("Error inserting data:", error.message);
+                showToast("Error al actualizar la dirección: " + error.message, "error");
             } else {
                 console.log("Data inserted successfully:", data);
+                showToast("Dirección actualizada correctamente", "success");
                 FetchDireccion();
             }
         } catch (err) {
@@ -252,7 +301,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
         <>
             <ModalOverlay>
                 <div
-                    style={{ height: `${props.renderStat === "DELETE" ? "fit-content" : "60%"}` }}
+                    style={{ height: props.renderStat === "DELETE" ? "fit-content" : undefined }}
                     className="modalContainer"
                 >
                     <DetallesTitulo id="title">
@@ -263,17 +312,8 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                               : ""}
                     </DetallesTitulo>
                     {props.renderStat === "UPDATE" && (
-                        <div
-                            style={{
-                                overflowY: "scroll",
-                                display: "flex",
-                                flexDirection: "row",
-                                gap: "1rem",
-                                flexWrap: "wrap",
-                                justifyContent: "center",
-                            }}
-                        >
-                            <InputsContainer style={{ width: "45%" }}>
+                        <div className="inputsGrid">
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Calle</DetailsTitle>
                                 <ResCardInputs
                                     value={calle}
@@ -283,7 +323,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     onChange={handleStreetChange}
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Número exterior</DetailsTitle>
                                 <ResCardInputs
                                     value={numeExt}
@@ -293,7 +333,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese número exterior"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Número interior</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleIntNumChange}
@@ -303,7 +343,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese número interior"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Piso</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleFloorChange}
@@ -313,7 +353,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese el piso"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Colonia</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleColoniaChange}
@@ -323,7 +363,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese la colonia"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Estado</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleEstadoChange}
@@ -333,7 +373,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese el estado"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Ciudad</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleCiudadChange}
@@ -343,7 +383,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="ingrese la ciudad"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Código postal</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleZipChange}
@@ -353,7 +393,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="ingrese el código postal"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Google maps url</DetailsTitle>
                                 <ResCardInputs
                                     onChange={handleUrlChange}
@@ -363,12 +403,12 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     placeholder="Ingrese url de google"
                                 ></ResCardInputs>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Responsable de dirección</DetailsTitle>
                                 <StyledSelect
                                     value={responsableId}
                                     onChange={e => setResponsableId(parseInt(e.target.value))}
-                                    style={{ width: "100%", boxSizing: "border-box", textAlign: "center" }}
+                                    style={{ width: "93%", boxSizing: "border-box", textAlign: "center" }}
                                 >
                                     <option value="">Seleccione al responsable de esta dirección</option>
                                     {responsabledeDireccion?.map(responsable => (
@@ -378,7 +418,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                                     ))}
                                 </StyledSelect>
                             </InputsContainer>
-                            <InputsContainer style={{ width: "45%" }}>
+                            <InputsContainer className="inputCol" style={{ width: undefined }}>
                                 <DetailsTitle>Apodo</DetailsTitle>
                                 <ResCardInputs
                                     onChange={e => setApodo(e.target.value)}
@@ -391,9 +431,7 @@ const DirerccionModal: React.FC<UpdateDirProps> = props => {
                             </InputsContainer>
 
                             <div
-                                className="addButton"
-                                style={{ width: "45%"}}
-                                id=""
+                                className="addButton inputCol"
                                 onClick={() => {
                                     update().then(() => {
                                         props.closeModal();

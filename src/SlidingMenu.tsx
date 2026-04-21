@@ -13,16 +13,23 @@ import { useEffect, useState } from "react";
 
 const MenuContainer = styled.div<{ open: boolean }> /*style*/ `
     z-index: 99;
-    height: 49.711rem;
+    height: 100vh;
     width: ${props => (props.open ? "16%" : "0")};
-    position: absolute;
+    min-width: ${props => (props.open ? "180px" : "0")};
+    position: fixed;
+    top: 0;
     right: 0;
-    transition: 0.3s ease; /* Animate the right position */
+    transition: 0.3s ease;
     background: #0d4e80;
     box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
     gap: 1rem;
+    overflow: hidden;
+    @media (max-width: 900px) {
+        width: ${props => (props.open ? "55%" : "0")};
+        min-width: unset;
+    }
     .servicios-button-container {
         display: flex;
     }

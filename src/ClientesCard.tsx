@@ -16,6 +16,7 @@ import ResponsableCard from "./ResponsableCard";
 import { StyledButton } from "./ServiciosCard";
 import { IoIosAddCircleOutline } from "react-icons/io";
 import DireccionCard from "./DireccionCard";
+import { useToast } from "./rehusableComponents/Toast";
 
 type Cliente = Tables<"Clientes">;
 interface serviciosProps {
@@ -33,6 +34,18 @@ const ModalOverlay = styled.div`
     justify-content: center;
     align-items: center;
     z-index: 1000;
+    padding: 1rem;
+    box-sizing: border-box;
+`;
+
+const ModalContent = styled.div`
+    background: #fff;
+    border-radius: 0.75rem;
+    width: 100%;
+    max-width: 520px;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
 `;
 
 const ClientCardContainer = styled(CardContainer) /*style*/ `
@@ -46,6 +59,11 @@ export const BodyContainer = styled.div`
         display: flex;
         flex-direction: column;
         gap: 1rem;
+    }
+    @media (max-width: 900px) {
+        flex-direction: column;
+        align-items: center;
+        width: 100%;
     }
 `;
 const NumberInputs = styled(CardInputs)`
@@ -95,6 +113,7 @@ const TextoAddCard = styled.h1 /*style*/ `
 `;
 
 const ClientesCard: React.FC<serviciosProps> = props => {
+    const { showToast } = useToast();
     const [cliente, setCliente] = useState<Cliente[] | null>([]);
     const [nombre, setNombre] = useState<string>("");
     const [telefono, setTelefono] = useState<string>("");
@@ -104,6 +123,7 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     const [tipoCliente, setTipoCliente] = useState<string>("");
     const [responsable, setResponsable] = useState<string>("");
     const [isClicked, setClicked] = useState<boolean>(false);
+    const [isSaving, setIsSaving] = useState(false);
     const [responsableExists, setResponsableExists] = useState<boolean | null>(false);
     const [, setResponsableId] = useState<number | null>();
     const [updater, setUpdater] = useState(false);
@@ -111,6 +131,8 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     const [newResponsableFlag, setNewResponsableFlag] = useState(false);
     const [responsableJustCreated, setResponsableJustCreated] = useState(false);
     const [direccionUpdatedFlag, setDireccionUpdatedFlag] = useState<boolean>(false);
+    const [screenWidth, setScreenWidth] = useState(window.innerWidth);
+    const [infoTab, setInfoTab] = useState<string>("general");
 
     const insertResponsable = async (elCliente: Cliente[]) => {
         const nombreCompleto = `${elCliente?.[0]?.nombre} ${elCliente?.[0]?.apellidos} `;
@@ -159,7 +181,7 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     };
 
     const handleChildStateChange = () => {
-        setClicked(true);
+        if (!showModal) setClicked(true);
     };
 
     const handleChildValue = (nuevoValor: string) => {
@@ -232,6 +254,12 @@ const ClientesCard: React.FC<serviciosProps> = props => {
     useEffect(() => {
         fetchClientes();
     }, []);
+
+    useEffect(() => {
+        const handleResize = () => setScreenWidth(window.innerWidth);
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
     const handleTipoChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         setClicked(true);
         const cambio = event.target.value;
@@ -254,35 +282,75 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                 .filter("id", "eq", `${id}`);
             if (error) {
                 console.error("Error updating data:", error.message);
+                showToast("Error al guardar el cliente: " + error.message, "error");
+                return false;
             } else {
                 console.log("Data updated successfully:", data);
             }
             updateOrInsert();
+            return true;
         } catch (err) {
             console.log("Error making the update request");
+            return false;
         }
     };
 
     const justCreatedHandler = () => {
         setResponsableJustCreated(prev => !prev);
-    }
+    };
 
-
+    const selectTab = (currentTab: string) => {
+        return (
+            <div className="selectTag">
+                <div
+                    className="genInfo infoButtons"
+                    onClick={() => setInfoTab("general")}
+                    style={{
+                        background: currentTab === "general" ? "white" : "#0D4E80",
+                        color: currentTab === "general" ? "#0D4E80" : "white",
+                    }}
+                >
+                    <p>General</p>
+                </div>
+                <div
+                    className="workInfo infoButtons"
+                    onClick={() => setInfoTab("responsable")}
+                    style={{
+                        background: currentTab === "responsable" ? "white" : "#0D4E80",
+                        color: currentTab === "responsable" ? "#0D4E80" : "white",
+                    }}
+                >
+                    <p>Responsable</p>
+                </div>
+                <div
+                    className="workInfo infoButtons"
+                    onClick={() => setInfoTab("direccion")}
+                    style={{
+                        background: currentTab === "direccion" ? "white" : "#0D4E80",
+                        color: currentTab === "direccion" ? "#0D4E80" : "white",
+                    }}
+                >
+                    <p>Dirección</p>
+                </div>
+            </div>
+        );
+    };
 
     return (
         <>
             {showModal && (
                 <>
                     <ModalOverlay>
-                    <ResponsableCard
-                        updaterPass={updater}
-                        onValueChange={handleChildValue}
-                        onStateChange={handleChildStateChange}
-                        newResponsableFlag={newResponsableFlag}
-                        modalCloser={() => setShowModal(false)}
-                        justCreated={() => justCreatedHandler()}
-                       
-                    ></ResponsableCard>
+                        <ModalContent>
+                            <ResponsableCard
+                                updaterPass={updater}
+                                onValueChange={handleChildValue}
+                                onStateChange={handleChildStateChange}
+                                newResponsableFlag={newResponsableFlag}
+                                modalCloser={() => setShowModal(false)}
+                                justCreated={() => justCreatedHandler()}
+                            ></ResponsableCard>
+                        </ModalContent>
                     </ModalOverlay>
                 </>
             )}
@@ -290,138 +358,220 @@ const ClientesCard: React.FC<serviciosProps> = props => {
             <BodyContainer id="bodyContainer">
                 <ClientCardContainer>
                     <DetallesTitulo>Información del cliente</DetallesTitulo>
-                    <InputsContainer>
-                        <div style={{ display: "inline-flex", width: "26.124rem" }}>
-                            <div style={{ width: tipoCliente !== "Residencial" ? "20.44rem" : "11.728rem" }}>
-                                <DetailsTitle>Nombre</DetailsTitle>
-                                <CardInputs
+                    {selectTab(infoTab)}
+                    {(screenWidth > 900 || infoTab === "general") && (
+                        <>
+                            <InputsContainer>
+                                <div
                                     style={{
-                                        ...inputWidthStyle,
-                                        width: tipoCliente === "Residencial" ? "85%" : "19.815rem",
+                                        display: "inline-flex",
+                                        width: screenWidth <= 900 ? "100%" : "26.124rem",
+                                        flexDirection: screenWidth <= 900 ? "column" : "row",
+                                        gap: screenWidth <= 900 ? "0.75rem" : undefined,
                                     }}
+                                >
+                                    <div
+                                        style={{
+                                            width:
+                                                screenWidth <= 900
+                                                    ? "100%"
+                                                    : tipoCliente !== "Residencial"
+                                                      ? "20.44rem"
+                                                      : "11.728rem",
+                                        }}
+                                    >
+                                        <DetailsTitle>Nombre</DetailsTitle>
+                                        <CardInputs
+                                            style={{
+                                                width:
+                                                    screenWidth <= 900
+                                                        ? "100%"
+                                                        : tipoCliente === "Residencial"
+                                                          ? "85%"
+                                                          : "19.815rem",
+                                            }}
+                                            id="textInputs"
+                                            className="textInputs"
+                                            onChange={handleNameChange}
+                                            value={nombre}
+                                        ></CardInputs>
+                                    </div>
+                                    {tipoCliente === "Residencial" && (
+                                        <div style={{ width: screenWidth <= 900 ? "100%" : "11.728rem" }}>
+                                            <DetailsTitle>Apellido</DetailsTitle>
+                                            <CardInputs
+                                                style={{ width: screenWidth <= 900 ? "100%" : "85%" }}
+                                                id="textInputs"
+                                                className="textInputs"
+                                                onChange={handleApellidoChange}
+                                                value={apellido}
+                                            ></CardInputs>
+                                        </div>
+                                    )}
+                                </div>
+                            </InputsContainer>
+                            <InputsContainer>
+                                <DetailsTitle>Teléfono</DetailsTitle>
+                                <NumberInputs
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
                                     id="textInputs"
                                     className="textInputs"
-                                    onChange={handleNameChange}
-                                    value={nombre}
+                                    type="tel"
+                                    onChange={handleTelefonoChange}
+                                    value={telefono}
+                                ></NumberInputs>
+                            </InputsContainer>
+                            <InputsContainer>
+                                <DetailsTitle>E-mail</DetailsTitle>
+                                <CardInputs
+                                    style={{ width: screenWidth <= 900 ? "100%" : "19.815rem" }}
+                                    className="textInputs"
+                                    type="text"
+                                    onChange={handleEmailChange}
+                                    value={email}
                                 ></CardInputs>
-                            </div>
-                            {tipoCliente === "Residencial" && (
-                                <div style={{ width: "11.728rem" }}>
-                                    <DetailsTitle>Apellido</DetailsTitle>
-                                    <CardInputs
-                                        style={{ ...inputWidthStyle, width: "85%" }}
-                                        id="textInputs"
-                                        className="textInputs"
-                                        onChange={handleApellidoChange}
-                                        value={apellido}
-                                    ></CardInputs>
-                                </div>
-                            )}
-                        </div>
-                    </InputsContainer>
-                    <InputsContainer>
-                        <DetailsTitle>Teléfono</DetailsTitle>
-                        <NumberInputs
-                            style={inputWidthStyle}
-                            id="textInputs"
-                            className="textInputs"
-                            type="tel"
-                            onChange={handleTelefonoChange}
-                            value={telefono}
-                        ></NumberInputs>
-                    </InputsContainer>
-                    <InputsContainer>
-                        <DetailsTitle>E-mail</DetailsTitle>
-                        <CardInputs
-                            style={inputWidthStyle}
-                            className="textInputs"
-                            type="text"
-                            onChange={handleEmailChange}
-                            value={email}
-                        ></CardInputs>
-                    </InputsContainer>
-                    <InputsContainer>
-                        <DetailsTitle>Tipo de Cliente</DetailsTitle>
-                        <select value={tipoCliente} style={mainStyle} onChange={handleTipoChange}>
-                            {servicioOptions?.map(options => (
-                                <option key={options.id} value={options.value}>
-                                    {options.value}
-                                </option>
-                            ))}
-                        </select>
-                    </InputsContainer>
-                    {/* {tipoCliente !== "Residencial" && (
-                        <InputsContainer>
-                            <DetailsTitle>Responsable</DetailsTitle>
-                            <CardInputs
-                                style={inputWidthStyle}
-                                className="textInputs"
-                                type="text"
-                                readOnly
-                                value={responsable}
-                            ></CardInputs>
-                        </InputsContainer>
-                    )} */}
-                </ClientCardContainer>
-                <div className="responsableSection">
-                    {responsableExists && tipoCliente !== "Residencial" && (
-                        <>
-                            <ResponsableCard
-                                updaterPass={updater}
-                                onValueChange={handleChildValue}
-                                onStateChange={handleChildStateChange}
-                                justCreatedFlag={responsableJustCreated}
-                                 justUpdated={direccionUpdatedFlag}
-                            ></ResponsableCard>
+                            </InputsContainer>
+                            <InputsContainer>
+                                <DetailsTitle>Tipo de Cliente</DetailsTitle>
+                                <select
+                                    value={tipoCliente}
+                                    style={{
+                                        ...mainStyle,
+                                        width: screenWidth <= 900 ? "100%" : "85%",
+                                        boxSizing: "border-box",
+                                    }}
+                                    onChange={handleTipoChange}
+                                >
+                                    {servicioOptions?.map(options => (
+                                        <option key={options.id} value={options.value}>
+                                            {options.value}
+                                        </option>
+                                    ))}
+                                </select>
+                            </InputsContainer>
                         </>
                     )}
-                    {/* {!responsableExists && tipoCliente !== "Residencial" && (
-                    <AddResponsableCard
-                        style={{ alignSelf: "center" }}
-                        onClick={() => {
-                            setResponsableExists(true);
-                        }}
-                    >
-                        <div>
-                            <IoIosAddCircleOutline size={30} style={{ color: "black" }} />
-                            <TextoAddCard>Añadir responsable</TextoAddCard>
-                        </div>
-                    </AddResponsableCard>
-                )}
-                <DireccionCard></DireccionCard> */}
-                    {tipoCliente !== "Residencial" && (
-                        <AddResponsableCard
-                        
-                            style={{ alignSelf: "center" }}
-                            onClick={() => {
-                                //setResponsableExists(true);
-                                setShowModal(true);
-                                setNewResponsableFlag(true)
+                    {screenWidth <= 900 && (
+                        <div
+                            style={{
+                                display: infoTab === "responsable" ? "flex" : "none",
+                                flexDirection: "column",
+                                gap: "1rem",
+                                flex: 1,
+                                width: "100%",
                             }}
                         >
-                            <div>
-                                <IoIosAddCircleOutline size={30} style={{ color: "black" }} />
-                                <TextoAddCard>Añadir responsable</TextoAddCard>
-                            </div>
-                        </AddResponsableCard>
+                            {tipoCliente !== "Residencial" && (
+                                <button
+                                    style={{
+                                        display: "inline-flex",
+                                        alignItems: "center",
+                                        gap: "0.4rem",
+                                        padding: "0.45rem 0.9rem",
+                                        border: "0.125rem solid #0d4e80",
+                                        borderRadius: "0.359rem",
+                                        color: "#0d4e80",
+                                        fontSize: "0.9rem",
+                                        fontWeight: 600,
+                                        cursor: "pointer",
+                                        background: "none",
+                                        fontFamily: "inherit",
+                                    }}
+                                    onClick={() => {
+                                        setShowModal(true);
+                                        setNewResponsableFlag(true);
+                                    }}
+                                >
+                                    <IoIosAddCircleOutline size={18} />
+                                    Añadir responsable
+                                </button>
+                            )}
+                            {responsableExists && tipoCliente !== "Residencial" && (
+                                <ResponsableCard
+                                    updaterPass={updater}
+                                    onValueChange={handleChildValue}
+                                    onStateChange={handleChildStateChange}
+                                    justCreatedFlag={responsableJustCreated}
+                                    justUpdated={direccionUpdatedFlag}
+                                ></ResponsableCard>
+                            )}
+                        </div>
                     )}
-                </div>
-                <DireccionCard
-                justCreatedResponsable={responsableJustCreated}
-                justUpdatedSender={async () => {await setDireccionUpdatedFlag(prev => !prev);}}
-                ></DireccionCard>
+                    {screenWidth <= 900 && (
+                        <div
+                            style={{
+                                display: infoTab === "direccion" ? "flex" : "none",
+                                flexDirection: "column",
+                                gap: "1rem",
+                                flex: 1,
+                                width: "100%",
+                            }}
+                        >
+                            <DireccionCard
+                                justCreatedResponsable={responsableJustCreated}
+                                justUpdatedSender={async () => {
+                                    await setDireccionUpdatedFlag(prev => !prev);
+                                }}
+                            ></DireccionCard>
+                        </div>
+                    )}
+                </ClientCardContainer>
+                {screenWidth > 900 && (
+                    <div className="responsableSection">
+                        {responsableExists && tipoCliente !== "Residencial" && (
+                            <>
+                                <ResponsableCard
+                                    updaterPass={updater}
+                                    onValueChange={handleChildValue}
+                                    onStateChange={handleChildStateChange}
+                                    justCreatedFlag={responsableJustCreated}
+                                    justUpdated={direccionUpdatedFlag}
+                                ></ResponsableCard>
+                            </>
+                        )}
+                        {tipoCliente !== "Residencial" && (
+                            <AddResponsableCard
+                                style={{ alignSelf: "center" }}
+                                onClick={() => {
+                                    setShowModal(true);
+                                    setNewResponsableFlag(true);
+                                }}
+                            >
+                                <div>
+                                    <IoIosAddCircleOutline size={30} style={{ color: "black" }} />
+                                    <TextoAddCard>Añadir responsable</TextoAddCard>
+                                </div>
+                            </AddResponsableCard>
+                        )}
+                    </div>
+                )}
+                {screenWidth > 900 && (
+                    <DireccionCard
+                        justCreatedResponsable={responsableJustCreated}
+                        justUpdatedSender={async () => {
+                            await setDireccionUpdatedFlag(prev => !prev);
+                        }}
+                    ></DireccionCard>
+                )}
             </BodyContainer>
             <ReturnButton onClick={() => window.history.back()}>Regresar</ReturnButton>
             <StyledButton
-                disabled={!isClicked}
+                disabled={!isClicked || isSaving}
                 clicado={isClicked}
                 onClick={async () => {
-                    await updateOrInsert();
-                   await  updateCliente();
-                   window.location.reload();
+                    if (isSaving) return;
+                    setIsSaving(true);
+                    const success = await updateCliente();
+                    if (success) {
+                        showToast("Cliente guardado correctamente", "success");
+                        await fetchClientes();
+                        setClicked(false);
+                        setUpdater(false);
+                    }
+                    setIsSaving(false);
                 }}
             >
-                Guardar Cambios
+                {isSaving ? "Guardando..." : "Guardar Cambios"}
             </StyledButton>
         </>
     );
