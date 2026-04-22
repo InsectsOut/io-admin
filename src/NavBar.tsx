@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import "./App.css";
 import useBodyClick from "./UseBodyClick";
+import { useBrandTheme } from "./utils/ThemeContext";
 
 const NavContainer = styled.div`
     width: 100vw;
@@ -54,6 +55,7 @@ function NavBar() {
     const [modalOpen, setModalOpena] = useState(false);
     const [home, setHome] = useState(false);
     const slidingRef = useRef<HTMLLIElement>(null);
+    const { theme } = useBrandTheme();
 
     const navigate = useNavigate();
 
@@ -73,29 +75,38 @@ function NavBar() {
         navegar();
     }, [home]);
 
-    useBodyClick(() => {
-        setModalOpena(false);
-    }, [slidingRef,], modalOpen);
+    useBodyClick(
+        () => {
+            setModalOpena(false);
+        },
+        [slidingRef],
+        modalOpen
+    );
 
     return (
         <>
             {window.location.pathname !== "/" && (
                 <>
                     <NavContainer>
-                        <Logo onClick={() => navigate("/inicio")} loading="lazy" src={icon} />
+                        <Logo
+                            onClick={() => navigate("/inicio")}
+                            loading="lazy"
+                            src={theme.logoUrl ?? icon}
+                            alt={theme.nombreEmpresa ?? "Logo"}
+                        />
                         <IconsContainer className="iconosContainer">
                             <Li
                                 onClick={() => {
                                     setHome(true);
                                 }}
                             >
-                                <FaHome size={30} color="#0E4E7E" />
+                                <FaHome size={30} color={theme.primaryColor} />
                             </Li>
                             <Li onClick={() => navigate("/perfil")}>
-                                <MdAccountCircle size={30} color="#0E4E7E" />
+                                <MdAccountCircle size={30} color={theme.primaryColor} />
                             </Li>
                             <Li ref={slidingRef} onClick={openModal}>
-                                <IoMenuSharp size={30} color="#0E4E7E" />
+                                <IoMenuSharp size={30} color={theme.primaryColor} />
                             </Li>
                         </IconsContainer>
                     </NavContainer>

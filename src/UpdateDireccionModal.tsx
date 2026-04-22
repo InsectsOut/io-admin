@@ -93,7 +93,7 @@ const ModalOverlay = styled(RegistroModal) /*style*/ `
         align-self: flex-end;
         margin-right: 24px;
         border-radius: 8px;
-        border: 1px solid #0d4e80;
+        border: 1px solid ${({ theme }) => theme.primaryColor};
         padding: 0.6em 1.2em;
         font-size: 1em;
         font-weight: 500;
@@ -107,7 +107,7 @@ const ModalOverlay = styled(RegistroModal) /*style*/ `
         box-sizing: border-box;
     }
     .addButton:hover {
-        background-color: #0d4e80;
+        background-color: ${({ theme }) => theme.primaryColor};
         color: white;
     }
 

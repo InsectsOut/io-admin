@@ -6,7 +6,7 @@ import logoGrande from "./assets/logoGrande.png";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import { PumpIcon } from "./Inicio";
 import { GrLogout } from "react-icons/gr";
-import { FaSprayCan, FaWarehouse, FaClipboardList, FaUserCircle } from "react-icons/fa";
+import { FaSprayCan, FaWarehouse, FaClipboardList, FaUserCircle, FaCog } from "react-icons/fa";
 import { supabase } from "./utils/ClientSupabase";
 import { BsPersonSquare } from "react-icons/bs";
 import { useEffect, useState } from "react";
@@ -20,7 +20,7 @@ const MenuContainer = styled.div<{ open: boolean }> /*style*/ `
     top: 0;
     right: 0;
     transition: 0.3s ease;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
     display: flex;
     flex-direction: column;
@@ -66,6 +66,17 @@ interface menuProps {
 
 const SlidingMenu: React.FC<menuProps> = ({ isOpen, closing }) => {
     const navigate = useNavigate();
+    const [isSuperAdmin, setIsSuperAdmin] = useState(false);
+
+    useEffect(() => {
+        const checkRole = async () => {
+            const userId = localStorage.getItem("user_id");
+            if (!userId) return;
+            const { data } = await supabase.from("Empleados").select("tipo_rol").eq("user_id", userId).maybeSingle();
+            setIsSuperAdmin(data?.tipo_rol === "superadmin");
+        };
+        if (isOpen) checkRole();
+    }, [isOpen]);
 
     const handleNavigate = (route: string) => {
         if (route === "log_out") {
@@ -174,6 +185,21 @@ const SlidingMenu: React.FC<menuProps> = ({ isOpen, closing }) => {
                             Perfil
                         </button>
                     </div>
+                    {isSuperAdmin && (
+                        <div className="servicios-button-container">
+                            <button
+                                style={{ fontSize: ".9rem" }}
+                                className="servicios-button"
+                                onClick={(event: React.MouseEvent) => {
+                                    handleNavigate("/configuracion");
+                                    closing?.(event);
+                                }}
+                            >
+                                <FaCog size={40} />
+                                Configuración
+                            </button>
+                        </div>
+                    )}
                     <div className="servicios-button-container">
                         <button
                             style={{ fontSize: ".9rem" }}

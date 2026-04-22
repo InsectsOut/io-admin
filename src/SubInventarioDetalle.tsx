@@ -76,7 +76,7 @@ export const FormRow = styled.div`
 export const StyledLabel = styled.label`
     min-width: 150px;
     font-weight: 600;
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     font-size: 0.9rem;
     text-align: left;
     @media (max-width: 900px) {
@@ -86,7 +86,7 @@ export const StyledLabel = styled.label`
 `;
 
 export const SectionTitle = styled.h2`
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     margin-bottom: 1rem;
 `;
 
@@ -148,7 +148,7 @@ export const EntryItem = styled.li`
     margin-bottom: 0.3rem;
     padding: 0.55rem 1rem 0.55rem 1.1rem;
     border-radius: 0.4rem;
-    border-left: 3px solid #0d4e80;
+    border-left: 3px solid ${({ theme }) => theme.primaryColor};
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     color: #2c3e50;
     display: flex;
@@ -208,13 +208,19 @@ export const EntryText = styled.span`
         font-size: 0.88rem;
         strong {
             font-size: 0.75rem;
-            color: #0d4e80;
+            color: ${({ theme }) => theme.primaryColor};
         }
     }
 `;
 export const Icono = styled(FaEdit)`
     &:hover {
         color: #2395ff;
+    }
+`;
+export const MobileLabel = styled.span`
+    display: none;
+    @media (max-width: 600px) {
+        display: inline;
     }
 `;
 export const Edit = styled(FaEdit)`
@@ -235,7 +241,7 @@ export const DeleteBtn = styled.button`
     width: 2rem;
     height: 2rem;
     border-radius: 50%;
-    background: #e74c3c;
+    background: ${({ theme }) => theme.secondaryColor};
     border: none;
     cursor: pointer;
     color: white;
@@ -248,7 +254,7 @@ export const DeleteBtn = styled.button`
         background 0.15s ease,
         transform 0.1s ease;
     &:hover {
-        background: #c0392b;
+        filter: brightness(0.85);
         transform: scale(1.1);
     }
     &:active {
@@ -282,8 +288,8 @@ const ActionsRow = styled.div`
             margin-left: 0 !important;
             width: auto;
             height: 2.5rem;
-            background: #eef5fb;
-            border: 1.5px solid #0d4e80;
+            background: ${({ theme }) => theme.accentColor};
+            border: 1.5px solid ${({ theme }) => theme.primaryColor};
             border-radius: 0.45rem;
             justify-content: center;
             align-items: center;
@@ -291,7 +297,7 @@ const ActionsRow = styled.div`
             cursor: pointer;
             font-size: 0.82rem;
             font-weight: 600;
-            color: #0d4e80;
+            color: ${({ theme }) => theme.primaryColor};
         }
 
         ${DeleteBtn} {
@@ -320,7 +326,7 @@ const AddInput = styled.input`
 `;
 
 const AddButton = styled.button`
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     color: white;
     border: none;
     padding: 0.5rem 1rem;
@@ -947,7 +953,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                             id="entrySixthElement"
                                         >
                                             <Icono size={16} />
-                                            <span>Editar</span>
+                                            <MobileLabel>Editar</MobileLabel>
                                         </EntryRow>
                                     )}
                                     {flag === "empleado" && (
@@ -968,12 +974,12 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                                     }
                                                 }
                                             }}
-                                            style={{ alignSelf: "left" , display:"flex", justifyContent:"center"}}
+                                            style={{ alignSelf: "left", display: "flex", justifyContent: "center" }}
                                             className="entrySixthElement"
                                             id="entrySixthElement"
                                         >
                                             <Edit size={16} />
-                                            <span>Editar</span>
+                                            <MobileLabel>Editar</MobileLabel>
                                         </EntryRow>
                                     )}
                                     <DeleteBtn
@@ -985,7 +991,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                         }}
                                         id="borrarServicio"
                                     >
-                                        ✕ 
+                                        ✕
                                     </DeleteBtn>
                                 </ActionsRow>
                             </EntryItem>
@@ -1066,7 +1072,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
                                             id="entrySixthElement"
                                         >
                                             <Icono size={16} />
-                                            <span>Editar</span>
+                                            <MobileLabel>Editar</MobileLabel>
                                         </EntryRow>
                                     )}
                                     <DeleteBtn

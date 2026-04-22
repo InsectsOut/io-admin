@@ -118,7 +118,7 @@ const DeleteButton = styled.button`
     min-width: fit-content;
     min-height: 2.25rem;
     height: 2.25rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.secondaryColor};
     border-radius: 0.359rem;
     padding: 0 1rem 0 1rem;
     font-style: normal;
@@ -126,7 +126,7 @@ const DeleteButton = styled.button`
     font-size: 1.005rem;
     &:hover {
         cursor: pointer;
-        background-color: #2980b9;
+        filter: brightness(0.85);
         transform: scale(1.05);
         color: white;
     }
@@ -149,8 +149,6 @@ interface cardProps {
     run?: () => void;
 }
 
-
-
 const DelModal: React.FC<cardProps> = ({
     closeModal,
     folio,
@@ -165,7 +163,7 @@ const DelModal: React.FC<cardProps> = ({
     stock,
     invNombre,
     principal,
-    run
+    run,
 }) => {
     const [registro, setRegistro] = useState<string>("");
     const [motivoSalida, setMotivoSalida] = useState<string>(""); // 👈 Added
@@ -179,51 +177,44 @@ const DelModal: React.FC<cardProps> = ({
 
     useEffect(() => {});
 
-  const createMovimiento = async (
-                  inventarioID: Number,
-                  itemType: Enums<"TipoItem">,
-                  fecha: Date,
-                  ItemID: number,
-                  type: Enums<"TipoMovimiento">,
-                  quanity: number,
-                  tecnicoID: number | null = null
-              ) => {
-                  try {
-                      const { data, error } = await supabase
-                          .from("Movimientos")
-                          .insert([
-                              {
-                                  inventario_id: inventarioID,
-                                  item_type: itemType,
-                                  date: fecha.toISOString(),
-                                  item_id: ItemID,
-                                  type: type,
-                                  quantity: quanity,
-                                  tecnico_id: tecnicoID,
-                                  organizacion: organizacion,
-                              },
-                          ] as Movimientos[])
-                          .select("*");
-          
-                      if (error) {
-                          console.error("Error creando inventario:", error);
-                      } else {
-                          console.log("Inventario creado:", data);
-                          return data?.[0].id;
-                      }
-                  } catch (err) {
-                      console.error("Error creating inventario:", err);
-                  }
-              };
+    const createMovimiento = async (
+        inventarioID: Number,
+        itemType: Enums<"TipoItem">,
+        fecha: Date,
+        ItemID: number,
+        type: Enums<"TipoMovimiento">,
+        quanity: number,
+        tecnicoID: number | null = null
+    ) => {
+        try {
+            const { data, error } = await supabase
+                .from("Movimientos")
+                .insert([
+                    {
+                        inventario_id: inventarioID,
+                        item_type: itemType,
+                        date: fecha.toISOString(),
+                        item_id: ItemID,
+                        type: type,
+                        quantity: quanity,
+                        tecnico_id: tecnicoID,
+                        organizacion: organizacion,
+                    },
+                ] as Movimientos[])
+                .select("*");
 
+            if (error) {
+                console.error("Error creando inventario:", error);
+            } else {
+                console.log("Inventario creado:", data);
+                return data?.[0].id;
+            }
+        } catch (err) {
+            console.error("Error creating inventario:", err);
+        }
+    };
 
-    const movimientoOptions: Enums<"TipoMovimiento">[] = [
-        "salida",
-        "caducidad",
-        "venta",
-        "basura",
-        "error"
-    ];
+    const movimientoOptions: Enums<"TipoMovimiento">[] = ["salida", "caducidad", "venta", "basura", "error"];
     return (
         <DeleteModal>
             <ModalContent>
@@ -321,18 +312,17 @@ const DelModal: React.FC<cardProps> = ({
                         </ServicioInfo>
                     )}
 
-                {window.location.pathname === `/inventario` &&
-                    params.get("flag") === "principal" && (
-                        <ServicioInfo>
-                            <div className="folio inventario">
-                                {principal?.includes("menu") && (
-                                    <SubTitles>
-                                        Se eliminará el inventario : <strong> {invNombre}</strong>
-                                    </SubTitles>
-                                )}
-                            </div>
-                        </ServicioInfo>
-                    )}
+                {window.location.pathname === `/inventario` && params.get("flag") === "principal" && (
+                    <ServicioInfo>
+                        <div className="folio inventario">
+                            {principal?.includes("menu") && (
+                                <SubTitles>
+                                    Se eliminará el inventario : <strong> {invNombre}</strong>
+                                </SubTitles>
+                            )}
+                        </div>
+                    </ServicioInfo>
+                )}
 
                 {getRegistroFromQuery() && (
                     <ServicioInfo>
@@ -358,7 +348,7 @@ const DelModal: React.FC<cardProps> = ({
                             </SubTitles>
                             <select
                                 value={motivoSalida}
-                                onChange={(e) => setMotivoSalida(e.target.value)}
+                                onChange={e => setMotivoSalida(e.target.value)}
                                 style={{
                                     padding: "0.4rem",
                                     borderRadius: "6px",
@@ -370,7 +360,7 @@ const DelModal: React.FC<cardProps> = ({
                                 }}
                             >
                                 <option value="">Seleccione una opción</option>
-                                {movimientoOptions.map((opt) => (
+                                {movimientoOptions.map(opt => (
                                     <option key={opt} value={opt}>
                                         {opt}
                                     </option>
@@ -388,14 +378,14 @@ const DelModal: React.FC<cardProps> = ({
                             return;
                         }
                         del?.(undefined, motivoSalida);
-                       if (params.get("flag") === "equipo" && motivoSalida) {
+                        if (params.get("flag") === "equipo" && motivoSalida) {
                             createMovimiento(
                                 Number(params.get("inventarioId")),
                                 "equipo",
                                 new Date(),
                                 Number(params.get("equipoId")),
                                 motivoSalida as Enums<"TipoMovimiento">,
-                               Number(params.get("stock")) || 1,
+                                Number(params.get("stock")) || 1,
                                 null
                             );
                         }

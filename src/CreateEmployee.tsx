@@ -12,7 +12,7 @@ import { DateInput } from "./CreateServiceForm";
 const SearchButtonLink = styled.button`
     width: 4.5rem;
     height: 2.188rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     border-radius: 0.375rem;
 
     font-style: normal;

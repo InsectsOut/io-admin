@@ -60,7 +60,7 @@ const ModalMessage = styled.div`
 `;
 
 const CloseButton = styled.button`
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     color: white;
     border: none;
     border-radius: 0.375rem;
@@ -90,7 +90,7 @@ export const WarningModal: React.FC<WarningModalProps> = ({ message, onClose, vi
 const SearchButtonLink = styled.button`
     width: 4.5rem;
     height: 2.188rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     border-radius: 0.375rem;
 
     font-style: normal;

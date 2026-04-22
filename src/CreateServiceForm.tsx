@@ -33,7 +33,7 @@ const isFrecuencia = (value: any): value is Enums<"FrecuenciaServicio"> => {
 
 const PeriodicidadTag = styled.div`
     margin-top: 0.5rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     width: 6rem;
     height: 2rem;
     border-radius: 999px; /* Fully rounded edges */
@@ -54,7 +54,7 @@ const PeriodicidadTag = styled.div`
 const SearchButtonLink = styled.button<{ disable: boolean }> /*style*/ `
     width: 8.5rem;
     height: 2.188rem;
-    background: ${props => (props.disable ? "gray" : "#0d4e80")};
+    background: ${props => (props.disable ? "gray" : props.theme.primaryColor)};
     border-radius: 0.375rem;
     font-style: normal;
     font-weight: 400;

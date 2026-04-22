@@ -22,6 +22,7 @@ import Inventario from "./Inventario";
 import Profile from "./Profile";
 import { Tables } from "./supabase/Database";
 import CertificadoServicio from "./ConstanciaLight";
+import Configuracion from "./Configuracion";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -184,9 +185,7 @@ const AppRoutes = () => {
                         path="/inventario"
                         element={<Inventario organizacion={localStorage.getItem("org") ?? ""} />}
                     />
-                    <Route 
-                    path="/certificado/:id"
-                    element={<CertificadoServicio></CertificadoServicio>} ></Route>
+                    <Route path="/certificado/:id" element={<CertificadoServicio></CertificadoServicio>}></Route>
                     <Route
                         path="/perfil"
                         element={
@@ -202,6 +201,7 @@ const AppRoutes = () => {
                             />
                         }
                     />
+                    <Route path="/configuracion" element={<Configuracion />} />
                 </>
             )}
         </Routes>

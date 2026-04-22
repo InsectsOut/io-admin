@@ -21,7 +21,7 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
     box-shadow: ${props => (props.clicado ? "0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25)" : "none")};
     .topContent {
         width: 100%;
-        background: #0d4e80;
+        background: ${({ theme }) => theme.primaryColor};
         border-radius: 1rem;
         content: "";
         height: 2.429rem;

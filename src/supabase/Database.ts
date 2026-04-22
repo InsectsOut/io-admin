@@ -660,7 +660,7 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "movimientos_servicio_id_fkey"
+            foreignKeyName: "Movimientos_servicio_id_fkey"
             columns: ["servicio_id"]
             isOneToOne: false
             referencedRelation: "Servicios"
@@ -674,6 +674,45 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      OrganizacionConfig: {
+        Row: {
+          accent_color: string
+          created_at: string
+          id: number
+          logo_dark_url: string | null
+          logo_url: string | null
+          nombre_empresa: string | null
+          organizacion: string
+          primary_color: string
+          secondary_color: string
+          updated_at: string
+        }
+        Insert: {
+          accent_color?: string
+          created_at?: string
+          id?: number
+          logo_dark_url?: string | null
+          logo_url?: string | null
+          nombre_empresa?: string | null
+          organizacion: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string
+        }
+        Update: {
+          accent_color?: string
+          created_at?: string
+          id?: number
+          logo_dark_url?: string | null
+          logo_url?: string | null
+          nombre_empresa?: string | null
+          organizacion?: string
+          primary_color?: string
+          secondary_color?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       Plagas: {
         Row: {

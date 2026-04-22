@@ -8,7 +8,7 @@ export const CreateButton = styled.div`
     width: 9.625rem;
     min-height: 2.25rem;
     height: 2.25rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     border-radius: 0.359rem;
     font-style: normal;
     font-weight: 700;
@@ -61,7 +61,7 @@ export const ModalInput = styled.input`
 
 export const ModalButton = styled.button<{ margin?: string; disableFunction?: boolean }>`
     /* background: #0d4e80; */
-    background: ${props => (props.disableFunction ? "#a0a0a0" : "#0d4e80")};
+    background: ${props => (props.disableFunction ? "#a0a0a0" : props.theme.primaryColor)};
     color: white;
     border: none;
     padding: 0.5rem 1rem;

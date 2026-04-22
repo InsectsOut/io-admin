@@ -8,6 +8,7 @@ import { RiDeleteBin6Line } from "react-icons/ri";
 import { FaExchangeAlt } from "react-icons/fa";
 import { supabase } from "./utils/ClientSupabase";
 import DelModal from "./DeleteModal";
+import { useBrandTheme } from "./utils/ThemeContext";
 
 type DownloaderProps = {
     editable?: boolean;
@@ -24,14 +25,14 @@ const DownloaderContainer = styled.div<DownloaderProps>`
     justify-content: space-between;
     padding-right: 0.75rem;
     border-radius: 0.4rem;
-    border-left: 4px solid #0d4e80;
+    border-left: 4px solid ${({ theme }) => theme.primaryColor};
     box-shadow: 0px 1px 4px rgba(0, 0, 0, 0.1);
     gap: 0.5rem;
     .fileIconWrapper {
         display: flex;
         align-items: center;
         padding: 0 0.5rem;
-        color: #0d4e80;
+        color: ${({ theme }) => theme.primaryColor};
         flex-shrink: 0;
     }
     .iconsContainer {
@@ -43,7 +44,7 @@ const DownloaderContainer = styled.div<DownloaderProps>`
     .editorInput {
         flex: 1;
         background: white;
-        border: 1px solid #0d4e80;
+        border: 1px solid ${({ theme }) => theme.primaryColor};
         border-radius: 0.25rem;
         padding: 0.2rem 0.5rem;
         color: black;
@@ -73,6 +74,7 @@ type styledDownloaderProps = {
 };
 
 const FileDownloader: React.FC<styledDownloaderProps> = props => {
+    const { theme } = useBrandTheme();
     const [editorOpen, setEditorOpen] = useState<boolean>(false);
     const [fileNombre, setFileNombre] = useState<string>("");
     const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
@@ -160,23 +162,27 @@ const FileDownloader: React.FC<styledDownloaderProps> = props => {
                     {props.file_name === "Firma" ? (
                         <MdFileUpload
                             size={22}
-                            style={{ color: "#0d4e80", cursor: "pointer" }}
+                            style={{ color: theme.primaryColor, cursor: "pointer" }}
                             onClick={props.openUploader}
                         />
                     ) : (
-                        <FaEdit size={19} style={{ color: "#0d4e80", cursor: "pointer" }} onClick={openEditor} />
+                        <FaEdit
+                            size={19}
+                            style={{ color: theme.primaryColor, cursor: "pointer" }}
+                            onClick={openEditor}
+                        />
                     )}
                     {props.file_name !== "Firma" && props.onReplace && (
                         <FaExchangeAlt
                             size={17}
                             title="Reemplazar archivo"
-                            style={{ color: "#0d4e80", cursor: "pointer" }}
+                            style={{ color: theme.primaryColor, cursor: "pointer" }}
                             onClick={() => replaceInputRef.current?.click()}
                         />
                     )}
                     <FaFileDownload
                         size={19}
-                        style={{ color: "#0d4e80", cursor: "pointer" }}
+                        style={{ color: theme.primaryColor, cursor: "pointer" }}
                         onClick={() => {
                             props.onclick?.();
                         }}

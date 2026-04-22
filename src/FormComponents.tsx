@@ -30,7 +30,7 @@ export const StyledInput = styled.input /*style*/ `
 
 export const StyledButton = styled.button /*style*/ `
     color: white;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     padding: 10px;
     margin-top: 10px;
     border: none;
@@ -47,7 +47,7 @@ export const StyledButton = styled.button /*style*/ `
 
 export const StyledAlert = styled.div /*style*/ `
     padding: 10px;
-    background-color: #f44336;
+    background-color: ${({ theme }) => theme.secondaryColor};
     color: white;
     margin-top: 10px;
     border-radius: 5px;

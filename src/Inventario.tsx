@@ -12,6 +12,7 @@ import {
     FaCheckCircle,
 } from "react-icons/fa";
 import { useState } from "react";
+import { useBrandTheme } from "./utils/ThemeContext";
 import Inventario_Menu from "./Invetarios_Views";
 import useBodyClick from "./UseBodyClick";
 import { Database, Enums, Tables } from "./supabase/Database";
@@ -112,9 +113,9 @@ export const DashbboardButton = styled.div`
     border-radius: 1rem;
     background: linear-gradient(145deg, #f9fbfd, #e5ecf4);
     box-shadow:
-        0 6px 20px rgba(14, 78, 126, 0.08),
+        0 6px 20px ${({ theme }) => theme.primaryColor}14,
         inset 0 1px 0 rgba(255, 255, 255, 0.6);
-    border: 1px solid rgba(14, 78, 126, 0.1);
+    border: 1px solid ${({ theme }) => theme.primaryColor}1a;
     backdrop-filter: blur(6px);
     display: flex;
     align-items: center;
@@ -128,7 +129,7 @@ export const DashbboardButton = styled.div`
     p {
         font-size: 1.1rem;
         font-weight: 600;
-        color: #0e4e7e;
+        color: ${({ theme }) => theme.primaryColor};
         margin: 0;
         text-align: center;
         transition: color 0.3s ease;
@@ -136,7 +137,7 @@ export const DashbboardButton = styled.div`
 
     svg {
         font-size: 2rem;
-        color: #0e4e7e;
+        color: ${({ theme }) => theme.primaryColor};
         transition:
             transform 0.3s ease,
             color 0.3s ease;
@@ -149,15 +150,15 @@ export const DashbboardButton = styled.div`
         left: -50%;
         width: 200%;
         height: 200%;
-        background: linear-gradient(120deg, rgba(14, 78, 126, 0.1), transparent 60%);
+        background: linear-gradient(120deg, ${({ theme }) => theme.primaryColor}1a, transparent 60%);
         transform: rotate(25deg);
         opacity: 0;
         transition: opacity 0.3s ease;
     }
 
     &:hover {
-        background: linear-gradient(145deg, #0e4e7e, #1d6fa5);
-        box-shadow: 0 10px 24px rgba(14, 78, 126, 0.25);
+        background: linear-gradient(145deg, ${({ theme }) => theme.primaryColor}, #1d6fa5);
+        box-shadow: 0 10px 24px ${({ theme }) => theme.primaryColor}40;
         transform: translateY(-2px);
 
         p {
@@ -174,7 +175,7 @@ export const DashbboardButton = styled.div`
 
     &:active {
         transform: translateY(0);
-        box-shadow: 0 4px 12px rgba(14, 78, 126, 0.2);
+        box-shadow: 0 4px 12px ${({ theme }) => theme.primaryColor}33;
     }
 `;
 
@@ -187,7 +188,7 @@ const MainContent = styled.div`
     overflow-y: scroll;
     overflow-x: hidden;
     .title {
-        color: #0d4e80;
+        color: ${({ theme }) => theme.primaryColor};
     }
     .dashboardMenu {
         width: 100%;
@@ -238,7 +239,7 @@ const AlertasContainer = styled.div`
     padding: 1rem;
     background-color: #f7f9fb; /* Fondo claro */
     h2 {
-        color: #0d4e80; /* Título en azul */
+        color: ${({ theme }) => theme.primaryColor}; /* Título en azul */
         margin-bottom: 1rem;
     }
     ul {
@@ -255,14 +256,14 @@ const AlertasContainer = styled.div`
     }
     .icon {
         font-size: 1.5rem;
-        color: rgb(14, 78, 126); /* Íconos en azul */
+        color: ${({ theme }) => theme.primaryColor}; /* Íconos en azul */
     }
 `;
 
 const StyledLabel = styled.label`
     min-width: 150px;
     font-weight: 600;
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     font-size: 0.9rem;
     text-align: left;
 `;
@@ -286,6 +287,7 @@ export enum InventarioFlag {
 }
 
 const Inventario: React.FC<inventarioProps> = props => {
+    const { theme } = useBrandTheme();
     const [inventarioMenu, setInventarioMenu] = useState<boolean>(false);
     const [inventarioFlag, setInventarioFlag] = useState<Enums<"TipoInventario">>();
     const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
@@ -328,7 +330,7 @@ const Inventario: React.FC<inventarioProps> = props => {
                             setInventarioMenu(false);
                         }}
                     >
-                        <FaPrescriptionBottle style={{ fontSize: "2rem", color: "rgb(14, 78, 126)" }} />
+                        <FaPrescriptionBottle style={{ fontSize: "2rem", color: theme.primaryColor }} />
                         <p>Artículos</p>
                     </MenuButtons>
                 </LeftMenu>
@@ -367,19 +369,19 @@ const Inventario: React.FC<inventarioProps> = props => {
                             <h1 className="title">Inventario</h1>
                             <div className="dashboardMenu">
                                 <DashbboardButton onClick={() => handleMenuClick("empleado")}>
-                                    <FaUserCog style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
+                                    <FaUserCog style={{ fontSize: "3rem" }} />
                                     <p>Inventarios de técnicos</p>
                                 </DashbboardButton>
                                 <DashbboardButton onClick={() => handleMenuClick("principal")}>
-                                    <FaWarehouse style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
+                                    <FaWarehouse style={{ fontSize: "3rem" }} />
                                     <p>Inventario Principal</p>
                                 </DashbboardButton>
                                 <DashbboardButton onClick={() => handleMenuClick("equipo")}>
-                                    <FaLaptop style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
+                                    <FaLaptop style={{ fontSize: "3rem" }} />
                                     <p>Inventario de Equipo</p>
                                 </DashbboardButton>
                                 <DashbboardButton onClick={() => handleMenuClick("vehiculo")}>
-                                    <FaCar style={{ fontSize: "3rem", color: "rgb(14, 78, 126)" }} />
+                                    <FaCar style={{ fontSize: "3rem" }} />
                                     <p>Inventario de Vehículos</p>
                                 </DashbboardButton>
                             </div>
