@@ -5,6 +5,7 @@ import pump from "./assets/pumpicon.png";
 import { FaRegCalendarAlt } from "react-icons/fa";
 import logoGrande from "./assets/logoGrande.png";
 import { Link, useLocation } from "react-router-dom";
+import { useBrandTheme } from "./utils/ThemeContext";
 import { FaSprayCan, FaWarehouse, FaClipboardList } from "react-icons/fa";
 
 const shineAnimation = keyframes /*style*/ `
@@ -94,7 +95,7 @@ const Option = styled.div /*style*/ `
 
 const OptionContainer = styled(Option) /*style*/ `
     height: fit-content;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     border-radius: 20px;
     display: flex;
     flex-direction: column;
@@ -259,6 +260,7 @@ const OptionsCardsCont = styled.div /*style*/ `
 `;
 
 const Dashboard = () => {
+    const { theme } = useBrandTheme();
     return (
         <>
             <DashboardContainer>
@@ -302,7 +304,11 @@ const Dashboard = () => {
                         </Link>
                     </OptionsCardsCont>
                     <ImgCont>
-                        <InsectImage loading="lazy" src={logoGrande} />
+                        <InsectImage
+                            loading="lazy"
+                            src={theme.logoUrl ?? logoGrande}
+                            alt={theme.nombreEmpresa ?? "Logo"}
+                        />
                         <InfoText>
                             <p>
                                 Hola, Esta herramienta nos ayudará a agilizar la operación de Insects Out. Ha sido

@@ -16,7 +16,7 @@ const ConfirmationModal = styled.div`
 const ModalContent = styled.div`
     position: relative;
     width: 50%;
-    max-width:50%;
+    max-width: 50%;
     height: auto;
     background: #f4f4f4;
     box-shadow: 0px 4.59475px 4.59475px rgba(0, 0, 0, 0.25);
@@ -27,7 +27,7 @@ const ModalContent = styled.div`
     padding: 1.75rem;
     gap: 1.5rem;
     color: white;
-    text-align: center ;
+    text-align: center;
     justify-content: center;
 `;
 
@@ -82,7 +82,7 @@ const Button = styled.button<{ variant?: "confirm" | "cancel" }>`
     min-height: 2.25rem;
     height: 2.25rem;
     padding: 0 1rem;
-    background: ${(props) => (props.variant === "cancel" ? "#999" : "#0d4e80")};
+    background: ${props => (props.variant === "cancel" ? "#999" : props.theme.secondaryColor)};
     border-radius: 0.359rem;
     font-style: normal;
     font-weight: 700;
@@ -90,9 +90,9 @@ const Button = styled.button<{ variant?: "confirm" | "cancel" }>`
     color: white;
     cursor: pointer;
     transition: all 0.2s ease;
-    
+
     &:hover {
-        background-color: ${(props) => (props.variant === "cancel" ? "#777" : "#2980b9")};
+        filter: brightness(0.85);
         transform: scale(1.05);
     }
 `;

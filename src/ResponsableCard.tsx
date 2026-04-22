@@ -10,6 +10,7 @@ import { useEffect, useState } from "react";
 import { CardInputs } from "./rehusableComponents/CardInputs";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import { FaEdit } from "react-icons/fa";
+import { useBrandTheme } from "./utils/ThemeContext";
 import { useToast } from "./rehusableComponents/Toast";
 
 type Cliente = Tables<"Clientes">;
@@ -24,7 +25,7 @@ type Direccion = Tables<"Direcciones">;
 
 const SaveButton = styled.button /*style*/ `
     all: unset;
-    background-color: #0d4e80;
+    background-color: ${({ theme }) => theme.primaryColor};
     display: flex;
     justify-content: center;
     align-items: center;
@@ -115,6 +116,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
     const [direccionId, setDireccionId] = useState<number | null>(null);
     const [screenWidth, setScreenWidth] = useState(window.innerWidth);
     const { showToast } = useToast();
+    const { theme } = useBrandTheme();
     useEffect(() => {
         const handleResize = () => setScreenWidth(window.innerWidth);
         window.addEventListener("resize", handleResize);
@@ -332,7 +334,7 @@ const ResponsableCard: React.FC<ResponsableCardProps> = ({
                                 onClick={() => (nombre !== "" ? setToggleEditName(!toggleEditName) : null)}
                                 style={{
                                     cursor: "pointer",
-                                    color: toggleEditName ? "#0d4e80" : "#ccc",
+                                    color: toggleEditName ? theme.primaryColor : "#ccc",
                                     transition: "color 0.3s",
                                 }}
                             ></FaEdit>

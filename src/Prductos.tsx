@@ -12,6 +12,7 @@ import SubInventarioDetalle, {
     EntryHeaderCell,
     FormRow,
     Icono,
+    MobileLabel,
     SectionContainer,
     SectionTitle,
     StyledLabel,
@@ -88,11 +89,11 @@ const MobileSelect = styled.select`
         display: block;
         flex: 1;
         padding: 0.6rem 1rem;
-        border: 2px solid #0d4e80;
+        border: 2px solid ${({ theme }) => theme.primaryColor};
         border-radius: 0.5rem;
         font-size: 1rem;
         font-weight: 600;
-        color: #0d4e80;
+        color: ${({ theme }) => theme.primaryColor};
         background: #fff;
         cursor: pointer;
         appearance: none;
@@ -126,8 +127,8 @@ const ProdActionsRow = styled.div`
             margin-left: 0 !important;
             width: auto;
             height: 2.5rem;
-            background: #eef5fb;
-            border: 1.5px solid #0d4e80;
+            background: ${({ theme }) => theme.accentColor};
+            border: 1.5px solid ${({ theme }) => theme.primaryColor};
             border-radius: 0.45rem;
             justify-content: center;
             align-items: center;
@@ -135,7 +136,7 @@ const ProdActionsRow = styled.div`
             cursor: pointer;
             font-size: 0.82rem;
             font-weight: 600;
-            color: #0d4e80;
+            color: ${({ theme }) => theme.primaryColor};
         }
 
         ${DeleteBtn} {
@@ -621,9 +622,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                     </EntryText>
                 </EntryRow>
 
-                <ProdActionsRow
-                
-                >
+                <ProdActionsRow>
                     <EntryRow
                         onClick={() => {
                             fetchSingleProduct(entry.id);
@@ -636,7 +635,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                         id="entrySixthElement"
                     >
                         <Icono size={16} />
-                        <span>Editar</span>
+                        <MobileLabel>Editar</MobileLabel>
                     </EntryRow>
                     <DeleteBtn
                         onClick={() => {
@@ -694,7 +693,7 @@ const ProductosMenu: React.FC<ProductosProps> = ({ organizacion }) => {
                         className="entrySixthElement"
                     >
                         <Icono size={16} />
-                        <span>Editar</span>
+                        <MobileLabel>Editar</MobileLabel>
                     </EntryRow>
 
                     <DeleteBtn

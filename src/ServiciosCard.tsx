@@ -4,6 +4,7 @@ import { IoIosAddCircleOutline } from "react-icons/io";
 import { Enums, Tables } from "../src/supabase/Database";
 import { FormatoInputs } from "./CreateServiceForm";
 import { Titulo } from "./Servicios";
+import { useBrandTheme } from "./utils/ThemeContext";
 import { useParams } from "react-router-dom";
 import { FechaInput } from "./CreateServiceForm";
 import { DateInput } from "./CreateServiceForm";
@@ -112,7 +113,7 @@ interface serviciosProps {
 
 export const StyledButton = styled.button<StyledButtonProps>`
     all: unset;
-    background-color: ${props => (props.clicado ? "#0D4E80" : "gray")};
+    background-color: ${props => (props.clicado ? props.theme.primaryColor : "gray")};
     font-weight: bold;
     width: 9.62rem;
     position: absolute;
@@ -131,7 +132,7 @@ export const StyledButton = styled.button<StyledButtonProps>`
 `;
 export const ReturnButton = styled.button`
     background: none;
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     font-size: 0.8rem;
     font-weight: normal;
     position: absolute;
@@ -140,7 +141,7 @@ export const ReturnButton = styled.button`
     margin-bottom: 0.5rem;
     width: 9.62rem;
     border-radius: 0.359rem;
-    border: 0.075rem solid #0d4e80;
+    border: 0.075rem solid ${({ theme }) => theme.primaryColor};
 `;
 
 const ServiciosCardContainer = styled.div`
@@ -183,7 +184,7 @@ const ServiciosCardContainer = styled.div`
 
         :hover {
             background: white;
-            color: #0d4e80;
+            color: ${({ theme }) => theme.primaryColor};
             cursor: pointer;
             border-radius: 0.215rem;
         }
@@ -193,7 +194,7 @@ const ServiciosCardContainer = styled.div`
         display: flex;
         justify-content: center;
         align-items: center;
-        background: #0d4e80;
+        background: ${({ theme }) => theme.primaryColor};
         border-radius: 0.215rem;
         border: 0.072rem solid rgb(114, 114, 114);
     }
@@ -274,6 +275,7 @@ const PdfMailButton = styled.div<StyledButtonProps>`
 
 const ServiciosCard: React.FC<serviciosProps> = props => {
     const { showToast } = useToast();
+    const { theme } = useBrandTheme();
     const [readOnly, setReadOnly] = useState(true);
     const [nombreEditable, setNombreEditable] = useState(true);
     const [fechaEditable, setFechaEditable] = useState(true);
@@ -671,8 +673,8 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                         setInfoTag(e, "general");
                     }}
                     style={{
-                        background: infoTab === "general" ? "white" : "#0D4E80",
-                        color: infoTab === "general" ? "#0D4E80" : "white",
+                        background: infoTab === "general" ? "white" : theme.primaryColor,
+                        color: infoTab === "general" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>General</p>
@@ -683,8 +685,8 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                         setInfoTag(e, "registros");
                     }}
                     style={{
-                        background: infoTab === "registros" ? "white" : "#0D4E80",
-                        color: infoTab === "registros" ? "#0D4E80" : "white",
+                        background: infoTab === "registros" ? "white" : theme.primaryColor,
+                        color: infoTab === "registros" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>Registros</p>
@@ -695,8 +697,8 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                         setInfoTag(e, "consumo");
                     }}
                     style={{
-                        background: infoTab === "consumo" ? "white" : "#0D4E80",
-                        color: infoTab === "consumo" ? "#0D4E80" : "white",
+                        background: infoTab === "consumo" ? "white" : theme.primaryColor,
+                        color: infoTab === "consumo" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>Consumo</p>
@@ -707,8 +709,8 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                         setInfoTag(e, "constancia");
                     }}
                     style={{
-                        background: infoTab === "constancia" ? "white" : "#0D4E80",
-                        color: infoTab === "constancia" ? "#0D4E80" : "white",
+                        background: infoTab === "constancia" ? "white" : theme.primaryColor,
+                        color: infoTab === "constancia" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>Constancia</p>
@@ -964,7 +966,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                 <ButtonComponents
                                     background="white"
                                     height="3rem"
-                                    color={servicios[0]?.was_used ? "#aaa" : "#0D4E80"}
+                                    color={servicios[0]?.was_used ? "#aaa" : theme.primaryColor}
                                     justify="center"
                                     gap={1}
                                     onClick={() => {

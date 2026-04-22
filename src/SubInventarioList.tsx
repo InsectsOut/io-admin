@@ -51,7 +51,7 @@ const SectionContainer = styled.div`
 `;
 
 const SectionTitle = styled.h2`
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     margin-bottom: 1rem;
 `;
 

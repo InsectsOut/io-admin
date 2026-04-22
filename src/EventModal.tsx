@@ -62,7 +62,7 @@ const CloseButton = styled.button`
     cursor: pointer;
     font-size: 20px;
     color: #fff;
-    background: #e74c3c;
+    background: ${({ theme }) => theme.secondaryColor};
     border-radius: 50%;
     width: 2rem;
     height: 2rem;
@@ -72,7 +72,7 @@ const CloseButton = styled.button`
     transition: background 0.3s ease;
 
     &:hover {
-        background: #c0392b;
+        filter: brightness(0.85);
     }
 `;
 

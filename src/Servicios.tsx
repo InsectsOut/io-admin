@@ -49,7 +49,7 @@ export const ModalContainer = styled.div<{ open?: boolean }> /*style*/ `
         display: flex;
     }
     .dateTexts {
-        color: #0d4e80;
+        color: ${({ theme }) => theme.primaryColor};
         p {
             margin: 0;
         }
@@ -63,7 +63,7 @@ export const Titulo = styled.h1 /*style*/ `
     text-align: left;
     margin-left: 5.875rem;
     margin-bottom: 0;
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     @media (max-width: 900px) {
         margin-left: 0px;
         margin-bottom: 1rem;
@@ -103,7 +103,7 @@ export const FiltrosLista = styled.li /*style*/ `
     padding-left: 1rem;
     padding-right: 1rem;
     height: 2.063rem;
-    background: #6b8aac;
+    background: ${({ theme }) => theme.primaryColor}b3;
     border-radius: 0.938rem;
 
     font-style: normal;
@@ -116,7 +116,7 @@ export const FiltrosLista = styled.li /*style*/ `
     text-align: center;
     color: #ffffff;
     &:hover {
-        background-color: #2980b9;
+        background: ${({ theme }) => theme.primaryColor};
         transform: scale(1.05);
         cursor: pointer;
     }
@@ -183,7 +183,7 @@ export const SearchBar = styled.input /*style*/ `
 export const SearchButton = styled.button /*style*/ `
     width: 4.5rem;
     height: 2.188rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     border-radius: 0.375rem;
 
     font-style: normal;
@@ -274,12 +274,13 @@ export const ModalContentBottom = styled.div<{ open?: boolean }> /*style*/ `
         margin-right: 1rem;
     }
     #limpiar {
-        color: #6b8aac;
+        color: ${({ theme }) => theme.primaryColor};
         background-color: white;
     }
     #aplicar {
-        background: #6b8aac;
+        background: ${({ theme }) => theme.primaryColor};
         border-radius: 0.28524rem;
+        color: white;
     }
 `;
 
@@ -450,7 +451,7 @@ export const CreateButton = styled(Link) /*style*/ `
     width: 8.625rem;
     min-height: 2.25rem;
     height: 2.25rem;
-    background: #0d4e80;
+    background: ${({ theme }) => theme.primaryColor};
     border-radius: 0.359rem;
     position: absolute;
     font-style: normal;
@@ -500,7 +501,7 @@ export const MobileCard = styled.div`
     margin-bottom: 0.5rem;
     padding: 0.85rem 1rem;
     border-radius: 0.4rem;
-    border-left: 3px solid #0d4e80;
+    border-left: 3px solid ${({ theme }) => theme.primaryColor};
     box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
     color: #2c3e50;
     display: flex;
@@ -520,7 +521,7 @@ export const MobileCardTitle = styled.div`
     font-weight: 700;
     font-size: 1rem;
     padding: 0 0 0.4rem 0;
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     a,
     a:visited {
         color: inherit;
@@ -560,8 +561,8 @@ export const MobileActionLink = styled(Link)`
     all: unset;
     flex: 1;
     height: 2.5rem;
-    background: #eef5fb;
-    border: 1.5px solid #0d4e80;
+    background: ${({ theme }) => theme.accentColor};
+    border: 1.5px solid ${({ theme }) => theme.primaryColor};
     border-radius: 0.45rem;
     display: flex;
     justify-content: center;
@@ -569,7 +570,7 @@ export const MobileActionLink = styled(Link)`
     gap: 0.4rem;
     font-size: 0.82rem;
     font-weight: 600;
-    color: #0d4e80;
+    color: ${({ theme }) => theme.primaryColor};
     cursor: pointer;
     text-decoration: none;
     box-sizing: border-box;
@@ -581,7 +582,7 @@ export const MobileActionLink = styled(Link)`
 export const MobileDeleteBtn = styled.button`
     flex: 1;
     height: 2.5rem;
-    background: #e74c3c;
+    background: ${({ theme }) => theme.secondaryColor};
     border: none;
     border-radius: 0.45rem;
     display: flex;
@@ -593,7 +594,7 @@ export const MobileDeleteBtn = styled.button`
     color: white;
     cursor: pointer;
     &:hover {
-        background: #c0392b;
+        filter: brightness(0.85);
     }
     &:active {
         transform: scale(0.97);

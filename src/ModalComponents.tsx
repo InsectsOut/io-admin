@@ -28,7 +28,7 @@ export const RegistroModal = styled.div`
     }
     .sendButton {
         width: 180.21px;
-        background: #0d4e80;
+        background: ${({ theme }) => theme.primaryColor};
         height: 40.19px;
     }
 `;

@@ -93,7 +93,7 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
 
     .direccionesOpen {
         width: 100%;
-        background: #0d4e80;
+        background: ${({ theme }) => theme.primaryColor};
         border-radius: 0.718rem;
         margin-right: 24px;
         cursor: pointer;
@@ -110,7 +110,7 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
         align-self: flex-end;
         margin-right: 24px;
         border-radius: 8px;
-        border: 1px solid #0d4e80;
+        border: 1px solid ${({ theme }) => theme.primaryColor};
         padding: 0.6em 1.2em;
         font-size: 1em;
         font-weight: 500;
@@ -123,7 +123,7 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
         color: black;
     }
     .addButton:hover {
-        background-color: #0d4e80;
+        background-color: ${({ theme }) => theme.primaryColor};
         color: white;
     }
     .closeButton {

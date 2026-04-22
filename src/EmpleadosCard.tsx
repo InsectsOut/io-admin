@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
+import { useBrandTheme } from "./utils/ThemeContext";
 import { MdFileUpload } from "react-icons/md";
 import { useParams } from "react-router-dom";
 import { ReturnButton } from "./ServiciosCard";
@@ -71,7 +72,7 @@ export const BodyContainer = styled.div`
     }
     .infoButtons {
         width: 25%;
-        background: #0d4e80;
+        background: ${({ theme }) => theme.primaryColor};
         border-radius: 0.25rem;
         cursor: pointer;
         box-shadow: 0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25);
@@ -219,6 +220,7 @@ const EmpleadosCard = () => {
     const [isClicked, setClicked] = useState<boolean>(false);
     const [isSaving, setIsSaving] = useState(false);
     const { showToast } = useToast();
+    const { theme } = useBrandTheme();
     const [responsableExists] = useState<boolean | null>(false);
     const [updater, setUpdater] = useState(false);
     const [infoTab, setInfoTab] = useState<string>("general");
@@ -681,8 +683,8 @@ const EmpleadosCard = () => {
                                 setInfoTag(e, "general");
                             }}
                             style={{
-                                background: infoTab === "general" ? "white" : "#0D4E80",
-                                color: infoTab === "general" ? "#0D4E80" : "white",
+                                background: infoTab === "general" ? "white" : theme.primaryColor,
+                                color: infoTab === "general" ? theme.primaryColor : "white",
                             }}
                         >
                             <p>General</p>
@@ -693,8 +695,8 @@ const EmpleadosCard = () => {
                                 setInfoTag(e, "trabajo");
                             }}
                             style={{
-                                background: infoTab === "trabajo" ? "white" : "#0D4E80",
-                                color: infoTab === "trabajo" ? "#0D4E80" : "white",
+                                background: infoTab === "trabajo" ? "white" : theme.primaryColor,
+                                color: infoTab === "trabajo" ? theme.primaryColor : "white",
                             }}
                         >
                             <p>Trabajo</p>
@@ -706,8 +708,8 @@ const EmpleadosCard = () => {
                                 fetchDocs(id);
                             }}
                             style={{
-                                background: infoTab === "docs" ? "white" : "#0D4E80",
-                                color: infoTab === "docs" ? "#0D4E80" : "white",
+                                background: infoTab === "docs" ? "white" : theme.primaryColor,
+                                color: infoTab === "docs" ? theme.primaryColor : "white",
                             }}
                         >
                             <p>Docs</p>
@@ -922,7 +924,7 @@ const EmpleadosCard = () => {
                                     background="white"
                                     width="55%"
                                     height="3rem"
-                                    color="#0D4E80"
+                                    color={theme.primaryColor}
                                     justify="space-between"
                                     onClick={() => {
                                         openUploader(false);
@@ -935,7 +937,7 @@ const EmpleadosCard = () => {
                                     background="white"
                                     width="30%"
                                     height="3rem"
-                                    color="#0D4E80"
+                                    color={theme.primaryColor}
                                     justify="space-between"
                                     onClick={handleMostrarCapacitaciones}
                                 >

@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import styled from "styled-components";
 import { Tables } from "../src/supabase/Database";
 import { Titulo } from "./Servicios";
+import { useBrandTheme } from "./utils/ThemeContext";
 import { useParams } from "react-router-dom";
 import { servicioOptions } from "./tipo_servicios";
 import { ReturnButton } from "./ServiciosCard";
@@ -114,6 +115,7 @@ const TextoAddCard = styled.h1 /*style*/ `
 
 const ClientesCard: React.FC<serviciosProps> = props => {
     const { showToast } = useToast();
+    const { theme } = useBrandTheme();
     const [cliente, setCliente] = useState<Cliente[] | null>([]);
     const [nombre, setNombre] = useState<string>("");
     const [telefono, setTelefono] = useState<string>("");
@@ -306,8 +308,8 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                     className="genInfo infoButtons"
                     onClick={() => setInfoTab("general")}
                     style={{
-                        background: currentTab === "general" ? "white" : "#0D4E80",
-                        color: currentTab === "general" ? "#0D4E80" : "white",
+                        background: currentTab === "general" ? "white" : theme.primaryColor,
+                        color: currentTab === "general" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>General</p>
@@ -316,8 +318,8 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                     className="workInfo infoButtons"
                     onClick={() => setInfoTab("responsable")}
                     style={{
-                        background: currentTab === "responsable" ? "white" : "#0D4E80",
-                        color: currentTab === "responsable" ? "#0D4E80" : "white",
+                        background: currentTab === "responsable" ? "white" : theme.primaryColor,
+                        color: currentTab === "responsable" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>Responsable</p>
@@ -326,8 +328,8 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                     className="workInfo infoButtons"
                     onClick={() => setInfoTab("direccion")}
                     style={{
-                        background: currentTab === "direccion" ? "white" : "#0D4E80",
-                        color: currentTab === "direccion" ? "#0D4E80" : "white",
+                        background: currentTab === "direccion" ? "white" : theme.primaryColor,
+                        color: currentTab === "direccion" ? theme.primaryColor : "white",
                     }}
                 >
                     <p>Dirección</p>
@@ -468,9 +470,9 @@ const ClientesCard: React.FC<serviciosProps> = props => {
                                         alignItems: "center",
                                         gap: "0.4rem",
                                         padding: "0.45rem 0.9rem",
-                                        border: "0.125rem solid #0d4e80",
+                                        border: `0.125rem solid ${theme.primaryColor}`,
                                         borderRadius: "0.359rem",
-                                        color: "#0d4e80",
+                                        color: theme.primaryColor,
                                         fontSize: "0.9rem",
                                         fontWeight: 600,
                                         cursor: "pointer",

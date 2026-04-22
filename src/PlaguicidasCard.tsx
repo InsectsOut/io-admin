@@ -8,6 +8,7 @@ import { useNavigate } from "react-router-dom";
 import { useParams } from "react-router-dom";
 import ConfirmModal from "./rehusableComponents/ConfirmationModal";
 import { useToast } from "./rehusableComponents/Toast";
+import { useBrandTheme } from "./utils/ThemeContext";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 type RegistroConProducto = Tables<"RegistroAplicacion"> & {
@@ -27,7 +28,7 @@ const RegistroContainer = styled.div<{ clicado?: boolean; alturaregitro: number 
     box-shadow: ${props => (props.clicado ? "0px 0.287rem 0.287rem rgba(0, 0, 0, 0.25)" : "none")};
     .topContent {
         width: 100%;
-        background: #0d4e80;
+        background: ${({ theme }) => theme.primaryColor};
         border-radius: 1rem;
         content: "";
         height: 2.429rem;
@@ -152,6 +153,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
     const navigate = useNavigate();
     const { folio } = useParams();
     const { showToast } = useToast();
+    const { theme } = useBrandTheme();
     const [enableConfirm, setEnableConfirm] = useState<boolean>(false);
     const [disableInputs, setDisableInputs] = useState<boolean>(false);
 
@@ -496,7 +498,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                 justifyContent: "center",
                 width: "95%",
                 padding: "0.5rem 1rem",
-                background: enableConfirm ? "#0d4e80" : "#0d4e80",
+                background: enableConfirm ? theme.primaryColor : theme.primaryColor,
                 borderRadius: "0.7179rem",
                 cursor: enableConfirm ? "pointer" : "not-allowed",
                 transition: "all 0.3s ease-in-out",
@@ -505,7 +507,7 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
             }}
             disabled={!enableConfirm}
             onMouseEnter={e => enableConfirm && (e.currentTarget.style.background = "#0a3a5f")}
-            onMouseLeave={e => enableConfirm && (e.currentTarget.style.background = "#0d4e80")}
+            onMouseLeave={e => enableConfirm && (e.currentTarget.style.background = theme.primaryColor)}
         >
             Confirmar
         </button>
