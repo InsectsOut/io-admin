@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import styled from "styled-components";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
-import { FaEdit } from "react-icons/fa";
+import { FaFilePdf } from "react-icons/fa";
 import { Database, Tables } from "../src/supabase/Database";
 import PaginationComponent from "./PaginationComponent";
 import { Link, useLocation } from "react-router-dom";
@@ -358,6 +358,10 @@ export const ServiciosElement1 = styled.div<{ screen_width?: number }> /*style*/
         padding-left: 1rem;
     }
     #iconSector {
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding-left: 0;
     }
 `;
 export const ServiciosElement2 = styled.div<{ screen_width?: number }> /*style*/ `
@@ -1810,8 +1814,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                     {screenWidth > 900 && <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>}
                                     {screenWidth > 900 && (
                                         <h3 className="primerSector" id="iconSector">
-                                            {" "}
-                                            <FaEdit />
+                                            <Link to={`/certificado/${servicio.id}`} style={{ color: "inherit" }}>
+                                                <FaFilePdf />
+                                            </Link>
                                         </h3>
                                     )}
                                 </ServiciosElement1>
@@ -1875,10 +1880,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                         </button>
                                     </ServiciosElement4>
                                 )}
-                                {screenWidth < 900 && (
+                                {screenWidth <= 900 && (
                                     <ServiciosElement5
                                         screen_width={screenWidth}
-                                        swipeActiator={swipedItems[servicio.id]}
                                         onClick={() => {
                                             deleteServicioHandler(servicio).then(() => {
                                                 setDeleteModalVisible(true);
