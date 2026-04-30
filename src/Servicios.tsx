@@ -753,14 +753,14 @@ export const Servicios: React.FC<serviciosProps> = props => {
         setTextModal("");
         clearAllFilters();
 
-        if (barraBusqueda === "") {
+        const urlBusqueda = new URLSearchParams(window.location.search).get("busqueda") ?? barraBusqueda;
+
+        if (urlBusqueda === "") {
             const { count } = await supabase
                 .from("Servicios")
                 .select("id", { count: "exact" })
                 .order("fecha_servicio", { ascending: false })
                 .filter("organizacion", "eq", props.organizacion);
-
-            // setPaginasNoFilter(count)
 
             // Calculate the total number of pages
             const totalPages = count && Math.ceil(count / itemsPerPage);
@@ -775,10 +775,14 @@ export const Servicios: React.FC<serviciosProps> = props => {
                 .order("fecha_servicio", { ascending: false })
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
 
-            if (barraBusqueda !== "") {
-                query = isNaN(parseInt(barraBusqueda))
-                    ? query.ilike("Clientes.nombre", `%${barraBusqueda}%`)
-                    : query.eq("folio", `${barraBusqueda}`);
+            if (urlBusqueda !== "") {
+                if (!isNaN(parseInt(urlBusqueda))) {
+                    query = query.eq("folio", `${urlBusqueda}`);
+                } else {
+                    query = query.or(`nombre.ilike.%${urlBusqueda}%,apellidos.ilike.%${urlBusqueda}%`, {
+                        foreignTable: "Clientes",
+                    });
+                }
             }
 
             const { error, data: servicios, count } = await query;
@@ -924,10 +928,11 @@ export const Servicios: React.FC<serviciosProps> = props => {
             const startDateParam = params.get("startDate");
             const endDateParam = params.get("endDate");
             const currentPageParam = params.get("currentPage");
+            const busquedaParam = params.get("busqueda");
 
-            // if (currentPageParam){
-            //   setCurrentPage(() => Number(currentPageParam));
-            // }
+            if (busquedaParam) {
+                setBarraBusqueda(busquedaParam);
+            }
 
             const clienteId = clienteParam ? Number(clienteParam) : null;
             const tecnicoId = tecnicoIdParam ? Number(tecnicoIdParam) : null;
@@ -942,6 +947,16 @@ export const Servicios: React.FC<serviciosProps> = props => {
                     ((Number(currentPageParam) || 1) - 1) * itemsPerPage,
                     (Number(currentPageParam) || 1) * itemsPerPage
                 );
+
+            if (busquedaParam) {
+                if (!isNaN(parseInt(busquedaParam))) {
+                    query = query.eq("folio", `${busquedaParam}`);
+                } else {
+                    query = query.or(`nombre.ilike.%${busquedaParam}%,apellidos.ilike.%${busquedaParam}%`, {
+                        foreignTable: "Clientes",
+                    });
+                }
+            }
 
             if (clienteId) {
                 query = query.eq("Clientes.id", clienteId);
@@ -1048,6 +1063,13 @@ export const Servicios: React.FC<serviciosProps> = props => {
     const handleTecnicoClick = (tecnicoId: number) => {
         setTecnicoId(tecnicoId);
     };
+
+    useEffect(() => {
+        const busquedaParam = new URLSearchParams(window.location.search).get("busqueda");
+        if (busquedaParam) {
+            setBarraBusqueda(busquedaParam);
+        }
+    }, []);
 
     useEffect(() => {
         const fetchClientes = async () => {
@@ -1288,7 +1310,15 @@ export const Servicios: React.FC<serviciosProps> = props => {
                         type="button"
                         onClick={() => {
                             setCondicion("nombres");
-                            (fetchServicios(), setModalVisible(false));
+                            setModalVisible(false);
+                            const url = new URL(window.location.href);
+                            if (barraBusqueda.trim()) {
+                                url.searchParams.set("busqueda", barraBusqueda.trim());
+                            } else {
+                                url.searchParams.delete("busqueda");
+                            }
+                            window.history.pushState({}, "", url.toString());
+                            fetchServicios();
                         }}
                     >
                         Buscar
