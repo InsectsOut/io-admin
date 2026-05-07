@@ -14,6 +14,8 @@ import { FaRegCheckCircle } from "react-icons/fa";
 import { MdDoNotDisturb } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { useToast } from "./rehusableComponents/Toast";
+import { downloadServiciosExcel } from "./utils/ExcelGenerator";
+import { RiFileExcel2Line } from "react-icons/ri";
 
 type Servicio = Tables<"Servicios">;
 type Cliente = Tables<"Clientes">;
@@ -80,6 +82,10 @@ export const SearchBarForm = styled.form /*style*/ `
         margin-left: 0px;
         width: 85%;
         align-self: center;
+    }
+    @media (max-width: 600px) {
+        flex-direction: column;
+        width: 92%;
     }
 `;
 export const FiltrosContainer = styled.ul /*style*/ `
@@ -178,6 +184,10 @@ export const SearchBar = styled.input /*style*/ `
     color: #838383;
     @media (max-width: 900px) {
         margin-left: 0px;
+    }
+    @media (max-width: 600px) {
+        width: 100%;
+        box-sizing: border-box;
     }
 `;
 export const SearchButton = styled.button /*style*/ `
@@ -447,6 +457,59 @@ export const ServiciosElement5 = styled.div<{ screen_width?: number; swipeActiat
     }
 `;
 
+export const ExcelButton = styled.button /*style*/ `
+    all: unset;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.35rem;
+    padding: 0 1rem;
+    min-height: 2.25rem;
+    height: 2.25rem;
+    background: #1d6f42;
+    border-radius: 0.359rem;
+    font-style: normal;
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: white;
+    cursor: pointer;
+    white-space: nowrap;
+    &:hover:not(:disabled) {
+        background: #155232;
+        transform: scale(1.05);
+    }
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+`;
+
+export const ExcelFab = styled.button`
+    all: unset;
+    position: fixed;
+    bottom: 5.5rem;
+    right: 1.25rem;
+    z-index: 100;
+    width: 3.25rem;
+    height: 3.25rem;
+    border-radius: 50%;
+    background: #1d6f42;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
+    cursor: pointer;
+    &:hover:not(:disabled) {
+        background: #155232;
+        transform: scale(1.08);
+    }
+    &:disabled {
+        opacity: 0.65;
+        cursor: not-allowed;
+    }
+`;
+
 export const CreateButton = styled(Link) /*style*/ `
     all: unset;
     display: flex;
@@ -659,6 +722,18 @@ export const Servicios: React.FC<serviciosProps> = props => {
     const estatusRefNorealizado = useRef<HTMLInputElement>(null);
     const [_, forceRender] = useState(0);
     const [triggered, setTriggered] = useState(false);
+    const [isDownloading, setIsDownloading] = useState(false);
+
+    const handleDownloadExcel = async () => {
+        setIsDownloading(true);
+        try {
+            await downloadServiciosExcel(props.organizacion ?? "");
+        } catch (e) {
+            showToast("Error al generar el reporte Excel", "error");
+        } finally {
+            setIsDownloading(false);
+        }
+    };
 
     const handleTouchStart = (e: React.TouchEvent<HTMLDivElement>, id: number) => {
         const touch = e.touches[0];
@@ -1310,24 +1385,74 @@ export const Servicios: React.FC<serviciosProps> = props => {
                         value={barraBusqueda}
                         placeholder=" 🔍 Folio, nombre, fecha..."
                     />
-                    <SearchButton
-                        type="button"
-                        onClick={() => {
-                            setCondicion("nombres");
-                            setModalVisible(false);
-                            const url = new URL(window.location.href);
-                            if (barraBusqueda.trim()) {
-                                url.searchParams.set("busqueda", barraBusqueda.trim());
-                            } else {
-                                url.searchParams.delete("busqueda");
-                            }
-                            window.history.pushState({}, "", url.toString());
-                            fetchServicios();
-                        }}
-                    >
-                        Buscar
-                    </SearchButton>
+                    {screenWidth <= 600 ? (
+                        <div style={{ display: "flex", justifyContent: "space-between", width: "100%", gap: "0.5rem" }}>
+                            <SearchButton
+                                type="button"
+                                style={{ flex: 1, width: "auto" }}
+                                onClick={() => {
+                                    setCondicion("nombres");
+                                    setModalVisible(false);
+                                    const url = new URL(window.location.href);
+                                    if (barraBusqueda.trim()) {
+                                        url.searchParams.set("busqueda", barraBusqueda.trim());
+                                    } else {
+                                        url.searchParams.delete("busqueda");
+                                    }
+                                    window.history.pushState({}, "", url.toString());
+                                    fetchServicios();
+                                }}
+                            >
+                                Buscar
+                            </SearchButton>
+                            <CreateButton
+                                to="/nuevo-servicio"
+                                style={{ position: "relative", flex: 1, width: "auto", marginTop: 0 }}
+                            >
+                                Nuevo Servicio
+                            </CreateButton>
+                        </div>
+                    ) : (
+                        <SearchButton
+                            type="button"
+                            onClick={() => {
+                                setCondicion("nombres");
+                                setModalVisible(false);
+                                const url = new URL(window.location.href);
+                                if (barraBusqueda.trim()) {
+                                    url.searchParams.set("busqueda", barraBusqueda.trim());
+                                } else {
+                                    url.searchParams.delete("busqueda");
+                                }
+                                window.history.pushState({}, "", url.toString());
+                                fetchServicios();
+                            }}
+                        >
+                            Buscar
+                        </SearchButton>
+                    )}
+                    {screenWidth > 600 && screenWidth <= 900 && (
+                        <ExcelButton
+                            type="button"
+                            onClick={handleDownloadExcel}
+                            disabled={isDownloading}
+                            title="Descargar reporte Excel"
+                        >
+                            <RiFileExcel2Line size={18} />
+                            {isDownloading ? "Descargando..." : "Excel"}
+                        </ExcelButton>
+                    )}
                 </SearchBarForm>
+                {screenWidth <= 600 && (
+                    <ExcelFab
+                        type="button"
+                        onClick={handleDownloadExcel}
+                        disabled={isDownloading}
+                        title="Descargar reporte Excel"
+                    >
+                        <RiFileExcel2Line size={22} />
+                    </ExcelFab>
+                )}
                 <FiltrosContainer>
                     <FiltrosLeft>
                         <FiltrosLista
@@ -1697,7 +1822,17 @@ export const Servicios: React.FC<serviciosProps> = props => {
                     </FiltrosLeft>
                     {screenWidth > 900 && (
                         <>
-                            <div style={{ display: "flex", alignItems: "center" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                                <ExcelButton
+                                    type="button"
+                                    onClick={handleDownloadExcel}
+                                    disabled={isDownloading}
+                                    title="Descargar reporte Excel"
+                                    style={{ position: "relative" }}
+                                >
+                                    <RiFileExcel2Line size={18} />
+                                    {isDownloading ? "Descargando..." : "Excel"}
+                                </ExcelButton>
                                 <CreateButton style={{ position: "relative" }} to="/nuevo-servicio">
                                     Nuevo Servicio
                                 </CreateButton>
@@ -1936,7 +2071,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
                         )
                     )}
 
-                    {screenWidth < 900 && (
+                    {screenWidth > 600 && screenWidth < 900 && (
                         <LowerActionButtons className="lowerActionButtons">
                             <div
                                 style={{

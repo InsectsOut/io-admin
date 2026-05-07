@@ -22,6 +22,7 @@
         "@fullcalendar/timegrid": "^6.0.2",
         "@react-pdf/renderer": "^3.4.4",
         "@supabase/supabase-js": "^2.39.7",
+        "exceljs": "^4.4.0",
         "html2pdf.js": "^0.12.1",
         "install": "^0.13.0",
         "npm": "^10.8.1",
