@@ -327,6 +327,26 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
         setAddButtonClicked(false);
     };
 
+    const syncResponsableFromDireccion = async (servicioId: number, direccionId: number) => {
+        try {
+            const { data: dir } = await supabase
+                .from("Direcciones")
+                .select("responsable_de_direccion")
+                .eq("id", direccionId)
+                .single();
+
+            if (dir?.responsable_de_direccion) {
+                await supabase
+                    .from("Servicios")
+                    .update({ responsable_id: dir.responsable_de_direccion })
+                    .eq("id", servicioId);
+                setResponsableDireccionId(dir.responsable_de_direccion);
+            }
+        } catch (err) {
+            console.log("Error syncing responsable from direccion", err);
+        }
+    };
+
     const FetchServicios = async () => {
         try {
             if (!folio) {
@@ -362,6 +382,11 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                     setPlagaSelected(() => [...(servicio?.[0]?.tipo_plaga_array_id ?? [])]);
                 } else {
                     setPlagaSelected([]);
+                }
+
+                // Si el servicio no tiene responsable pero tiene dirección, sincronizar
+                if (!servicio[0]?.responsable_id && servicio[0]?.direccion_id) {
+                    await syncResponsableFromDireccion(servicio[0].id, servicio[0].direccion_id);
                 }
             }
         } catch (err) {
