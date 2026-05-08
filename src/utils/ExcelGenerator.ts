@@ -19,7 +19,7 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
     let query = supabase
         .from("Servicios")
         .select(
-            `*, Clientes!inner(*), Empleados!Servicios_tecnico_id_fkey(*), RegistroAplicacion(*, Productos(*), Plagas(*))`,
+            `*, Clientes!inner(*), Empleados!Servicios_tecnico_id_fkey(*), RegistroAplicacion(*, Productos(*), Plagas(*)), Direcciones(*)`,
             { count: "exact" }
         )
         .filter("organizacion", "eq", organizacion)
@@ -59,6 +59,8 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
         { header: "Folio", key: "folio", width: 10 },
         { header: "Cliente", key: "cliente", width: 30 },
         { header: "Fecha", key: "fecha", width: 14 },
+        { header: "Horario", key: "horario", width: 12 },
+        { header: "Dirección", key: "direccion", width: 35 },
         { header: "Estatus", key: "estatus", width: 14 },
         { header: "Tipo de Servicio", key: "tipoServicio", width: 20 },
         { header: "Técnico", key: "tecnico", width: 20 },
@@ -99,6 +101,18 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
             folio: s.folio < 0 ? `FT-${s.folio * -1}` : s.folio,
             cliente: `${s.Clientes?.nombre ?? ""} ${s.Clientes?.apellidos ?? ""}`.trim(),
             fecha: s.fecha_servicio,
+            horario: s.horario_servicio ?? "",
+            direccion: s.Direcciones
+                ? [
+                      s.Direcciones.calle,
+                      s.Direcciones.numero_ext ? `#${s.Direcciones.numero_ext}` : null,
+                      s.Direcciones.colonia,
+                      s.Direcciones.ciudad,
+                      s.Direcciones.estado,
+                  ]
+                      .filter(Boolean)
+                      .join(", ")
+                : "",
             estatus: s.realizado ? "Realizado" : "No realizado",
             tipoServicio: s.tipo_servicio ?? "",
             tecnico: s.Empleados?.nombre?.trim() ?? "",
