@@ -89,6 +89,7 @@ const DireccionesCardContainer = styled(CardContainer) /*style*/ `
         gap: 1rem;
         overflow-y: scroll;
         width: 100%;
+        max-height: 12rem;
     }
 
     .direccionesOpen {
@@ -562,7 +563,9 @@ const DireccionCard: React.FC<ResponsableCardProps> = props => {
                                         handleOpenModa();
                                     }}
                                 >
-                                    {dir?.calle} {dir?.colonia} {dir?.estado}
+                                    {dir?.apodo_direccion
+                                        ? dir.apodo_direccion
+                                        : `${dir?.calle} ${dir?.colonia} ${dir?.estado}`}
                                 </p>
                                 <div
                                     onClick={() => {

@@ -265,6 +265,7 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
     const [_servicioFolio, SetServicioFolio] = useState<number | null>(null);
     const [nombre, setNombre] = useState<string>("");
     const [apellido, setApellido] = useState<string>("");
+    const [partida, setPartida] = useState<number | null>(null);
     const [areaGubernamental, setAreaGubernamental] = useState<AreaGubernamental[]>([]);
     const [modalVisible, setModalVisible] = useState(false);
     const [areaGubernamentalId, setAreaGubernamentalId] = useState<number | null>(-1);
@@ -288,6 +289,7 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                         user_id: props.user_id,
                         organizacion: props.organizacion,
                         gob_id: areaGubernamentalId && areaGubernamentalId !== -1 ? areaGubernamentalId : null,
+                        Partida: partida,
                     },
                 ] as any)
                 .select();
@@ -315,6 +317,10 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
     const handleAreaGubernamentalChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const areaId = parseInt(event.target.value, 10);
         setAreaGubernamentalId(areaId);
+        const area = areaGubernamental.find(a => a.id === areaId);
+        if (area) {
+            setNombre(area.nombreAreaGob);
+        }
     };
 
     const fetchAreasGubernamentales = async () => {
@@ -372,6 +378,18 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
         setApellido(cambio);
     };
 
+    const handlePartidaChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const valor = event.target.value;
+        if (valor === "") {
+            setPartida(null);
+        } else {
+            const num = parseInt(valor, 10);
+            if (!isNaN(num) && num > 0) {
+                setPartida(num);
+            }
+        }
+    };
+
     return (
         <CreateContainer id="createContainer">
             <WarningModal
@@ -403,9 +421,25 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                             <option value="Escolar">Escolar</option>
                         </select>
                     </FormatoInputs>
+                    {tipoCliente === "Gubernamental" && (
+                        <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
+                            <div style={{ width: "45%" }}>
+                                <FormLabels>Partida</FormLabels>
+                                <CardInputs
+                                    className="textInputs"
+                                    type="number"
+                                    min={1}
+                                    step={1}
+                                    value={partida ?? ""}
+                                    onChange={handlePartidaChange}
+                                />
+                            </div>
+                            <div style={{ width: "45%" }} />
+                        </FormatoInputs>
+                    )}
                     {tipoCliente === "Gubernamental" && areaGubernamental.length > 0 && (
                         <FormatoInputs style={{ width: "19.815rem" }}>
-                            <FormLabels>Anexo:</FormLabels>
+                            <FormLabels>Dependencia:</FormLabels>
                             <select
                                 id="tipoSelect"
                                 value={areaGubernamentalId ?? -1}
@@ -428,46 +462,35 @@ const CreateClientForm: React.FC<createClienteProps> = props => {
                     )}
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
                         <div style={{ width: "45%" }}>
-                            <FormLabels>
-                                {(() => {
-                                    const tipoSelect = document.getElementById(
-                                        "tipoSelect"
-                                    ) as HTMLSelectElement | null;
-                                    if (tipoSelect) {
-                                        if (tipoSelect.value === "Gubernamental") {
-                                            return "Sub dependencia";
-                                        } else if (tipoSelect.value !== "Residencial") {
-                                            return "Nombre de la empresa";
-                                        } else {
-                                            return "Nombre del Cliente";
-                                        }
-                                    }
-                                    return "Nombre del Cliente";
-                                })()}
-                            </FormLabels>
-                            <CardInputs
-                                value={nombre}
-                                onChange={handleNameChange}
-                                id="textInputs"
-                                className="textInputs"
-                            />
+                            {tipoCliente !== "Gubernamental" && (
+                                <>
+                                    <FormLabels>
+                                        {tipoCliente && tipoCliente !== "Residencial"
+                                            ? "Nombre de la empresa"
+                                            : "Nombre del Cliente"}
+                                    </FormLabels>
+                                    <CardInputs
+                                        value={nombre}
+                                        onChange={handleNameChange}
+                                        id="textInputs"
+                                        className="textInputs"
+                                    />
+                                </>
+                            )}
                         </div>
 
                         <div style={{ width: "45%" }}>
-                            {(() => {
-                                const tipoSelect = document.getElementById("tipoSelect") as HTMLSelectElement | null;
-                                return tipoSelect && tipoSelect.value === "Residencial" ? (
-                                    <>
-                                        <FormLabels>Apellidos</FormLabels>
-                                        <CardInputs
-                                            value={apellido}
-                                            onChange={handleApellidosChange}
-                                            id="textInputs"
-                                            className="textInputs"
-                                        />
-                                    </>
-                                ) : null;
-                            })()}
+                            {tipoCliente === "Residencial" && (
+                                <>
+                                    <FormLabels>Apellidos</FormLabels>
+                                    <CardInputs
+                                        value={apellido}
+                                        onChange={handleApellidosChange}
+                                        id="textInputs"
+                                        className="textInputs"
+                                    />
+                                </>
+                            )}
                         </div>
                     </FormatoInputs>
                     <FormatoInputs style={{ flexDirection: "row", width: "75%", gap: "2rem" }}>
