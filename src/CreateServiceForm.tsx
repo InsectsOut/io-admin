@@ -973,8 +973,9 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                                 <option>Elige la dirección</option>
                                 {dirección.map(direccion => (
                                     <option key={direccion.id} value={direccion.id}>
-                                        {direccion.calle} {direccion.ciudad} {direccion.colonia} {direccion.numero_ext}{" "}
-                                        {direccion.codigo_postal}
+                                        {direccion.apodo_direccion
+                                            ? direccion.apodo_direccion
+                                            : `${direccion.calle} ${direccion.ciudad} ${direccion.colonia} ${direccion.numero_ext} ${direccion.codigo_postal}`}
                                     </option>
                                 ))}
                             </select>
