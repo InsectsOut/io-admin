@@ -4,6 +4,8 @@ import styled from "styled-components";
 import { Database, Tables } from "../src/supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
 import { useNavigate } from "react-router-dom";
+import { downloadCalendarioExcel } from "./utils/ExcelGenerator";
+import { IoDownloadOutline } from "react-icons/io5";
 
 type RegistroAplicacion = Tables<"RegistroAplicacion">;
 type Servicios = Tables<"Servicios">;
@@ -99,6 +101,7 @@ const GrupoServiciosCard: React.FC<registrosProps> = props => {
     const [registroId, setRegistroId] = useState<number>();
     const [servicio_Id, setServicioId] = useState<number>(props?.servicioId ?? -1);
     const [servicios, setServicios] = useState<Servicios[]>([]);
+    const [descargando, setDescargando] = useState(false);
     const navigate = useNavigate();
 
     const fetchRegistros = async () => {
@@ -178,6 +181,26 @@ const GrupoServiciosCard: React.FC<registrosProps> = props => {
                     }}
                 >
                     <p>{props.title ? props.title : "Registros"}</p>
+                    {servicios.length > 0 && (
+                        <IoDownloadOutline
+                            size={20}
+                            color="white"
+                            title="Descargar calendario de servicios"
+                            style={{ marginLeft: "0.5rem", cursor: "pointer", flexShrink: 0 }}
+                            onClick={async e => {
+                                e.stopPropagation();
+                                if (descargando) return;
+                                setDescargando(true);
+                                try {
+                                    await downloadCalendarioExcel(servicios.map(s => s.id));
+                                } catch (err) {
+                                    console.error("Error al descargar calendario:", err);
+                                } finally {
+                                    setDescargando(false);
+                                }
+                            }}
+                        />
+                    )}
                 </div>
                 <div className="bottomContent">
                     {servicios

@@ -1,5 +1,6 @@
 import ExcelJS from "exceljs";
 import { supabase } from "./ClientSupabase";
+import logoGrandeUrl from "../assets/logoGrande.png";
 
 export async function downloadServiciosExcel(organizacion: string): Promise<void> {
     const params = new URLSearchParams(window.location.search);
@@ -140,6 +141,213 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
     const a = document.createElement("a");
     a.href = url;
     a.download = "reporte_servicios.xlsx";
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+const MESES_ES = [
+    "ENERO",
+    "FEBRERO",
+    "MARZO",
+    "ABRIL",
+    "MAYO",
+    "JUNIO",
+    "JULIO",
+    "AGOSTO",
+    "SEPTIEMBRE",
+    "OCTUBRE",
+    "NOVIEMBRE",
+    "DICIEMBRE",
+];
+const DIAS_ES = ["DOMINGO", "LUNES", "MARTES", "MIÉRCOLES", "JUEVES", "VIERNES", "SÁBADO"];
+
+export async function downloadCalendarioExcel(servicioIds: number[]): Promise<void> {
+    const { data: servicios, error } = await supabase
+        .from("Servicios")
+        .select(`*, Clientes(*), Responsables!Servicios_responsable_id_fkey(*), Direcciones(*)`)
+        .in("id", servicioIds)
+        .order("fecha_servicio", { ascending: true });
+
+    if (error || !servicios || servicios.length === 0) {
+        throw new Error("No se pudieron obtener los servicios del grupo");
+    }
+
+    const primero = servicios[0];
+    const clienteNombre = primero?.Clientes?.nombre
+        ? `${primero.Clientes.nombre}${primero.Clientes.apellidos ? ` ${primero.Clientes.apellidos}` : ""}`.toUpperCase()
+        : "CLIENTE";
+    const responsableNombre = (primero as any)?.Responsables?.nombre?.toUpperCase() ?? "";
+    const ciudadDir = (primero?.Direcciones as any)?.ciudad?.toUpperCase() ?? "";
+    const estadoDir = (primero?.Direcciones as any)?.estado?.toUpperCase() ?? "";
+
+    const hoy = new Date();
+    const fechaDoc = `${ciudadDir}${estadoDir ? `, ${estadoDir}` : ""}. A ${hoy.getDate()} DE ${MESES_ES[hoy.getMonth()]} DE ${hoy.getFullYear()}`;
+    const anioServicios = new Date(servicios[0].fecha_servicio + "T12:00:00").getFullYear();
+
+    const workbook = new ExcelJS.Workbook();
+    const sheet = workbook.addWorksheet("Calendario de Servicios");
+
+    // Anchos de columna: A=espaciador, B=PERIODO, C=ÁREA, D=FECHA, E=espaciador
+    sheet.getColumn("A").width = 4;
+    sheet.getColumn("B").width = 22;
+    sheet.getColumn("C").width = 38;
+    sheet.getColumn("D").width = 22;
+    sheet.getColumn("E").width = 4;
+
+    const BLUE = "1F5C99";
+    const LIGHT_BLUE = "D6E4F0";
+
+    // --- Logo ---
+    try {
+        const response = await fetch(logoGrandeUrl);
+        if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            const imageId = workbook.addImage({ buffer, extension: "png" });
+            sheet.addImage(imageId, {
+                tl: { col: 0.2, row: 0.2 },
+                ext: { width: 110, height: 55 },
+            });
+        }
+    } catch {
+        // Sin logo
+    }
+
+    // Filas 1–3: espacio para el logo
+    sheet.getRow(1).height = 20;
+    sheet.getRow(2).height = 20;
+    sheet.getRow(3).height = 20;
+
+    // Fila 4: Nombre de la empresa
+    sheet.mergeCells("B4:D4");
+    sheet.getRow(4).height = 30;
+    const companyCell = sheet.getCell("B4");
+    companyCell.value = "INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A. DE C.V.";
+    companyCell.font = { bold: true, size: 13, color: { argb: BLUE } };
+    companyCell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
+
+    // Fila 5: Ciudad y fecha
+    sheet.getRow(5).height = 18;
+    const dateCell = sheet.getCell("D5");
+    dateCell.value = fechaDoc;
+    dateCell.font = { size: 10 };
+    dateCell.alignment = { horizontal: "right", vertical: "middle" };
+
+    // Fila 6: Nombre del cliente (centrado)
+    sheet.mergeCells("B6:D6");
+    sheet.getRow(6).height = 20;
+    const clienteCell = sheet.getCell("B6");
+    clienteCell.value = `${clienteNombre}.`;
+    clienteCell.font = { bold: true, size: 11, color: { argb: BLUE } };
+    clienteCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    // Fila 7: Espaciador
+    sheet.getRow(7).height = 14;
+
+    // Fila 8: AT'N responsable (derecha)
+    sheet.getRow(8).height = 20;
+    const atnCell = sheet.getCell("D8");
+    atnCell.value = `AT´N: ${responsableNombre}.`;
+    atnCell.font = { bold: true, size: 11, color: { argb: BLUE } };
+    atnCell.alignment = { horizontal: "right", vertical: "middle" };
+
+    // Fila 9: Espaciador
+    sheet.getRow(9).height = 14;
+
+    // Fila 10: Título del calendario
+    sheet.mergeCells("B10:D10");
+    sheet.getRow(10).height = 38;
+    const titleCell = sheet.getCell("B10");
+    titleCell.value = `CALENDARIO DE SERVICIOS ${anioServicios}`;
+    titleCell.font = { bold: true, size: 18, color: { argb: BLUE } };
+    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    // Fila 11: Espaciador
+    sheet.getRow(11).height = 12;
+
+    // Fila 12: Encabezados de tabla
+    sheet.getRow(12).height = 28;
+    const hPeriodo = sheet.getCell("B12");
+    hPeriodo.value = "PERIODO";
+    hPeriodo.font = { bold: true, size: 12, color: { argb: BLUE } };
+    hPeriodo.alignment = { horizontal: "left", vertical: "middle" };
+
+    const hArea = sheet.getCell("C12");
+    hArea.value = "DIRECCIÓN";
+    hArea.font = { bold: true, size: 12, color: { argb: BLUE } };
+    hArea.alignment = { horizontal: "center", vertical: "middle" };
+
+    const hFecha = sheet.getCell("D12");
+    hFecha.value = "FECHA";
+    hFecha.font = { bold: true, size: 12, color: { argb: BLUE } };
+    hFecha.alignment = { horizontal: "center", vertical: "middle" };
+
+    // Filas de datos
+    servicios.forEach((servicio, index) => {
+        const fechaDate = new Date(servicio.fecha_servicio + "T12:00:00");
+        const mes = MESES_ES[fechaDate.getMonth()];
+        const diaName = DIAS_ES[fechaDate.getDay()];
+        const diaNum = fechaDate.getDate().toString().padStart(2, "0");
+
+        const dir = servicio.Direcciones as any;
+        const area = dir?.apodo_direccion
+            ? (dir.apodo_direccion as string).toUpperCase()
+            : dir
+              ? `${dir.calle ?? ""} ${dir.numero_ext ? `#${dir.numero_ext}` : ""} ${dir.colonia ?? ""}`
+                    .trim()
+                    .toUpperCase()
+              : (servicio.tipo_servicio ?? "").toUpperCase();
+
+        const rowNum = 13 + index;
+        sheet.getRow(rowNum).height = 28;
+
+        const pCell = sheet.getCell(`B${rowNum}`);
+        pCell.value = mes;
+        pCell.font = { bold: true, size: 11 };
+        pCell.alignment = { horizontal: "left", vertical: "middle" };
+
+        const aCell = sheet.getCell(`C${rowNum}`);
+        aCell.value = area;
+        aCell.font = { size: 9 };
+        aCell.alignment = { horizontal: "center", vertical: "middle", wrapText: false };
+
+        const fCell = sheet.getCell(`D${rowNum}`);
+        fCell.value = `${diaName}/${diaNum}`;
+        fCell.alignment = { horizontal: "center", vertical: "middle" };
+
+        if (index % 2 === 0) {
+            [pCell, aCell, fCell].forEach(cell => {
+                cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: LIGHT_BLUE } };
+            });
+        }
+    });
+
+    // Filas de pie
+    const lastDataRow = 13 + servicios.length;
+    sheet.getRow(lastDataRow).height = 14;
+    sheet.getRow(lastDataRow + 1).height = 14;
+
+    const equipoRow = lastDataRow + 2;
+    sheet.getRow(equipoRow).height = 18;
+    const equipoCell = sheet.getCell(`B${equipoRow}`);
+    equipoCell.value = "EQUIPO INSECTS OUT MANEJO INTEGRADO DE PLAGAS";
+    equipoCell.font = { bold: true, size: 10 };
+    equipoCell.alignment = { vertical: "middle" };
+
+    const fechaPieRow = equipoRow + 1;
+    sheet.getRow(fechaPieRow).height = 16;
+    const fechaPieCell = sheet.getCell(`B${fechaPieRow}`);
+    fechaPieCell.value = `${ciudadDir} , ${estadoDir} . A ${hoy.getDate()} DE ${MESES_ES[hoy.getMonth()]} DE ${hoy.getFullYear()}`;
+    fechaPieCell.font = { size: 10 };
+    fechaPieCell.alignment = { vertical: "middle" };
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `calendario_servicios_${anioServicios}.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
 }
