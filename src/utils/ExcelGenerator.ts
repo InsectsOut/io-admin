@@ -24,7 +24,8 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
             { count: "exact" }
         )
         .filter("organizacion", "eq", organizacion)
-        .order("fecha_servicio", { ascending: false });
+        .order("fecha_servicio", { ascending: true })
+        .order("horario_servicio", { ascending: true });
 
     if (busquedaParam) {
         if (!isNaN(parseInt(busquedaParam))) {
@@ -53,35 +54,131 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
         throw new Error("No se pudieron obtener los servicios");
     }
 
+    // --- Calcular etiqueta de fecha para el encabezado ---
+    const MESES_REPORTE = [
+        "ENERO",
+        "FEBRERO",
+        "MARZO",
+        "ABRIL",
+        "MAYO",
+        "JUNIO",
+        "JULIO",
+        "AGOSTO",
+        "SEPTIEMBRE",
+        "OCTUBRE",
+        "NOVIEMBRE",
+        "DICIEMBRE",
+    ];
+    const formatFechaLabel = (iso: string) => {
+        const d = new Date(iso + "T12:00:00");
+        return `${d.getDate()} DE ${MESES_REPORTE[d.getMonth()]} DE ${d.getFullYear()}`;
+    };
+    let fechaLabel = "";
+    if (startDateParam && endDateParam && startDateParam === endDateParam) {
+        fechaLabel = `DEL DÍA  ${formatFechaLabel(startDateParam)}`;
+    } else if (startDateParam && endDateParam) {
+        fechaLabel = `DEL ${formatFechaLabel(startDateParam)}  AL  ${formatFechaLabel(endDateParam)}`;
+    } else {
+        const hoy = new Date();
+        fechaLabel = `DEL DÍA  ${hoy.getDate()} DE ${MESES_REPORTE[hoy.getMonth()]} DE ${hoy.getFullYear()}`;
+    }
+
+    // --- Workbook ---
     const workbook = new ExcelJS.Workbook();
     const sheet = workbook.addWorksheet("Servicios");
 
-    const headers = [
-        { header: "Folio", key: "folio", width: 10 },
-        { header: "Cliente", key: "cliente", width: 30 },
-        { header: "Fecha", key: "fecha", width: 14 },
-        { header: "Horario", key: "horario", width: 12 },
-        { header: "Dirección", key: "direccion", width: 35 },
-        { header: "Estatus", key: "estatus", width: 14 },
-        { header: "Tipo de Servicio", key: "tipoServicio", width: 20 },
-        { header: "Técnico", key: "tecnico", width: 20 },
-        { header: "Tipo de Aplicación", key: "tipoAplicacion", width: 25 },
-        { header: "Plaga", key: "plaga", width: 25 },
-        { header: "Lugar de Aplicación", key: "lugar", width: 25 },
-        { header: "Insecticida", key: "insecticida", width: 30 },
-    ];
-    sheet.columns = headers;
+    const COL_COUNT = 13;
+    const GREEN_DARK = "FF1D5C30";
+    const GREEN_HEADER = "FF1D6F42";
 
-    // Estilo de encabezado
-    sheet.getRow(1).eachCell(cell => {
-        cell.font = { bold: true, color: { argb: "FFFFFFFF" } };
-        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF1D6F42" } };
-        cell.alignment = { vertical: "middle", horizontal: "center" };
+    // Anchos de columnas de datos (A–L)
+    const dataColumns = [
+        { key: "folio", width: 10 },
+        { key: "cliente", width: 30 },
+        { key: "fecha", width: 14 },
+        { key: "horario", width: 10 },
+        { key: "direccion", width: 38 },
+        { key: "apodo", width: 22 },
+        { key: "estatus", width: 14 },
+        { key: "tipoServicio", width: 18 },
+        { key: "tecnico", width: 22 },
+        { key: "tipoAplicacion", width: 24 },
+        { key: "plaga", width: 22 },
+        { key: "lugar", width: 26 },
+        { key: "insecticida", width: 28 },
+    ];
+    dataColumns.forEach((col, i) => {
+        sheet.getColumn(i + 1).width = col.width;
     });
 
-    const bulletCols = new Set(["tipoAplicacion", "plaga", "lugar", "insecticida"]);
+    // --- Fila 1: Logo + Título ---
+    // Logo en A1
+    try {
+        const response = await fetch(logoGrandeUrl);
+        if (response.ok) {
+            const buffer = await response.arrayBuffer();
+            const imageId = workbook.addImage({ buffer, extension: "png" });
+            sheet.addImage(imageId, "A1:C3");
+        }
+    } catch {
+        /* sin logo */
+    }
 
-    for (const s of servicios as any[]) {
+    sheet.getRow(1).height = 55;
+    sheet.getRow(2).height = 38;
+    sheet.getRow(3).height = 34;
+
+    // Título "REPORTE DE SERVICIOS" en D1:L1
+    sheet.mergeCells(1, 4, 1, COL_COUNT);
+    const titleCell = sheet.getCell(1, 4);
+    titleCell.value = "REPORTE DE SERVICIOS";
+    titleCell.font = { bold: true, size: 16, color: { argb: "FF000000" } };
+    titleCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    // Fecha en D2:L2
+    sheet.mergeCells(2, 4, 2, COL_COUNT);
+    const fechaCell = sheet.getCell(2, 4);
+    fechaCell.value = fechaLabel;
+    fechaCell.font = { bold: true, size: 11 };
+    fechaCell.alignment = { horizontal: "center", vertical: "middle" };
+
+    // --- Fila 4: encabezados de tabla ---
+    const headerRow = sheet.getRow(4);
+    headerRow.height = 28;
+    const headerLabels = [
+        "Folio",
+        "Cliente",
+        "Fecha",
+        "Horario",
+        "Dirección",
+        "Apodo",
+        "Estatus",
+        "Tipo de Servicio",
+        "Técnico",
+        "Tipo de Aplicación",
+        "Plaga",
+        "Lugar de Aplicación",
+        "Insecticida",
+    ];
+    headerLabels.forEach((label, i) => {
+        const cell = headerRow.getCell(i + 1);
+        cell.value = label;
+        cell.font = { bold: true, color: { argb: "FFFFFFFF" }, size: 10 };
+        cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: GREEN_HEADER } };
+        cell.alignment = { vertical: "middle", horizontal: "center", wrapText: true };
+        cell.border = {
+            top: { style: "thin", color: { argb: "FFFFFFFF" } },
+            bottom: { style: "thin", color: { argb: "FFFFFFFF" } },
+            left: { style: "thin", color: { argb: "FFFFFFFF" } },
+            right: { style: "thin", color: { argb: "FFFFFFFF" } },
+        };
+    });
+
+    // --- Filas de datos ---
+    const bulletCols = new Set([10, 11, 12, 13]); // 1-based: tipoAplicacion, plaga, lugar, insecticida
+    const LIGHT_GREEN = "FFE8F5E9";
+
+    servicios.forEach((s: any, rowIndex) => {
         const registros: any[] = s.RegistroAplicacion ?? [];
 
         const joinBullets = (values: (string | undefined | null)[]) =>
@@ -90,47 +187,50 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
                 .map(v => `• ${(v as string).trim()}`)
                 .join("\n\n");
 
-        const joinBulletsUnique = (values: (string | undefined | null)[]) =>
-            [...new Set(values.filter(Boolean))].map(v => `• ${v}`).join("\n");
-
         const tipoAplicacion = joinBullets(registros.map(r => r.tipo_aplicacion));
         const plaga = joinBullets(registros.map(r => r.Plagas?.plaga));
         const lugar = joinBullets(registros.map(r => r.area_aplicacion));
         const insecticida = joinBullets(registros.map(r => r.Productos?.nombre));
 
-        const row = sheet.addRow({
-            folio: s.folio < 0 ? `FT-${s.folio * -1}` : s.folio,
-            cliente: `${s.Clientes?.nombre ?? ""} ${s.Clientes?.apellidos ?? ""}`.trim(),
-            fecha: s.fecha_servicio,
-            horario: s.horario_servicio ?? "",
-            direccion: s.Direcciones
-                ? [
-                      s.Direcciones.calle,
-                      s.Direcciones.numero_ext ? `#${s.Direcciones.numero_ext}` : null,
-                      s.Direcciones.colonia,
-                      s.Direcciones.ciudad,
-                      s.Direcciones.estado,
-                  ]
-                      .filter(Boolean)
-                      .join(", ")
-                : "",
-            estatus: s.realizado ? "Realizado" : "No realizado",
-            tipoServicio: s.tipo_servicio ?? "",
-            tecnico: s.Empleados?.nombre?.trim() ?? "",
+        const dir = s.Direcciones;
+        const direccionStr = dir
+            ? [dir.calle, dir.numero_ext ? `#${dir.numero_ext}` : null, dir.colonia, dir.ciudad, dir.estado]
+                  .filter(Boolean)
+                  .join(", ")
+            : "";
+        const apodoStr = dir?.apodo_direccion ?? "";
+
+        const dataRow = sheet.addRow([
+            s.folio < 0 ? `FT-${s.folio * -1}` : s.folio,
+            `${s.Clientes?.nombre ?? ""} ${s.Clientes?.apellidos ?? ""}`.trim(),
+            s.fecha_servicio,
+            s.horario_servicio ?? "",
+            direccionStr,
+            apodoStr,
+            s.realizado ? "Realizado" : "No realizado",
+            s.tipo_servicio ?? "",
+            s.Empleados?.nombre?.trim() ?? "",
             tipoAplicacion,
             plaga,
             lugar,
             insecticida,
-        });
+        ]);
 
-        row.eachCell((cell, colNum) => {
-            const key = headers[colNum - 1]?.key ?? "";
+        const isEven = rowIndex % 2 === 0;
+        dataRow.eachCell({ includeEmpty: true }, (cell, colNumber) => {
             cell.alignment = {
                 vertical: "top",
-                wrapText: bulletCols.has(key),
+                wrapText: bulletCols.has(colNumber),
+                horizontal: colNumber <= 2 ? "left" : "center",
+            };
+            if (isEven) {
+                cell.fill = { type: "pattern", pattern: "solid", fgColor: { argb: LIGHT_GREEN } };
+            }
+            cell.border = {
+                bottom: { style: "hair", color: { argb: "FFCCCCCC" } },
             };
         });
-    }
+    });
 
     // Descargar en el navegador
     const buffer = await workbook.xlsx.writeBuffer();
