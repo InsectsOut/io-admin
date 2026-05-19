@@ -151,7 +151,7 @@ export async function downloadServiciosExcel(organizacion: string): Promise<void
         "Fecha",
         "Horario",
         "Dirección",
-        "Apodo",
+        "Área",
         "Estatus",
         "Tipo de Servicio",
         "Técnico",
