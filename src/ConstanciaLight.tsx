@@ -14,9 +14,9 @@ const Wrapper = styled.div`
     @media (max-width: 600px) {
     }
     .page-break {
-  page-break-before: always;
-  padding-top: 1rem;
-}
+        page-break-before: always;
+        padding-top: 1rem;
+    }
 `;
 
 const ConstanciaContainer = styled.div`
@@ -359,7 +359,7 @@ const CertificadoServicio = ({}) => {
     };
 
     const fetchResponsableById = async (responsable_id: number | null) => {
-        try{
+        try {
             let query = supabase;
             const { data, error } = await query
                 .from("Responsables")
@@ -372,16 +372,15 @@ const CertificadoServicio = ({}) => {
         } catch (err) {
             console.log(err);
         }
-    }
+    };
 
-    const getResponsableData = () =>{
+    const getResponsableData = () => {
         const direccion = clienteData?.Direcciones?.find(dir => dir.id === servicioData?.direccion_id);
         const responsableId = direccion?.responsable_de_direccion ?? null;
-        if(responsableId){
+        if (responsableId) {
             fetchResponsableById(responsableId);
         }
-
-    }
+    };
 
     const fetchClienteById = async (cliente_id: number | null) => {
         try {
@@ -435,7 +434,6 @@ const CertificadoServicio = ({}) => {
             setServicioData(data);
             setFirmaClienteUrl(firmaClienteUrl);
             setTecnicoName(data?.tecnico?.nombre ?? "");
-
 
             await fetchClienteById(data?.cliente_id ?? null);
         } catch (err) {
@@ -505,10 +503,10 @@ const CertificadoServicio = ({}) => {
         if (id) fetchServicioById(id);
         fetchRegistrosByServicioId(id ?? "");
         fetchRecomendaciones(id ? Number(id) : 0);
-       // getResponsableData();
+        // getResponsableData();
     }, []);
     useEffect(() => {
-  getResponsableData();
+        getResponsableData();
     }, [clienteData, servicioData]);
 
     return (
@@ -615,6 +613,14 @@ const CertificadoServicio = ({}) => {
                                     </div>
                                     <Line className="longerLine">
                                         {clienteData?.nombre} {clienteData?.apellidos}
+                                        {(() => {
+                                            const direccion = clienteData?.Direcciones?.find(
+                                                dir => dir.id === servicioData?.direccion_id
+                                            );
+                                            return direccion?.apodo_direccion
+                                                ? ` / ${direccion.apodo_direccion.toUpperCase()}`
+                                                : "";
+                                        })()}
                                     </Line>
                                 </Field>
                             </Row>
@@ -637,9 +643,8 @@ const CertificadoServicio = ({}) => {
                                             const direccion = clienteData?.Direcciones?.find(
                                                 dir => dir.id === servicioData?.direccion_id
                                             );
-                                            return direccion
-                                                ? `${direccion.calle ?? ""} ${direccion.numero_ext ?? ""} ${direccion.numero_int ?? ""} ${direccion.colonia ?? ""} ${direccion.ciudad ?? ""} ${direccion.estado ?? ""} ${direccion.codigo_postal ?? ""}`
-                                                : "";
+                                            if (!direccion) return "";
+                                            return `${direccion.calle ?? ""} ${direccion.numero_ext ?? ""} ${direccion.numero_int ?? ""} ${direccion.colonia ?? ""} ${direccion.ciudad ?? ""} ${direccion.estado ?? ""} ${direccion.codigo_postal ?? ""}`.trim();
                                         })()}
                                     </Line>
                                 </Field>
@@ -864,9 +869,7 @@ const CertificadoServicio = ({}) => {
                             </Section>
                         </Section>
                     </div>
-                    <div 
-                    className="page-break"
-                    style={{ marginTop: "1rem"}}>
+                    <div className="page-break" style={{ marginTop: "1rem" }}>
                         <Section>
                             <SectionHeader className="reporteFotograficoHeader">
                                 <Label
@@ -932,7 +935,11 @@ const CertificadoServicio = ({}) => {
                                                         crossOrigin="anonymous"
                                                         src={signedUrls[recs.id]}
                                                         alt="Evidencia"
-                                                        style={{width: "200px", height: "200px", objectFit: "contain" }}
+                                                        style={{
+                                                            width: "200px",
+                                                            height: "200px",
+                                                            objectFit: "contain",
+                                                        }}
                                                     />
                                                 ) : (
                                                     <span style={{ fontSize: "8px", color: "#888" }}>
@@ -948,9 +955,7 @@ const CertificadoServicio = ({}) => {
                             ))}
                         </Section>
                     </div>
-                    <div 
-                    className= "page-break"
-                    style={{ marginTop: "1rem" }}>
+                    <div className="page-break" style={{ marginTop: "1rem" }}>
                         <Section>
                             <SectionHeader largo="100%">
                                 <div style={{ width: "50%" }}>
