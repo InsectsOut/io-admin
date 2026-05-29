@@ -1,6 +1,7 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
 import logo1 from "./assets/logo1.png";
+import logo2 from "./assets/logoserviplax.jpeg";
 import img2 from "./assets/img2.jpeg";
 import img3 from "./assets/img3.jpeg";
 import img4 from "./assets/img4.jpeg";
@@ -149,7 +150,7 @@ const Login: React.FC<loginProps> = ({ setToken }) => {
         >
             <LoginCard>
                 <LoginTitle>Accede con tu cuenta</LoginTitle>
-                <LoginLogo src={logo1}  loading="lazy" alt="Logo" />
+                <LoginLogo src={logo2}  loading="lazy" alt="Logo" />
                 <StyledForm onSubmit={handleSubmit}>
                     <StyledInput placeholder="Usuario" type="text" value={username} onChange={usernameEntered} />
                     <StyledInput placeholder="Contraseña" type="password" value={password} onChange={passwordEntered} />
