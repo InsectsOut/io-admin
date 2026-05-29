@@ -3,7 +3,7 @@ import { BsPersonSquare } from "react-icons/bs";
 import { FaHandshake } from "react-icons/fa";
 import pump from "./assets/pumpicon.png";
 import { FaRegCalendarAlt } from "react-icons/fa";
-import logoGrande from "./assets/logoGrande.png";
+import logoGrande from "./assets/logoserviplax.png";
 import { Link, useLocation } from "react-router-dom";
 import { useBrandTheme } from "./utils/ThemeContext";
 import { FaSprayCan, FaWarehouse, FaClipboardList } from "react-icons/fa";
@@ -311,10 +311,10 @@ const Dashboard = () => {
                         />
                         <InfoText>
                             <p>
-                                Hola, Esta herramienta nos ayudará a agilizar la operación de Insects Out. Ha sido
-                                desarrollada a la medida de la empresa, por lo que encontrarán que se ajusta fácilmente
-                                al ritmo de trabajo que manejamos. Todo esto con el objetivo de aligerar la carga
-                                laboral y brindar un mejor servicio y atención a nuestros clientes.
+                                Hola, Esta herramienta nos ayudará a agilizar la operación de Servicoplax. Aquí podrás
+                                gestionar clientes, empleados, servicios, inventario y más. Explora cada sección para
+                                descubrir cómo puede facilitar tu trabajo diario. Si tienes alguna pregunta, no dudes en
+                                preguntar. ¡Bienvenido a bordo!
                             </p>
                         </InfoText>
                     </ImgCont>

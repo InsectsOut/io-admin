@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import icon from "./assets/logoOjo.png";
+import icon from "./assets/logoserviplax.png";
 import { FaHome } from "react-icons/fa";
 import { MdAccountCircle } from "react-icons/md";
 import { IoMenuSharp } from "react-icons/io5";

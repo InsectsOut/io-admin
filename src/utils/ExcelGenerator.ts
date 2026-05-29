@@ -1,6 +1,6 @@
 import ExcelJS from "exceljs";
 import { supabase } from "./ClientSupabase";
-import logoGrandeUrl from "../assets/logoGrande.png";
+import logoGrandeUrl from "../assets/logoserviplax.png";
 
 export async function downloadServiciosExcel(organizacion: string): Promise<void> {
     const params = new URLSearchParams(window.location.search);
@@ -321,7 +321,7 @@ export async function downloadCalendarioExcel(servicioIds: number[]): Promise<vo
     sheet.mergeCells("B4:D4");
     sheet.getRow(4).height = 30;
     const companyCell = sheet.getCell("B4");
-    companyCell.value = "INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A. DE C.V.";
+    companyCell.value = "SERVICOPLAX CONTROL DE PLAGAS";
     companyCell.font = { bold: true, size: 13, color: { argb: BLUE } };
     companyCell.alignment = { horizontal: "center", vertical: "middle", wrapText: true };
 
@@ -429,7 +429,7 @@ export async function downloadCalendarioExcel(servicioIds: number[]): Promise<vo
     const equipoRow = lastDataRow + 2;
     sheet.getRow(equipoRow).height = 18;
     const equipoCell = sheet.getCell(`B${equipoRow}`);
-    equipoCell.value = "EQUIPO INSECTS OUT MANEJO INTEGRADO DE PLAGAS";
+    equipoCell.value = "EQUIPO SERVICOPLAX CONTROL DE PLAGAS";
     equipoCell.font = { bold: true, size: 10 };
     equipoCell.alignment = { vertical: "middle" };
 

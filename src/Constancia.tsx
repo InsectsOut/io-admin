@@ -1,5 +1,5 @@
 import { Page, Text, Document, StyleSheet, View, Image, Font, PDFViewer } from "@react-pdf/renderer";
-import logo from "../src/assets/logoGrande.png";
+import logo from "../src/assets/logoserviplax.png";
 import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { Enums, Tables } from "../src/supabase/Database";
@@ -449,10 +449,7 @@ const MyDocument = () => {
                     <View style={styles.header}>
                         <View style={{ display: "flex", flexDirection: "row", width: "75%", alignItems: "center" }}>
                             <Image src={logo} style={{ width: "25%" }} />
-                            <Text style={{ ...styles.title, fontSize: "12px" }}>
-                                {" "}
-                                INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V
-                            </Text>
+                            <Text style={{ ...styles.title, fontSize: "12px" }}> SERVICOPLAX CONTROL DE PLAGAS</Text>
                         </View>
                         <View style={styles.folioSection}>
                             <Text style={{ color: "red", fontSize: "12px" }}>FOLIO</Text>
@@ -622,8 +619,10 @@ const MyDocument = () => {
                                 }}
                             >
                                 {registroAp?.map(registro => (
-                                    <View key={registro?.id} style={{ ...styles.registrosINfo, marginLeft: "15px", height:"90px"
-                                    }}>
+                                    <View
+                                        key={registro?.id}
+                                        style={{ ...styles.registrosINfo, marginLeft: "15px", height: "90px" }}
+                                    >
                                         <View style={styles.registrosStyleInfoContainer}>
                                             <Text>{registro?.tipo_aplicacion}</Text>
                                         </View>
@@ -790,7 +789,7 @@ const MyDocument = () => {
                     </View>
                 </Page>
                 <Page size={"LETTER"} style={styles.body}>
-                    <View style={styles.container}></View> 
+                    <View style={styles.container}></View>
 
                     <View style={{ ...styles.fechaSection, marginTop: "30px" }}>
                         <View
@@ -851,7 +850,6 @@ const MyDocument = () => {
                                     height: 85,
                                     minHeight: rec.acciones && rec.acciones.length > 4 ? "150px" : "100px",
                                     marginBottom: "3px",
-                                   
                                 }}
                             >
                                 {/* Left Column */}
@@ -870,10 +868,10 @@ const MyDocument = () => {
                                     {rec?.acciones?.map?.((accion, index) => (
                                         <View
                                             key={index}
-                                            style={{ display: "flex", flexDirection: "row", marginBottom: 3, }}
+                                            style={{ display: "flex", flexDirection: "row", marginBottom: 3 }}
                                         >
                                             <Text>{index + 1} </Text>
-                                            
+
                                             <Text>{accion}</Text>
                                         </View>
                                     ))}
@@ -930,7 +928,7 @@ const MyDocument = () => {
                                         height: "100%",
                                     }}
                                 >
-                                    <Text style={{ paddingLeft: "3px" }}>INSECTS OUT</Text>
+                                    <Text style={{ paddingLeft: "3px" }}>SERVICOPLAX</Text>
                                 </View>
                             </View>
                             <View style={{ ...styles.reporteFotográficoInfo, height: "90%", flexDirection: "row" }}>

@@ -1,5 +1,5 @@
 import { Page, Text, Document, StyleSheet, View, Image, Font, PDFViewer, BlobProvider } from "@react-pdf/renderer";
-import logo from "../src/assets/logoGrande.png";
+import logo from "../src/assets/logoserviplax.png";
 import { supabase } from "./utils/ClientSupabase";
 import { useEffect, useState } from "react";
 import { Enums, Tables } from "../src/supabase/Database";
@@ -490,10 +490,7 @@ const MyConstanciaMobile = () => {
                     <View style={styles.header}>
                         <View style={{ display: "flex", flexDirection: "row", width: "75%", alignItems: "center" }}>
                             <Image src={logo} style={{ width: "25%" }} />
-                            <Text style={{ ...styles.title, fontSize: "12px" }}>
-                                {" "}
-                                INSECTS OUT PREVENCIÓN Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V
-                            </Text>
+                            <Text style={{ ...styles.title, fontSize: "12px" }}> SERVICOPLAX CONTROL DE PLAGAS</Text>
                         </View>
                         <View style={styles.folioSection}>
                             <Text style={{ color: "red", fontSize: "12px" }}>FOLIO</Text>
@@ -962,7 +959,7 @@ const MyConstanciaMobile = () => {
                                         height: "100%",
                                     }}
                                 >
-                                    <Text style={{ paddingLeft: "3px" }}>INSECTS OUT</Text>
+                                    <Text style={{ paddingLeft: "3px" }}>SERVICOPLAX</Text>
                                 </View>
                             </View>
                             <View style={{ ...styles.reporteFotográficoInfo, height: "90%", flexDirection: "row" }}>

@@ -1,6 +1,5 @@
 import styled from "styled-components";
 import { useEffect, useState } from "react";
-import logo1 from "./assets/logo1.png";
 import logo2 from "./assets/logoserviplax.png";
 import img2 from "./assets/img2.jpeg";
 import img3 from "./assets/img3.jpeg";
@@ -69,11 +68,21 @@ const LoginTitle = styled.h1`
     }
 `;
 
-const LoginLogo = styled.img`
-    object-fit: fill;
-    width: 60%;
+const LogoContainer = styled.div`
+    width: 40%;
+    height: 200px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     position: relative;
-    top: -0.75rem;
+    z-index: 1;
+`;
+
+const LoginLogo = styled.img`
+    object-fit: contain;
+    width: 100%;
+    height: 100%;
 `;
 
 interface loginProps {
@@ -150,7 +159,9 @@ const Login: React.FC<loginProps> = ({ setToken }) => {
         >
             <LoginCard>
                 <LoginTitle>Accede con tu cuenta</LoginTitle>
-                <LoginLogo src={logo2}  loading="lazy" alt="Logo" />
+                <LogoContainer>
+                    <LoginLogo src={logo2} loading="lazy" alt="Logo" />
+                </LogoContainer>
                 <StyledForm onSubmit={handleSubmit}>
                     <StyledInput placeholder="Usuario" type="text" value={username} onChange={usernameEntered} />
                     <StyledInput placeholder="Contraseña" type="password" value={password} onChange={passwordEntered} />
@@ -165,7 +176,7 @@ const Login: React.FC<loginProps> = ({ setToken }) => {
                         Login
                     </StyledButton>
                 </StyledForm>
-                <LoginTitle className="final">Insects Out Mip</LoginTitle>
+                <LoginTitle className="final">Servicoplax Control de Plagas</LoginTitle>
                 <LoginTitle className="final">Software de Operación Para Control de Plagas</LoginTitle>
             </LoginCard>
         </div>

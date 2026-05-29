@@ -1,5 +1,5 @@
 import styled from "styled-components";
-import logo from "../src/assets/logoGrande.png";
+import logo from "../src/assets/logoserviplax.png";
 import { useParams } from "react-router-dom";
 import { Enums, Tables } from "./supabase/Database";
 import { supabase } from "./utils/ClientSupabase";
@@ -536,8 +536,7 @@ const CertificadoServicio = ({}) => {
                         <HeaderLeft>
                             <img crossOrigin="anonymous" style={{ width: "25%" }} src={logo}></img>
                             <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                                <Title style={{ fontSize: "15px" }}>INSECTS OUT PREVENCIÓN</Title>
-                                <Title style={{ fontSize: "15px" }}>Y MANEJO INTEGRAL DE PLAGAS, S.A DE C.V</Title>
+                                <Title style={{ fontSize: "15px" }}>SERVICOPLAX CONTROL DE PLAGAS</Title>
                             </div>
                         </HeaderLeft>
                         <HeaderRight>
@@ -959,7 +958,7 @@ const CertificadoServicio = ({}) => {
                         <Section>
                             <SectionHeader largo="100%">
                                 <div style={{ width: "50%" }}>
-                                    <Label>INSECTS OUT</Label>
+                                    <Label>SERVICOPLAX</Label>
                                 </div>
                                 <div style={{ width: "50%" }}>
                                     <Label>CLIENTE RECIBE SERVICIO Y RECOMENDACIONES</Label>
