@@ -124,13 +124,12 @@ const ToggleBtn = styled.button<{ selected: boolean; variant: "si" | "no" }>`
     font-size: 12px;
     font-weight: 700;
     cursor: pointer;
-    border: 2px solid
-        ${({ variant }) => (variant === "si" ? "#23245a" : "#c62828")};
-    background: ${({ selected, variant }) =>
-        selected ? (variant === "si" ? "#23245a" : "#c62828") : "white"};
-    color: ${({ selected, variant }) =>
-        selected ? "white" : variant === "si" ? "#23245a" : "#c62828"};
-    transition: background 0.15s, color 0.15s;
+    border: 2px solid ${({ variant }) => (variant === "si" ? "#23245a" : "#c62828")};
+    background: ${({ selected, variant }) => (selected ? (variant === "si" ? "#23245a" : "#c62828") : "white")};
+    color: ${({ selected, variant }) => (selected ? "white" : variant === "si" ? "#23245a" : "#c62828")};
+    transition:
+        background 0.15s,
+        color 0.15s;
 `;
 
 const ScoreBox = styled.div`
@@ -216,10 +215,8 @@ const StatusMessage = styled.div<{ type: "error" | "success" | "info" }>`
     text-align: center;
     font-size: 14px;
     font-weight: 600;
-    color: ${({ type }) =>
-        type === "error" ? "#c62828" : type === "success" ? "#1a6e2e" : "#23245a"};
-    background: ${({ type }) =>
-        type === "error" ? "#fdecea" : type === "success" ? "#e8f5e9" : "#e8ecf8"};
+    color: ${({ type }) => (type === "error" ? "#c62828" : type === "success" ? "#1a6e2e" : "#23245a")};
+    background: ${({ type }) => (type === "error" ? "#fdecea" : type === "success" ? "#e8f5e9" : "#e8ecf8")};
 `;
 
 // ─── Preguntas ────────────────────────────────────────────────────────────────
@@ -249,7 +246,9 @@ const EncuestaPage = () => {
     const [folio, setFolio] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
-    const [pageState, setPageState] = useState<"loading" | "expired" | "answered" | "form" | "success" | "error">("loading");
+    const [pageState, setPageState] = useState<"loading" | "expired" | "answered" | "form" | "success" | "error">(
+        "loading"
+    );
 
     const [respuestas, setRespuestas] = useState<RespuestasState>({
         pregunta_1: null,
@@ -262,8 +261,13 @@ const EncuestaPage = () => {
     const [nombreFirmante, setNombreFirmante] = useState("");
 
     const calificacion =
-        [respuestas.pregunta_1, respuestas.pregunta_2, respuestas.pregunta_3, respuestas.pregunta_4, respuestas.pregunta_5]
-            .filter(r => r === true).length * 2;
+        [
+            respuestas.pregunta_1,
+            respuestas.pregunta_2,
+            respuestas.pregunta_3,
+            respuestas.pregunta_4,
+            respuestas.pregunta_5,
+        ].filter(r => r === true).length * 2;
 
     const todasRespondidas =
         respuestas.pregunta_1 !== null &&
@@ -478,3 +482,4 @@ const EncuestaPage = () => {
 };
 
 export default EncuestaPage;
+

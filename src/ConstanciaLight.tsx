@@ -1109,13 +1109,27 @@ const CertificadoServicio = ({}) => {
                                 >;
                                 const respuesta = encuestaData ? encuestaData[key] : null;
                                 return (
-                                    <Row key={idx} style={{ alignItems: "center", padding: "4px 0", borderBottom: "1px solid #eee" }}>
+                                    <Row
+                                        key={idx}
+                                        style={{
+                                            alignItems: "center",
+                                            padding: "4px 0",
+                                            borderBottom: "1px solid #eee",
+                                        }}
+                                    >
                                         <Field className="longerField" style={{ width: "80%" }}>
                                             <Label style={{ fontSize: "9px", color: "black" }}>
                                                 {idx + 1}) {pregunta}
                                             </Label>
                                         </Field>
-                                        <div style={{ display: "flex", gap: "8px", width: "20%", justifyContent: "flex-end" }}>
+                                        <div
+                                            style={{
+                                                display: "flex",
+                                                gap: "8px",
+                                                width: "20%",
+                                                justifyContent: "flex-end",
+                                            }}
+                                        >
                                             <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
                                                 <Checbox checked={respuesta === true} />
                                                 <Label style={{ fontSize: "8px" }}>Sí</Label>
@@ -1130,9 +1144,7 @@ const CertificadoServicio = ({}) => {
                             })}
 
                             <Row style={{ marginTop: "8px", alignItems: "center" }}>
-                                <Label style={{ fontSize: "9px" }}>
-                                    Calificación general (2 pts por pregunta):
-                                </Label>
+                                <Label style={{ fontSize: "9px" }}>Calificación general (2 pts por pregunta):</Label>
                                 <div
                                     style={{
                                         marginLeft: "8px",
