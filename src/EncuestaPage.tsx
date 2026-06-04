@@ -246,6 +246,7 @@ const EncuestaPage = () => {
     const [folio, setFolio] = useState<number | null>(null);
     const [loading, setLoading] = useState(true);
     const [submitting, setSubmitting] = useState(false);
+    const [submitError, setSubmitError] = useState<string | null>(null);
     const [pageState, setPageState] = useState<"loading" | "expired" | "answered" | "form" | "success" | "error">(
         "loading"
     );
@@ -327,7 +328,17 @@ const EncuestaPage = () => {
         if (!todasRespondidas || !encuesta) return;
         setSubmitting(true);
         try {
-            const { error } = await supabase
+            // Verificar que el registro sigue existiendo y matchea
+            const { data: check } = await supabase
+                .from("EncuestaSatisfaccion")
+                .select("id, token, respondido_at, expires_at")
+                .eq("token", token as string);
+
+            if (!check || check.length === 0) {
+                throw new Error("Token no encontrado");
+            }
+
+            const { data: updated, error } = await supabase
                 .from("EncuestaSatisfaccion")
                 .update({
                     pregunta_1: respuestas.pregunta_1,
@@ -340,12 +351,19 @@ const EncuestaPage = () => {
                     nombre_firmante: nombreFirmante.trim() || null,
                     respondido_at: new Date().toISOString(),
                 })
-                .eq("token", token as string);
+                .eq("token", token as string)
+                .select();
 
             if (error) throw error;
+            if (!updated || updated.length === 0) throw new Error("No se actualizó ninguna fila");
+
             setPageState("success");
-        } catch {
-            setPageState("error");
+        } catch (err: any) {
+            setSubmitError(
+                err?.message?.includes("violates row-level security")
+                    ? "Sin permisos para guardar. Contacta al administrador."
+                    : "Error al enviar la encuesta. Intenta de nuevo."
+            );
         } finally {
             setSubmitting(false);
         }
@@ -442,7 +460,10 @@ const EncuestaPage = () => {
                 <SubmitButton
                     // @ts-ignore
                     disabled={!todasRespondidas || submitting}
-                    onClick={handleSubmit}
+                    onClick={() => {
+                        setSubmitError(null);
+                        handleSubmit();
+                    }}
                 >
                     {submitting ? "Enviando..." : "Enviar encuesta"}
                 </SubmitButton>
@@ -450,6 +471,19 @@ const EncuestaPage = () => {
                 {!todasRespondidas && (
                     <p style={{ fontSize: "11px", color: "#888", textAlign: "center", marginTop: "8px" }}>
                         Responde todas las preguntas para poder enviar.
+                    </p>
+                )}
+                {submitError && (
+                    <p
+                        style={{
+                            fontSize: "12px",
+                            color: "#c62828",
+                            textAlign: "center",
+                            marginTop: "8px",
+                            fontWeight: 600,
+                        }}
+                    >
+                        {submitError}
                     </p>
                 )}
             </Body>
