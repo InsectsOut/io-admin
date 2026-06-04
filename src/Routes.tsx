@@ -53,9 +53,13 @@ const AppRoutes = () => {
         }
     };
 
+    const PUBLIC_ROUTES = ["/encuesta/"];
+
+    const isPublicRoute = (path: string) => PUBLIC_ROUTES.some(prefix => path.startsWith(prefix));
+
     const authSupabase = () => {
         supabase.auth.onAuthStateChange((event, session) => {
-            if (!session) {
+            if (!session && !isPublicRoute(location.pathname)) {
                 navigate("/");
             } else if (session && location.pathname === "/") {
                 navigate("/inicio");
