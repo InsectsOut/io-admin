@@ -313,6 +313,8 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
     const [precio, setPrecio] = useState<number | null>(null);
     const [responsable_direccion_id, setResponsableDireccionId] = useState<number | null>(null);
     const [registrosRefreshKey, setRegistrosRefreshKey] = useState<number>(0);
+    const [encuestaLink, setEncuestaLink] = useState<string>("");
+    const [generatingLink, setGeneratingLink] = useState<boolean>(false);
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null;
     };
@@ -680,6 +682,41 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
         setInfoTab(tag);
     };
 
+    const handleGenerarEncuesta = async () => {
+        if (!servicios[0]?.id) return;
+        setGeneratingLink(true);
+        try {
+            // Borrar encuesta anterior para este servicio (si existe y no fue respondida)
+            await supabase
+                .from("EncuestaSatisfaccion")
+                .delete()
+                .eq("servicio_id", servicios[0].id)
+                .is("respondido_at", null);
+
+            const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000).toISOString();
+            const { data, error } = await supabase
+                .from("EncuestaSatisfaccion")
+                .insert({
+                    servicio_id: servicios[0].id,
+                    organizacion: props.organizacion ?? "",
+                    expires_at: expiresAt,
+                })
+                .select("token")
+                .single();
+
+            if (error) throw error;
+
+            const url = `${window.location.origin}/encuesta/${data.token}`;
+            setEncuestaLink(url);
+            await navigator.clipboard.writeText(url);
+            showToast("¡Liga copiada al portapapeles! Válida por 24 horas.", "success");
+        } catch {
+            showToast("Error al generar la liga de encuesta", "error");
+        } finally {
+            setGeneratingLink(false);
+        }
+    };
+
     const hanldeSetData = async (data: number | null) => {
         await setDataFromRegistros(data);
     };
@@ -1044,6 +1081,37 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                             <p>Descargar PDF</p>
                                         </div>
                                     </PdfMailButton>
+                                    <PdfMailButton
+                                        position="relative"
+                                        style={{
+                                            cursor: generatingLink ? "not-allowed" : "pointer",
+                                            opacity: generatingLink ? 0.6 : 1,
+                                            marginTop: "1rem",
+                                        }}
+                                        onClick={handleGenerarEncuesta}
+                                    >
+                                        <p style={{ marginBottom: 0 }}>Encuesta de Satisfacción</p>
+                                        <p style={{ color: "#2395FF", margin: 0, fontSize: ".85rem" }}>
+                                            {generatingLink
+                                                ? "Generando..."
+                                                : encuestaLink
+                                                  ? "✓ Copiar liga de nuevo"
+                                                  : "Generar y copiar liga"}
+                                        </p>
+                                        {encuestaLink && (
+                                            <p
+                                                style={{
+                                                    color: "#888",
+                                                    margin: "4px 0 0",
+                                                    fontSize: "0.65rem",
+                                                    wordBreak: "break-all",
+                                                    padding: "0 6px",
+                                                }}
+                                            >
+                                                {encuestaLink}
+                                            </p>
+                                        )}
+                                    </PdfMailButton>
                                 </div>
                             )}
                         </CardContainer>
@@ -1143,6 +1211,35 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                                             value={precio}
                                         />
                                     </div>
+                                </PdfMailButton>
+                                <PdfMailButton
+                                    style={{
+                                        cursor: generatingLink ? "not-allowed" : "pointer",
+                                        opacity: generatingLink ? 0.6 : 1,
+                                    }}
+                                    onClick={handleGenerarEncuesta}
+                                >
+                                    <p style={{ marginBottom: 0 }}>Encuesta de Satisfacción</p>
+                                    <p style={{ color: "#2395FF", margin: 0, fontSize: ".85rem" }}>
+                                        {generatingLink
+                                            ? "Generando..."
+                                            : encuestaLink
+                                              ? "✓ Copiar liga de nuevo"
+                                              : "Generar y copiar liga"}
+                                    </p>
+                                    {encuestaLink && (
+                                        <p
+                                            style={{
+                                                color: "#888",
+                                                margin: "4px 0 0",
+                                                fontSize: "0.65rem",
+                                                wordBreak: "break-all",
+                                                padding: "0 6px",
+                                            }}
+                                        >
+                                            {encuestaLink}
+                                        </p>
+                                    )}
                                 </PdfMailButton>
                             </div>
                         </div>
