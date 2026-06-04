@@ -23,6 +23,7 @@ import Profile from "./Profile";
 import { Tables } from "./supabase/Database";
 import CertificadoServicio from "./ConstanciaLight";
 import Configuracion from "./Configuracion";
+import EncuestaPage from "./EncuestaPage";
 
 const AppRoutes = () => {
     const navigate = useNavigate();
@@ -204,6 +205,8 @@ const AppRoutes = () => {
                     <Route path="/configuracion" element={<Configuracion />} />
                 </>
             )}
+            {/* Ruta pública — sin auth requerida */}
+            <Route path="/encuesta/:token" element={<EncuestaPage />} />
         </Routes>
     );
 };

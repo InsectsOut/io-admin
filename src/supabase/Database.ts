@@ -286,6 +286,68 @@ export type Database = {
           },
         ]
       }
+      EncuestaSatisfaccion: {
+        Row: {
+          calificacion: number | null
+          created_at: string | null
+          expires_at: string
+          id: string
+          nombre_firmante: string | null
+          observaciones: string | null
+          organizacion: string | null
+          pregunta_1: boolean | null
+          pregunta_2: boolean | null
+          pregunta_3: boolean | null
+          pregunta_4: boolean | null
+          pregunta_5: boolean | null
+          respondido_at: string | null
+          servicio_id: number
+          token: string
+        }
+        Insert: {
+          calificacion?: number | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          nombre_firmante?: string | null
+          observaciones?: string | null
+          organizacion?: string | null
+          pregunta_1?: boolean | null
+          pregunta_2?: boolean | null
+          pregunta_3?: boolean | null
+          pregunta_4?: boolean | null
+          pregunta_5?: boolean | null
+          respondido_at?: string | null
+          servicio_id: number
+          token?: string
+        }
+        Update: {
+          calificacion?: number | null
+          created_at?: string | null
+          expires_at?: string
+          id?: string
+          nombre_firmante?: string | null
+          observaciones?: string | null
+          organizacion?: string | null
+          pregunta_1?: boolean | null
+          pregunta_2?: boolean | null
+          pregunta_3?: boolean | null
+          pregunta_4?: boolean | null
+          pregunta_5?: boolean | null
+          respondido_at?: string | null
+          servicio_id?: number
+          token?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "EncuestaSatisfaccion_servicio_id_fkey"
+            columns: ["servicio_id"]
+            isOneToOne: false
+            referencedRelation: "Servicios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       Equipos: {
         Row: {
           detalles: string | null

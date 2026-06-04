@@ -336,6 +336,7 @@ const CertificadoServicio = ({}) => {
     const [firmaClienteUrl, setFirmaClienteUrl] = useState<string>("");
     const [firmaTecnicoUrl, setFirmaTecnicoUrl] = useState<string>("");
     const [loading, setLoading] = useState<boolean>(false);
+    const [encuestaData, setEncuestaData] = useState<Tables<"EncuestaSatisfaccion"> | null>(null);
     const pdfRef = useRef<HTMLDivElement>(null);
 
     const fetchRegistrosByServicioId = async (servicio_id: string) => {
@@ -508,6 +509,22 @@ const CertificadoServicio = ({}) => {
     useEffect(() => {
         getResponsableData();
     }, [clienteData, servicioData]);
+
+    useEffect(() => {
+        const fetchEncuesta = async () => {
+            if (!id) return;
+            const { data } = await supabase
+                .from("EncuestaSatisfaccion")
+                .select("*")
+                .eq("servicio_id", Number(id))
+                .not("respondido_at", "is", null)
+                .order("respondido_at", { ascending: false })
+                .limit(1)
+                .maybeSingle();
+            if (data) setEncuestaData(data as Tables<"EncuestaSatisfaccion">);
+        };
+        fetchEncuesta();
+    }, [id]);
 
     return (
         <Wrapper style={{ width: "100vw", display: "flex", justifyContent: "center", overflowX: "auto" }}>
@@ -1061,6 +1078,115 @@ const CertificadoServicio = ({}) => {
                             </div>
                         </Section>
                     </div>
+                    {/* ─── ENCUESTA DE SATISFACCIÓN ─────────────────────────── */}
+                    <div className="page-break" style={{ marginTop: "1rem" }}>
+                        <Section>
+                            <SectionHeader
+                                largo="100%"
+                                style={{
+                                    display: "flex",
+                                    justifyContent: "center",
+                                    background: "#23245a",
+                                    fontSize: "12px",
+                                    letterSpacing: "1px",
+                                }}
+                            >
+                                ENCUESTA DE SATISFACCIÓN
+                            </SectionHeader>
+                        </Section>
+                        <Section>
+                            <SectionHeader largo="55%">REALIZACIÓN DEL SERVICIO Y SATISFACCIÓN</SectionHeader>
+                            {[
+                                "El personal estuvo a tiempo y se presentó con usted.",
+                                "El personal portaba su uniforme y Equipo de Protección Personal.",
+                                "El personal le preguntó cuál era su problema de plagas y las áreas.",
+                                "El personal inspeccionó y atendió las áreas afectadas.",
+                                "El personal le dio sugerencias posteriores.",
+                            ].map((pregunta, idx) => {
+                                const key = `pregunta_${idx + 1}` as keyof Pick<
+                                    Tables<"EncuestaSatisfaccion">,
+                                    "pregunta_1" | "pregunta_2" | "pregunta_3" | "pregunta_4" | "pregunta_5"
+                                >;
+                                const respuesta = encuestaData ? encuestaData[key] : null;
+                                return (
+                                    <Row key={idx} style={{ alignItems: "center", padding: "4px 0", borderBottom: "1px solid #eee" }}>
+                                        <Field className="longerField" style={{ width: "80%" }}>
+                                            <Label style={{ fontSize: "9px", color: "black" }}>
+                                                {idx + 1}) {pregunta}
+                                            </Label>
+                                        </Field>
+                                        <div style={{ display: "flex", gap: "8px", width: "20%", justifyContent: "flex-end" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+                                                <Checbox checked={respuesta === true} />
+                                                <Label style={{ fontSize: "8px" }}>Sí</Label>
+                                            </div>
+                                            <div style={{ display: "flex", alignItems: "center", gap: "3px" }}>
+                                                <Checbox checked={respuesta === false} />
+                                                <Label style={{ fontSize: "8px" }}>No</Label>
+                                            </div>
+                                        </div>
+                                    </Row>
+                                );
+                            })}
+
+                            <Row style={{ marginTop: "8px", alignItems: "center" }}>
+                                <Label style={{ fontSize: "9px" }}>
+                                    Calificación general (2 pts por pregunta):
+                                </Label>
+                                <div
+                                    style={{
+                                        marginLeft: "8px",
+                                        background: "#23245a",
+                                        color: "white",
+                                        padding: "2px 10px",
+                                        fontWeight: "bold",
+                                        fontSize: "11px",
+                                        borderRadius: "3px",
+                                    }}
+                                >
+                                    {encuestaData?.calificacion ?? "—"} / 10
+                                </div>
+                            </Row>
+
+                            <Row style={{ marginTop: "10px", flexDirection: "column", gap: "4px" }}>
+                                <Label style={{ fontSize: "9px" }}>Observaciones, sugerencias o felicitaciones:</Label>
+                                <div
+                                    style={{
+                                        borderBottom: "1px solid #23245a",
+                                        minHeight: "18px",
+                                        width: "100%",
+                                        fontSize: "9px",
+                                        paddingBottom: "2px",
+                                    }}
+                                >
+                                    {encuestaData?.observaciones ?? ""}
+                                </div>
+                            </Row>
+
+                            <Row style={{ marginTop: "12px", gap: "24px" }}>
+                                <Field style={{ width: "60%", alignItems: "flex-end" }}>
+                                    <Label>NOMBRE Y FIRMA</Label>
+                                    <Line style={{ width: "65%" }}>{encuestaData?.nombre_firmante ?? ""}</Line>
+                                </Field>
+                                <Field style={{ width: "40%", alignItems: "flex-end" }}>
+                                    <Label>SELLO</Label>
+                                    <Line style={{ width: "65%" }} />
+                                </Field>
+                            </Row>
+                            <Row style={{ marginTop: "6px" }}>
+                                <Label style={{ fontSize: "9px" }}>Vo.Bo. DE LA DEPENDENCIA</Label>
+                            </Row>
+
+                            {!encuestaData && (
+                                <Row style={{ marginTop: "8px" }}>
+                                    <Label style={{ fontSize: "8px", color: "#aaa" }}>
+                                        Encuesta pendiente de respuesta por el cliente.
+                                    </Label>
+                                </Row>
+                            )}
+                        </Section>
+                    </div>
+
                     <div style={{ marginTop: "1rem" }}>
                         <Section>
                             <SectionHeader
