@@ -1175,20 +1175,6 @@ const CertificadoServicio = ({}) => {
                                 </div>
                             </Row>
 
-                            <Row style={{ marginTop: "12px", gap: "24px" }}>
-                                <Field style={{ width: "60%", alignItems: "flex-end" }}>
-                                    <Label>NOMBRE Y FIRMA</Label>
-                                    <Line style={{ width: "65%" }}>{encuestaData?.nombre_firmante ?? ""}</Line>
-                                </Field>
-                                <Field style={{ width: "40%", alignItems: "flex-end" }}>
-                                    <Label>SELLO</Label>
-                                    <Line style={{ width: "65%" }} />
-                                </Field>
-                            </Row>
-                            <Row style={{ marginTop: "6px" }}>
-                                <Label style={{ fontSize: "9px" }}>Vo.Bo. DE LA DEPENDENCIA</Label>
-                            </Row>
-
                             {!encuestaData && (
                                 <Row style={{ marginTop: "8px" }}>
                                     <Label style={{ fontSize: "8px", color: "#aaa" }}>
