@@ -12,6 +12,7 @@ interface inventario_Views_Props {
 
 const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion }) => {
     const [selectedSub, setSelectedSub] = useState<number | null>(null);
+    const [selectedSubName, setSelectedSubName] = useState<string>("");
     const [subinventarios, setSubinventarios] = useState<Record<string, string[]>>({
         tecnicos: ["Juan Pérez", "Ana López"],
         principal: ["Bodega Principal"],
@@ -82,7 +83,7 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
                 return <FaUserCog />;
             case "principal":
                 return <FaWarehouse />;
-            case  "equipo":
+            case "equipo":
                 return <FaLaptop />;
             case "vehiculo":
                 return <FaCar />;
@@ -95,25 +96,34 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
         return <h1 className="title">Selecciona una categoría del inventario</h1>;
     }
 
-     const clearParams = () => {
+    const clearParams = () => {
         const url = new URL(window.location.href);
-                            url.search = ""; // this removes all search params
-                            window.history.replaceState(null, "", url.toString());
-
-    }
+        url.search = ""; // this removes all search params
+        window.history.replaceState(null, "", url.toString());
+    };
 
     return (
         <>
-            {selectedSub && <DashbboardButton  style={{ height: "3rem", margin: "1rem 0", fontSize: "1rem", fontWeight: 600, marginLeft:"2rem" }} onClick={() => {clearParams();setSelectedSub(null)}}>← Volver a subinventarios</DashbboardButton>}
+            {selectedSub && (
+                <DashbboardButton
+                    style={{ height: "3rem", margin: "1rem 0", fontSize: "1rem", fontWeight: 600, marginLeft: "2rem" }}
+                    onClick={() => {
+                        clearParams();
+                        setSelectedSub(null);
+                    }}
+                >
+                    ← Volver a subinventarios
+                </DashbboardButton>
+            )}
             {!selectedSub ? (
                 <SubInventarioList
                     organizacion={organizacion}
                     title={`Inventarios de ${flag}`}
                     icon={getIcon()}
                     subinventarios={subinventarios[flag] || []}
-                    onSelect={id => {
+                    onSelect={(id, nombre) => {
                         setSelectedSub(id);
-                        console.log(id);
+                        setSelectedSubName(nombre ?? "");
                     }}
                     onAdd={handleAddSub}
                     flag={flag}
@@ -122,6 +132,7 @@ const Inventario_Menu: React.FC<inventario_Views_Props> = ({ flag, organizacion 
                 <SubInventarioDetalle
                     organizacion={organizacion}
                     flag={flag}
+                    name={selectedSubName}
                     items={fakeItems || []}
                     onAddItem={handleAddItem}
                 />

@@ -877,7 +877,7 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
     return (
         <SectionContainer>
-            <SectionTitle>Contenido de {flag}</SectionTitle>
+            <SectionTitle>Contenido del inventario: {name || flag}</SectionTitle>
             {(flag === "principal" || flag === "empleado") && (
                 <>
                     <div

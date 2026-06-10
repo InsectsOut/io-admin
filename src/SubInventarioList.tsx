@@ -24,7 +24,7 @@ interface SubInventarioListProps {
     title: string;
     icon: React.ReactNode;
     subinventarios: string[];
-    onSelect: (id: number) => void;
+    onSelect: (id: number, nombre?: string) => void;
     onAdd: (newName: string) => void;
     flag: Enums<"TipoInventario">;
     organizacion: string;
@@ -234,7 +234,11 @@ const SubInventarioList: React.FC<SubInventarioListProps> = ({ title, icon, onSe
                     <EntryItem
                         key={inv.id}
                         onClick={() => {
-                            onSelect(inv.id);
+                            const nombre =
+                                flag === "empleado"
+                                    ? (empleados.find(emp => emp.id === inv.tecnico_id)?.nombre ?? "Técnico")
+                                    : (inv.inv_nombre ?? "");
+                            onSelect(inv.id, nombre);
                             pushToQueryParams(
                                 empleados.find(emp => emp.id === inv.tecnico_id)?.nombre || "Técnico Desconocido",
                                 inv.id,

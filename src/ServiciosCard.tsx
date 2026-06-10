@@ -527,6 +527,7 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
                     console.log("Data updated successfully:", data);
                     showToast("Cambios guardados correctamente", "success");
                     navigate(`/Servicios/${folio_perm}`);
+                    location.reload();
                     return true;
                 }
             } catch (err) {
@@ -603,14 +604,15 @@ const ServiciosCard: React.FC<serviciosProps> = props => {
 
         if (cambio === "Realizado") {
             let confirmation = (await folioPermanenteAlert()).valueOf();
-            console.log("la confi: ", (await confirmation).valueOf());
-            setStatusFlag((await confirmation).valueOf());
-            setConfirmation(confirmation);
             if (!confirmation) {
                 setSelectedEstatus(false);
                 setStatusFlag(false);
-                setConfirmation(confirmation);
+                setConfirmation(false);
+                setEstatusString("No realizado");
+                return;
             }
+            setStatusFlag(true);
+            setConfirmation(true);
             setSelectedEstatus(true);
         } else if (cambio === "No realizado") {
             setSelectedEstatus(false);
