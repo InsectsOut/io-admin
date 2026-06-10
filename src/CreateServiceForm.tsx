@@ -642,8 +642,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
         frecuencia: Enums<"FrecuenciaServicio">,
         fechas: Date[]
     ) => {
-        setDisableButton(true);
-        if (!cantidadServicios) {
+        if (!cantidadServicios || cantidadServicios <= 0) {
             window.alert("Por favor defina la cantidad de servicios a crear");
             return;
         }
@@ -651,10 +650,8 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
             window.alert("Por favor defina la fecha de inicio de creación de servicios");
             return;
         }
-        if (cantidadServicios <= 0) {
-            window.alert("Por favor defina la cantidad de servicios a crear");
-        }
-        if (!date) return;
+
+        setDisableButton(true);
 
         if (frecuencia !== "Ninguna") {
             let folioGuardados = []; // Declare an empty array to store the folios
@@ -672,10 +669,8 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
                 }
 
                 date = fechas[i];
-                console.log("pasada num:", i);
 
                 if (i === cantidadServicios - 1) {
-                    console.log(folioGuardados);
                     showToast("Servicio(s) creado(s) correctamente", "success");
                     navigate(`/Servicios/${folioGuardados[0]}`);
                 }
@@ -685,6 +680,7 @@ const CreateServiceForm: React.FC<createServicioProps> = props => {
             showToast("Servicio creado correctamente", "success");
             navigate(`/Servicios/${folioGuardado}`);
         }
+        setDisableButton(false);
     };
 
     const createSuggestedDates = (
