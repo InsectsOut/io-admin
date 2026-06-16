@@ -916,7 +916,8 @@ const SubInventarioDetalle: React.FC<SubInventarioDetalleProps> = ({ name, items
 
                                 <EntryRow className="entrySecondElement">
                                     <EntryText>
-                                        <strong>Stock:</strong> {entry?.stock}
+                                        <strong>Stock:</strong>{" "}
+                                        {Number((entry?.stock * (entry?.Productos?.presentacion_cantidad ?? 1)).toFixed(4))} {entry?.Productos?.presentacion_unidad ?? ""}
                                     </EntryText>
                                 </EntryRow>
                                 <EntryRow className="entryThirdElement">

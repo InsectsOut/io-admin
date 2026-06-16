@@ -409,6 +409,14 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
             let cantidadGastada = cantidad;
             const unidadDeGasto = registro.Productos?.unidad_de_gasto;
             const presentacionUnidad = registro.Productos?.presentacion_unidad;
+            const presentacionCantidad = registro.Productos?.presentacion_cantidad ?? 1;
+
+            console.log("🧪 DEBUG consumo inventario:");
+            console.log("  Producto:", registro.Productos?.nombre);
+            console.log("  Cantidad a consumir:", cantidad, unidadDeGasto);
+            console.log("  Presentación:", presentacionCantidad, presentacionUnidad);
+            console.log("  Stock actual (en unidades de presentación):", stock);
+            console.log("  Equivalencia: 1 unidad =", presentacionCantidad, presentacionUnidad);
 
             if (!inventarioProductoId) {
                 console.error("No inventario_producto_id found");
@@ -452,6 +460,13 @@ const PlaguicidasCard: React.FC<registrosProps> = props => {
                     );
                     cantidadGastada = cantidad;
             }
+
+            console.log("  cantidadGastada ANTES de convertir a presentaciones:", cantidadGastada);
+            console.log("  cantidadGastada EN presentaciones (÷", presentacionCantidad, "):", cantidadGastada / presentacionCantidad);
+            console.log("  ¿Excede stock?", cantidadGastada, ">", stock, "→", cantidadGastada > stock);
+
+            // Convertir de unidad de gasto a unidades de presentación
+            cantidadGastada = cantidadGastada / presentacionCantidad;
 
             if (cantidadGastada > stock) {
                 window.alert(
