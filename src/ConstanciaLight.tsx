@@ -486,16 +486,28 @@ const CertificadoServicio = ({}) => {
         const element = document.getElementById("pdf-root");
         if (!element) return;
 
+        // Construir nombre del archivo: NNNN AAMMDD Nombre del Cliente
+        const folio = servicioData?.folio != null ? String(servicioData.folio).padStart(4, "0") : "0000";
+        const fechaRaw = servicioData?.fecha_servicio ?? "";
+        const fechaFormateada = fechaRaw
+            ? (() => {
+                  const [year, month, day] = fechaRaw.split("-");
+                  return `${year?.slice(2)}${month}${day}`;
+              })()
+            : "000000";
+        const nombreCliente = [clienteData?.nombre, clienteData?.apellidos].filter(Boolean).join(" ") || "Cliente";
+        const fileName = `${folio} ${fechaFormateada} ${nombreCliente}.pdf`;
+
         // px → mm
         const heightPx = element.scrollHeight;
         const heightMm = heightPx * 0.264583;
 
-        const blob = await generatePdf(element, "constancia.pdf", heightMm);
+        const blob = await generatePdf(element, fileName, heightMm);
 
         const url = URL.createObjectURL(blob);
         const a = document.createElement("a");
         a.href = url;
-        a.download = "constancia.pdf";
+        a.download = fileName;
         a.click();
         URL.revokeObjectURL(url);
         setLoading(false);
