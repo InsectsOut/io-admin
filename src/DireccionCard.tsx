@@ -1,6 +1,6 @@
 import styled from "styled-components";
 import { Tables } from "../src/supabase/Database";
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { DetailsTitle } from "./ServiciosCard";
 import { CardContainer } from "./rehusableComponents/CardContainer";
 import { CardInputs } from "./rehusableComponents/CardInputs";
@@ -556,17 +556,60 @@ const DireccionCard: React.FC<ResponsableCardProps> = props => {
                     <div className="direccionesRegistrosContainer">
                         {dirección?.map(dir => (
                             <div className="direccionesRegistros" key={dir?.id}>
-                                <p
-                                    onClick={() => {
-                                        setDireccionId(dir?.id);
-                                        handleUpdateModalOpen();
-                                        handleOpenModa();
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        width: "85%",
+                                        alignItems: "baseline",
+                                        gap: "0.5rem",
+                                        overflow: "hidden",
                                     }}
                                 >
-                                    {dir?.apodo_direccion
-                                        ? dir.apodo_direccion
-                                        : `${dir?.calle} ${dir?.colonia} ${dir?.estado}`}
-                                </p>
+                                    <p
+                                        onClick={() => {
+                                            setDireccionId(dir?.id);
+                                            handleUpdateModalOpen();
+                                            handleOpenModa();
+                                        }}
+                                        style={{
+                                            margin: "8px 0",
+                                            flex: 1,
+                                            width: "auto",
+                                            overflow: "hidden",
+                                            textOverflow: "ellipsis",
+                                            whiteSpace: "nowrap",
+                                        }}
+                                    >
+                                        {dir?.apodo_direccion
+                                            ? dir.apodo_direccion
+                                            : `${dir?.calle} ${dir?.colonia} ${dir?.estado}`}
+                                    </p>
+                                    <Link
+                                        to={`/bitacoras/direccion/${dir?.id}`}
+                                        onMouseEnter={e => {
+                                            e.currentTarget.style.backgroundColor = "#4a90e2";
+                                            e.currentTarget.style.color = "white";
+                                            e.currentTarget.style.padding = "0.25rem 0.5rem";
+                                            e.currentTarget.style.borderRadius = "4px";
+                                            e.currentTarget.style.transition = "all 0.2s";
+                                        }}
+                                        onMouseLeave={e => {
+                                            e.currentTarget.style.backgroundColor = "transparent";
+                                            e.currentTarget.style.color = "#4a90e2";
+                                            e.currentTarget.style.padding = "0";
+                                        }}
+                                        style={{
+                                            fontSize: "0.7rem",
+                                            color: "#4a90e2",
+                                            textDecoration: "none",
+                                            whiteSpace: "nowrap",
+                                            flexShrink: 0,
+                                            cursor: "pointer",
+                                        }}
+                                    >
+                                        Estaciones
+                                    </Link>
+                                </div>
                                 <div
                                     onClick={() => {
                                         setDireccionId(dir?.id);

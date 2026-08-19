@@ -19,6 +19,7 @@ import { RiFileExcel2Line } from "react-icons/ri";
 
 type Servicio = Tables<"Servicios">;
 type Cliente = Tables<"Clientes">;
+type Direccion = Tables<"Direcciones">;
 
 export const ServiciosContainer = styled.div /*style*/ `
     width: 100vw;
@@ -104,7 +105,11 @@ export const FiltrosContainer = styled.ul /*style*/ `
         gap: 0.5rem;
     }
 `;
-export const FiltrosLista = styled.li /*style*/ `
+type FiltrosListaProps = {
+    minWidth?: string;
+};
+
+export const FiltrosLista = styled.li<FiltrosListaProps> /*style*/ `
     width: max-content;
     padding-left: 1rem;
     padding-right: 1rem;
@@ -121,6 +126,7 @@ export const FiltrosLista = styled.li /*style*/ `
     justify-content: center;
     text-align: center;
     color: #ffffff;
+    min-width: ${props => props.minWidth ?? "max-content"};
     &:hover {
         background: ${({ theme }) => theme.primaryColor};
         transform: scale(1.05);
@@ -205,7 +211,7 @@ export const SearchButton = styled.button /*style*/ `
     align-items: center;
 `;
 
-export const ModalContentTop = styled.div<{ open?: boolean }> /*style*/ `
+export const ModalContentTop = styled.div<{ open: boolean }> /*style*/ `
     height: 5.895rem;
     width: 100%;
     border-bottom: 0.095rem solid #e2e2e2;
@@ -258,7 +264,7 @@ export const EstatusForma = styled.form /*style*/ `
     }
 `;
 
-export const ModalContentBottom = styled.div<{ open?: boolean }> /*style*/ `
+export const ModalContentBottom = styled.div<{ open: boolean }> /*style*/ `
     transition: 1s;
     width: ${props => (props.open ? "100%" : "none")};
     height: 3.043rem;
@@ -393,12 +399,14 @@ export const ServiciosElement3 = styled.div /*style*/ `
     display: flex;
     justify-content: left;
     align-items: center;
-    width: 35%;
+    width: 30%;
     height: 3.35125rem;
     gap: 0.5rem;
     color: #727272;
     h3 {
         width: fit-content;
+        margin: 0;
+        white-space: nowrap;
     }
     .primerSector {
         font-style: normal;
@@ -406,13 +414,17 @@ export const ServiciosElement3 = styled.div /*style*/ `
         font-size: 1rem;
         padding-right: 1rem;
         padding-left: 1rem;
+        white-space: nowrap;
     }
 `;
 export const ServiciosElement4 = styled.div<{ screen_width?: number; swipeActiator?: boolean }> /*style*/ `
     display: flex;
-    justify-content: left;
+    justify-content: flex-end;
     align-items: center;
-    width: ${props => (props.screen_width && props.screen_width >= 900 ? "5%" : "15%")};
+    gap: 0.5rem;
+    padding-right: 0.6rem;
+    box-sizing: border-box;
+    width: ${props => (props.screen_width && props.screen_width >= 900 ? "10%" : "15%")};
     height: 3.35125rem;
     background: ${props => (props.screen_width && props.screen_width >= 900 ? "none" : "red")};
     #borrarServicio {
@@ -646,6 +658,46 @@ export const MobileActionLink = styled(Link)`
     }
 `;
 
+export const MobileBitacoraLink = styled(Link)`
+    all: unset;
+    flex: 1;
+    height: 2.5rem;
+    background: #f2f7ff;
+    border: 1.5px solid ${({ theme }) => theme.primaryColor};
+    border-radius: 0.45rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: ${({ theme }) => theme.primaryColor};
+    cursor: pointer;
+    text-decoration: none;
+    box-sizing: border-box;
+    &:hover {
+        background: #e3eefc;
+    }
+`;
+
+export const DesktopBitacoraLink = styled(Link)`
+    all: unset;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    border: 1px solid ${({ theme }) => theme.primaryColor};
+    color: ${({ theme }) => theme.primaryColor};
+    border-radius: 0.35rem;
+    padding: 0 0.55rem;
+    min-height: 1.9rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    white-space: nowrap;
+    &:hover {
+        background: #e8f2fc;
+    }
+`;
+
 export const MobileDeleteBtn = styled.button`
     flex: 1;
     height: 2.5rem;
@@ -787,6 +839,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
 
     type ServicioConClientes = Servicio & {
         Clientes: Cliente | null;
+        Direcciones: Direccion | null;
     };
 
     const handleModalCheck = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -849,7 +902,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
         try {
             let query = supabase
                 .from("Servicios")
-                .select(`*, Clientes!inner(*)`, { count: "exact" })
+                .select(`*, Clientes!inner(*), Direcciones(*)`, { count: "exact" })
                 .filter("organizacion", "eq", props.organizacion)
                 .order("fecha_servicio", { ascending: false })
                 .range((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage);
@@ -1019,7 +1072,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
 
             let query = supabase
                 .from("Servicios")
-                .select(`*, Clientes!inner(*)`, { count: "exact" })
+                .select(`*, Clientes!inner(*), Direcciones(*)`, { count: "exact" })
                 .filter("organizacion", "eq", props.organizacion)
                 .order("fecha_servicio", { ascending: false })
                 .range(
@@ -1331,7 +1384,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
         const text = textModal;
         const url = new URL(window.location.href);
         const params = url.searchParams;
-
+        params.set("currentPage", "1"); // Reset to first page on filter change
         // Set each parameter
         paramsList.forEach((param, index) => {
             params.set(param, valuesList[index]);
@@ -1853,7 +1906,11 @@ export const Servicios: React.FC<serviciosProps> = props => {
                 {screenWidth <= 900 && (
                     <FiltrosRight>
                         <PaginationComponent
-                            currentPage={currentPage}
+                            currentPage={
+                                new URLSearchParams(window.location.search).get("currentPage")
+                                    ? Number(new URLSearchParams(window.location.search).get("currentPage"))
+                                    : currentPage
+                            }
                             totalPages={totalPages}
                             onPageChange={handlePageChange}
                         />
@@ -1876,6 +1933,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                         style={{ color: "#2c3e50" }}
                                     >
                                         {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos}
+                                        {servicio?.Direcciones?.apodo_direccion
+                                            ? ` / ${servicio.Direcciones.apodo_direccion}`
+                                            : ""}
                                     </FolioLink>
                                 </MobileCardField>
                                 <MobileCardField>
@@ -1894,6 +1954,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                     <MobileActionLink to={`${location.pathname}/${servicio.folio}`}>
                                         Ver servicio
                                     </MobileActionLink>
+                                    <MobileBitacoraLink to={`/bitacoras?folio=${servicio.folio}`}>
+                                        Bitacora
+                                    </MobileBitacoraLink>
                                     <MobileDeleteBtn
                                         onClick={() => {
                                             deleteServicioHandler(servicio).then(() => setDeleteModalVisible(true));
@@ -1974,6 +2037,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                         >
                                             {" "}
                                             {servicio?.Clientes?.nombre} {servicio?.Clientes?.apellidos}{" "}
+                                            {servicio?.Direcciones?.apodo_direccion
+                                                ? ` / ${servicio.Direcciones.apodo_direccion}`
+                                                : ""}
                                         </FolioLink>
                                     </div>
                                     {screenWidth > 900 && <p>{`$${servicio?.precio ? servicio?.precio : 0}`}</p>}
@@ -2019,7 +2085,7 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                     }
                                 >
                                     <h3 className="primerSector" style={{ fontWeight: "bold", textAlign: "left" }}>
-                                        {screenWidth > 900 ? " Estatus :" : "Est."}
+                                        {screenWidth > 900 ? "Estatus:" : "Est."}
                                     </h3>
                                     <h3>
                                         {servicio.realizado ? (
@@ -2032,6 +2098,9 @@ export const Servicios: React.FC<serviciosProps> = props => {
                                 </ServiciosElement3>
                                 {screenWidth > 900 && (
                                     <ServiciosElement4 screen_width={screenWidth}>
+                                        <DesktopBitacoraLink to={`/bitacoras?folio=${servicio.folio}`}>
+                                            Bitacora
+                                        </DesktopBitacoraLink>
                                         <button
                                             id="borrarServicio"
                                             onClick={() => {

@@ -18,6 +18,8 @@ import EmpleadosCard from "./EmpleadosCard";
 import CreateEmployee from "./CreateEmployee";
 import MyConstanciaMobile from "./ConstanciaMobile";
 import Bitacoras from "./Bitacoras";
+import BitacoraServicio from "./BitacoraServicio";
+import BitacorasDireccion from "./BitacorasDireccion";
 import Inventario from "./Inventario";
 import Profile from "./Profile";
 import { Tables } from "./supabase/Database";
@@ -186,6 +188,14 @@ const AppRoutes = () => {
                         element={<CreateEmployee organizacion={localStorage.getItem("org") ?? ""} />}
                     />
                     <Route path="/bitacoras" element={<Bitacoras organizacion={localStorage.getItem("org") ?? ""} />} />
+                    <Route
+                        path="/bitacoras/servicio/:servicioId/tipo/:tipo"
+                        element={<BitacoraServicio organizacion={localStorage.getItem("org") ?? ""} />}
+                    />
+                    <Route
+                        path="/bitacoras/direccion/:direccionId"
+                        element={<BitacorasDireccion organizacion={localStorage.getItem("org") ?? ""} />}
+                    />
                     <Route
                         path="/inventario"
                         element={<Inventario organizacion={localStorage.getItem("org") ?? ""} />}

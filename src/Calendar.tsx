@@ -109,25 +109,68 @@ const Calendar: React.FC<calendarProps> = props => {
     const [hasModalOpened, setHasModalOpened] = useState(false);
 
     const fetchServicios = async () => {
+        if (!props.organizacion) {
+            console.warn("Calendar: no hay organización para consultar servicios", props.organizacion);
+            setServicios([]);
+            setFilteredServicios([]);
+            return;
+        }
+
         try {
-            let query = await supabase
-                .from("Servicios")
-                .select(
-                    `
-        *,
-        Clientes(*),
-        Empleados:tecnico_id(*)
-      `
-                )
-                .filter("organizacion", "eq", props.organizacion);
-            const { data, error } = query;
-            if (error) {
-                console.log(error);
+            const batchSize = 1000;
+            const serviciosCompletos: ServicioConClientes[] = [];
+            let offset = 0;
+
+            while (true) {
+                const { data, error } = await supabase
+                    .from("Servicios")
+                    .select(
+                        `
+          *,
+          Clientes(*),
+          Empleados:tecnico_id(*)
+        `
+                    )
+                    .eq("organizacion", props.organizacion)
+                    .order("fecha_servicio", { ascending: true })
+                    .order("id", { ascending: true })
+                    .range(offset, offset + batchSize - 1);
+
+                if (error) {
+                    console.error("Error obteniendo servicios del calendario:", error);
+                    setServicios([]);
+                    setFilteredServicios([]);
+                    return;
+                }
+
+                serviciosCompletos.push(...(data ?? []));
+
+                console.log("Batch de servicios recibido:", {
+                    offset,
+                    cantidad: data?.length ?? 0,
+                    totalAcumulado: serviciosCompletos.length,
+                });
+
+                if (!data || data.length < batchSize) {
+                    break;
+                }
+
+                offset += batchSize;
             }
-            setServicios(data ?? []);
-            setFilteredServicios(data ?? []); // Initialize filtered events with all events
+
+            const servicio2661 = serviciosCompletos.find(servicio => Number(servicio.folio) === -2661);
+            console.log("Servicio -2661 recibido en Calendar:", servicio2661);
+            console.log("Organización usada en Calendar:", props.organizacion);
+            console.log("Servicios recibidos en Calendar:", serviciosCompletos.length);
+            console.log(
+                "Folios negativos recibidos en Calendar:",
+                serviciosCompletos.filter(servicio => Number(servicio.folio) < 0).map(servicio => servicio.folio)
+            );
+
+            setServicios(serviciosCompletos);
+            setFilteredServicios(serviciosCompletos); // Initialize filtered events with all events
         } catch (err) {
-            console.log(err);
+            console.error("Error inesperado cargando servicios del calendario:", err);
         }
     };
 
@@ -166,6 +209,20 @@ const Calendar: React.FC<calendarProps> = props => {
         setSelectedAplicador(parseInt(event.target.value));
     };
 
+    const sortFilterOptions = <T,>(options: T[], getLabel: (option: T) => string) =>
+        options.slice().sort((first, second) => {
+            const firstLabel = getLabel(first).trim();
+            const secondLabel = getLabel(second).trim();
+            const firstHasNumber = /\d/.test(firstLabel);
+            const secondHasNumber = /\d/.test(secondLabel);
+
+            if (firstHasNumber !== secondHasNumber) {
+                return firstHasNumber ? -1 : 1;
+            }
+
+            return firstLabel.localeCompare(secondLabel, "es", { sensitivity: "base" });
+        });
+
     const hoverChange = () => {
         setIsHovered(true);
     };
@@ -184,7 +241,7 @@ const Calendar: React.FC<calendarProps> = props => {
 
         let filtered = servicios;
 
-        if (selectedClient !== undefined && selectedAplicador !== 0) {
+        if (selectedClient !== undefined) {
             filtered = filtered.filter(servicio => servicio.cliente_id === selectedClient);
         }
 
@@ -205,30 +262,38 @@ const Calendar: React.FC<calendarProps> = props => {
         fetchServicios();
         fetchClientes();
         fetchEmpleados();
-    }, []);
+    }, [props.organizacion]);
 
     useBodyClick(() => {
         setModalActive(false); // Close modal when body is clicked
     }, [modalRef, filterRef]);
 
-    const events = filteredServicios.map(item => ({
-        title: `${item.Clientes?.nombre} ${item.Clientes?.apellidos}` || `Client ${item.cliente_id}`,
-        start: `${item?.fecha_servicio}T${item?.horario_servicio}`,
-        allDay: false,
-        description: item.observaciones,
-        folio: item.folio,
-        frecuencia: item.frecuencia_recomendada,
-        direccion: item.direccion_id,
-        tipoServicio: item.tipo_servicio,
-        tipoFolio: item.tipo_folio,
-        responsable: item.responsable_id,
-        realizado: item.realizado,
-        cancelado: item.cancelado,
-        aplicadorResponsable: item?.Empleados?.nombre,
-        aplicadorResponsable_id: item?.tecnico_id,
-        tipoPlaga: item.tipo_plaga_id,
-        ubicacion: item.direccion_id,
-    }));
+    const events = filteredServicios.map(item => {
+        const event = {
+            title: `${item.Clientes?.nombre} ${item.Clientes?.apellidos}` || `Client ${item.cliente_id}`,
+            start: `${item?.fecha_servicio}T${item?.horario_servicio}`,
+            allDay: false,
+            description: item.observaciones,
+            folio: item.folio,
+            frecuencia: item.frecuencia_recomendada,
+            direccion: item.direccion_id,
+            tipoServicio: item.tipo_servicio,
+            tipoFolio: item.tipo_folio,
+            responsable: item.responsable_id,
+            realizado: item.realizado,
+            cancelado: item.cancelado,
+            aplicadorResponsable: item?.Empleados?.nombre,
+            aplicadorResponsable_id: item?.tecnico_id,
+            tipoPlaga: item.tipo_plaga_id,
+            ubicacion: item.direccion_id,
+        };
+
+        if (Number(item.folio) === -2661) {
+            console.log("Evento -2661 generado para FullCalendar:", event);
+        }
+
+        return event;
+    });
 
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState<any>(null);
@@ -328,11 +393,13 @@ const Calendar: React.FC<calendarProps> = props => {
                             <div className="selectsContainer">
                                 <select value={selectedClient} onChange={handleClienteChange} style={{ ...mainStyle }}>
                                     <option>Filtrar por cliente</option>
-                                    {clientes.map(item => (
-                                        <option key={item.id} value={item.id}>
-                                            {item.nombre} {item.apellidos}
-                                        </option>
-                                    ))}
+                                    {sortFilterOptions(clientes, item => `${item.nombre} ${item.apellidos}`).map(
+                                        item => (
+                                            <option key={item.id} value={item.id}>
+                                                {item.nombre} {item.apellidos}
+                                            </option>
+                                        )
+                                    )}
                                 </select>
                                 <select
                                     value={selectedAplicador}
@@ -340,7 +407,7 @@ const Calendar: React.FC<calendarProps> = props => {
                                     style={{ ...mainStyle }}
                                 >
                                     <option value={0}>Filtrar por Aplicador</option>
-                                    {empleados?.map(item => (
+                                    {sortFilterOptions(empleados ?? [], item => item?.nombre ?? "").map(item => (
                                         <option key={item?.id} value={item?.id}>
                                             {item?.nombre}
                                         </option>
