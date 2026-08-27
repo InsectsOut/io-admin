@@ -5,6 +5,7 @@ import { supabase } from "./utils/ClientSupabase";
 import { useToast } from "./rehusableComponents/Toast";
 import { StyledSelect } from "./rehusableComponents/StyledSelect";
 import { StyledInput, StyledButton } from "./FormComponents";
+import { downloadBitacoraExcel } from "./utils/ExcelGenerator";
 
 type TipoBitacora = "ECEXTT" | "ECINT" | "VOLADORES";
 
@@ -376,6 +377,7 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
     const { servicioId, tipo } = useParams();
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [downloadingExcel, setDownloadingExcel] = useState(false);
     const [servicio, setServicio] = useState<ServicioData | null>(null);
     const [bitacora, setBitacora] = useState<BitacoraData | null>(null);
     const [revision, setRevision] = useState<RevisionData | null>(null);
@@ -396,6 +398,20 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
     }, [tipo]);
 
     const folioText = servicio?.folio && servicio.folio < 0 ? `FT-${servicio.folio * -1}` : servicio?.folio;
+
+    const descargarExcel = async () => {
+        if (!servicio) return;
+        try {
+            setDownloadingExcel(true);
+            await downloadBitacoraExcel(servicio.id, organizacion ?? "");
+            showToast("Excel de bitácora descargado", "success");
+        } catch (error) {
+            console.error("Error descargando Excel de bitácora", error);
+            showToast("No se pudo generar el Excel de la bitácora", "error");
+        } finally {
+            setDownloadingExcel(false);
+        }
+    };
 
     const crearRevisionSiNoExiste = async (servicioData: ServicioData, bitacoraData: BitacoraData) => {
         const { data: existente, error: e1 } = await (supabase as any)
@@ -988,16 +1004,21 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
                             );
                         })}
 
-                        {estaciones.length > 0 && (
-                            <Actions>
-                                <Button disabled={saving} onClick={() => guardarCaptura(false)}>
-                                    Guardar
-                                </Button>
-                                <Button disabled={saving} onClick={() => guardarCaptura(true)}>
-                                    Cerrar revision
-                                </Button>
-                            </Actions>
-                        )}
+                        <Actions>
+                            {estaciones.length > 0 && (
+                                <>
+                                    <Button disabled={saving} onClick={() => guardarCaptura(false)}>
+                                        Guardar
+                                    </Button>
+                                    <Button disabled={saving} onClick={() => guardarCaptura(true)}>
+                                        Cerrar revision
+                                    </Button>
+                                </>
+                            )}
+                            <Button disabled={saving || downloadingExcel || !servicio} onClick={descargarExcel}>
+                                {downloadingExcel ? "Generando Excel..." : "Descargar bitácora Excel"}
+                            </Button>
+                        </Actions>
                     </>
                 )}
             </Card>

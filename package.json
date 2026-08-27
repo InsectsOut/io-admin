@@ -25,6 +25,7 @@
         "exceljs": "^4.4.0",
         "html2pdf.js": "^0.12.1",
         "install": "^0.13.0",
+        "jszip": "^3.10.1",
         "npm": "^10.8.1",
         "react": "^18.2.0",
         "react-datepicker": "^6.1.0",
