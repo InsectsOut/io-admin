@@ -101,7 +101,7 @@ const StationList = styled.div`
 
 const StationRow = styled.div`
     display: flex;
-    align-items: center;
+    align-items: flex-start;
     justify-content: space-between;
     gap: 0.75rem;
     padding: 0.55rem 0.7rem;
@@ -114,6 +114,9 @@ const StationInfo = styled.div`
     display: flex;
     flex-direction: column;
     gap: 0.1rem;
+    flex: 1;
+    min-width: 0;
+    text-align: left;
 `;
 
 const StationCode = styled.span`
@@ -162,7 +165,13 @@ const Select = styled.select`
     border: 1px solid #d4d4d4;
     border-radius: 0.35rem;
     background: #fff;
+    color: #474747;
     padding: 0 0.4rem;
+
+    option {
+        color: #474747;
+        background: #fff;
+    }
 `;
 
 const Textarea = styled.textarea`
@@ -174,6 +183,44 @@ const Textarea = styled.textarea`
     box-sizing: border-box;
     resize: vertical;
     margin-top: 0.4rem;
+`;
+
+const StationEditor = styled.div`
+    display: grid;
+    grid-template-columns: repeat(2, minmax(10rem, 1fr));
+    gap: 0.55rem;
+    margin-top: 0.45rem;
+
+    @media (max-width: 42rem) {
+        grid-template-columns: 1fr;
+    }
+`;
+
+const StationField = styled.div`
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+
+    &:last-child {
+        grid-column: 1 / -1;
+    }
+`;
+
+const StationFieldLabel = styled(Label)`
+    font-size: 0.78rem;
+`;
+
+const StationTextarea = styled(Textarea)`
+    margin-top: 0;
+    min-height: 3rem;
+`;
+
+const StationActions = styled.div`
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    flex-wrap: wrap;
 `;
 
 const Actions = styled.div`
@@ -192,6 +239,29 @@ const Button = styled.button`
     padding: 0.45rem 0.9rem;
     font-weight: 700;
     font-size: 0.88rem;
+
+    &:disabled {
+        opacity: 0.55;
+        cursor: not-allowed;
+    }
+`;
+
+const EditButton = styled(Button)`
+    color: #2a5f8c;
+    border-color: #2a5f8c;
+    background: #f1f7fc;
+`;
+
+const CancelButton = styled.button`
+    all: unset;
+    cursor: pointer;
+    border: 1px solid #999;
+    color: #666;
+    background: #fff;
+    border-radius: 0.4rem;
+    padding: 0.45rem 0.75rem;
+    font-weight: 700;
+    font-size: 0.82rem;
 
     &:disabled {
         opacity: 0.55;
@@ -244,6 +314,8 @@ const BitacorasDireccion: React.FC<Props> = ({ organizacion }) => {
     const [rolEmpleado, setRolEmpleado] = useState<RolEmpleado>(null);
     const [nuevoTipo, setNuevoTipo] = useState<TipoBitacora>("ECEXTT");
     const [nuevaEstacion, setNuevaEstacion] = useState({ codigo: "", area: "", zona: "", descripcion: "" });
+    const [editingStationId, setEditingStationId] = useState<number | null>(null);
+    const [stationDraft, setStationDraft] = useState({ area: "", zona: "", descripcion: "" });
 
     const canManage = rolEmpleado === "administrador" || rolEmpleado === "superadmin";
 
@@ -378,6 +450,55 @@ const BitacorasDireccion: React.FC<Props> = ({ organizacion }) => {
         }
     };
 
+    const iniciarEdicionEstacion = (estacion: Estacion) => {
+        if (!canManage || saving) return;
+        setEditingStationId(estacion.id);
+        setStationDraft({
+            area: estacion.area ?? "",
+            zona: estacion.zona ?? "",
+            descripcion: estacion.descripcion ?? "",
+        });
+    };
+
+    const cancelarEdicionEstacion = () => {
+        if (saving) return;
+        setEditingStationId(null);
+        setStationDraft({ area: "", zona: "", descripcion: "" });
+    };
+
+    const guardarEdicionEstacion = async (id: number) => {
+        if (!canManage) return;
+        const changes = {
+            area: stationDraft.area.trim() || null,
+            zona: stationDraft.zona.trim() || null,
+            descripcion: stationDraft.descripcion.trim() || null,
+        };
+
+        try {
+            setSaving(true);
+            const { error } = await (supabase as any)
+                .from("EstacionesBitacora")
+                .update(changes)
+                .eq("id", id)
+                .eq("direccion_id", Number(direccionId));
+
+            if (error) {
+                showToast(error.message, "error");
+                return;
+            }
+
+            setEstaciones(prev => prev.map(estacion => (estacion.id === id ? { ...estacion, ...changes } : estacion)));
+            setEditingStationId(null);
+            setStationDraft({ area: "", zona: "", descripcion: "" });
+            showToast("Datos de estación actualizados", "success");
+        } catch (err: any) {
+            showToast("No se pudieron actualizar los datos de la estación", "error");
+            console.log("Error actualizando estacion", err?.message ?? err);
+        } finally {
+            setSaving(false);
+        }
+    };
+
     if (loading) {
         return (
             <Wrap>
@@ -409,7 +530,7 @@ const BitacorasDireccion: React.FC<Props> = ({ organizacion }) => {
                         {dirText ? ` — ${dirText}` : ""}
                     </Subtitle>
                 </TitleBlock>
-                <ReturnLink to="/bitacoras">← Volver a bitácoras</ReturnLink>
+                <ReturnLink to="/bitacoras">Volver a bitácoras</ReturnLink>
             </Header>
 
             {TIPOS.map(tipo => {
@@ -424,23 +545,110 @@ const BitacorasDireccion: React.FC<Props> = ({ organizacion }) => {
                             <EmptyText>Sin estaciones configuradas.</EmptyText>
                         ) : (
                             <StationList>
-                                {estsTipo.map(est => (
-                                    <StationRow key={est.id}>
-                                        <StationInfo>
-                                            <StationCode>{est.codigo_estacion}</StationCode>
-                                            <StationMeta>
-                                                {est.area ?? "Sin área"}
-                                                {est.zona ? ` | ${est.zona}` : ""}
-                                                {est.descripcion ? ` — ${est.descripcion}` : ""}
-                                            </StationMeta>
-                                        </StationInfo>
-                                        {canManage && (
-                                            <DangerButton disabled={saving} onClick={() => desactivarEstacion(est.id)}>
-                                                Desactivar
-                                            </DangerButton>
-                                        )}
-                                    </StationRow>
-                                ))}
+                                {estsTipo.map(est => {
+                                    const isEditing = editingStationId === est.id;
+
+                                    return (
+                                        <StationRow key={est.id}>
+                                            <StationInfo>
+                                                <StationCode>{est.codigo_estacion}</StationCode>
+                                                {isEditing ? (
+                                                    <StationEditor>
+                                                        <StationField>
+                                                            <StationFieldLabel htmlFor={`area-${est.id}`}>
+                                                                Área
+                                                            </StationFieldLabel>
+                                                            <Input
+                                                                id={`area-${est.id}`}
+                                                                value={stationDraft.area}
+                                                                onChange={e =>
+                                                                    setStationDraft(prev => ({
+                                                                        ...prev,
+                                                                        area: e.target.value,
+                                                                    }))
+                                                                }
+                                                                placeholder="Ej: Almacén"
+                                                            />
+                                                        </StationField>
+                                                        <StationField>
+                                                            <StationFieldLabel htmlFor={`zona-${est.id}`}>
+                                                                Zona
+                                                            </StationFieldLabel>
+                                                            <Input
+                                                                id={`zona-${est.id}`}
+                                                                value={stationDraft.zona}
+                                                                onChange={e =>
+                                                                    setStationDraft(prev => ({
+                                                                        ...prev,
+                                                                        zona: e.target.value,
+                                                                    }))
+                                                                }
+                                                                placeholder="Ej: Norte"
+                                                            />
+                                                        </StationField>
+                                                        <StationField>
+                                                            <StationFieldLabel htmlFor={`descripcion-${est.id}`}>
+                                                                Descripción
+                                                            </StationFieldLabel>
+                                                            <StationTextarea
+                                                                id={`descripcion-${est.id}`}
+                                                                value={stationDraft.descripcion}
+                                                                onChange={e =>
+                                                                    setStationDraft(prev => ({
+                                                                        ...prev,
+                                                                        descripcion: e.target.value,
+                                                                    }))
+                                                                }
+                                                                placeholder="Detalle opcional de la estación"
+                                                            />
+                                                        </StationField>
+                                                    </StationEditor>
+                                                ) : (
+                                                    <StationMeta>
+                                                        {est.area ?? "Sin área"}
+                                                        {est.zona ? ` | ${est.zona}` : ""}
+                                                        {est.descripcion ? ` — ${est.descripcion}` : ""}
+                                                    </StationMeta>
+                                                )}
+                                            </StationInfo>
+                                            {canManage && (
+                                                <StationActions>
+                                                    {isEditing ? (
+                                                        <>
+                                                            <Button
+                                                                disabled={saving}
+                                                                onClick={() => guardarEdicionEstacion(est.id)}
+                                                            >
+                                                                Guardar
+                                                            </Button>
+                                                            <CancelButton
+                                                                disabled={saving}
+                                                                onClick={cancelarEdicionEstacion}
+                                                            >
+                                                                Cancelar
+                                                            </CancelButton>
+                                                        </>
+                                                    ) : (
+                                                        <>
+                                                            <EditButton
+                                                                disabled={saving}
+                                                                onClick={() => iniciarEdicionEstacion(est)}
+                                                            >
+                                                                Editar
+                                                            </EditButton>
+                                                            <DangerButton
+                                                                disabled={saving}
+                                                                onClick={() => desactivarEstacion(est.id)}
+                                                            >
+                                                                Desactivar
+                                                            </DangerButton>
+                                                        </>
+                                                    )}
+                                                </StationActions>
+                                            )}
+                                        </StationRow>
+                                    );
+                                })}
                             </StationList>
                         )}
                     </SectionCard>
