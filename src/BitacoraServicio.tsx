@@ -77,6 +77,7 @@ const Wrap = styled.div`
     width: 100%;
     box-sizing: border-box;
     padding: 1.2rem 1.4rem;
+    color: #333;
 `;
 
 const Header = styled.div`
@@ -829,7 +830,7 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
                                     to={`/bitacoras/direccion/${servicio?.direccion_id}`}
                                     style={{ color: "inherit", fontWeight: 700 }}
                                 >
-                                    Ir a configurar estaciones →
+                                    Ir a configurar estaciones
                                 </Link>
                             </p>
                         )}
@@ -897,7 +898,7 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
                                     )}
 
                                     {/* SECCIÓN DE INCIDENCIAS DE PLAGAS */}
-                                    <SubsectionTitle>🐛 Incidencias de Plagas</SubsectionTitle>
+                                    <SubsectionTitle>Incidencias de Plagas</SubsectionTitle>
                                     <PlagasSection>
                                         <PlagasForm>
                                             <StyledSelect
@@ -954,7 +955,7 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
                                                                 </small>
                                                             </HallazgoInfo>
                                                             <DeleteButton onClick={() => eliminarHallazgo(est.id, idx)}>
-                                                                ✕
+                                                                Eliminar
                                                             </DeleteButton>
                                                         </HallazgoItemStyled>
                                                     );
@@ -965,7 +966,7 @@ const BitacoraServicio: React.FC<BitacoraServicioProps> = ({ organizacion }) => 
 
                                     {/* SECCIÓN DE CÓDIGOS CLAVE: aparece debajo de plagas, por cada estación */}
                                     <>
-                                        <SubsectionTitle>🔑 Códigos CLAVE de esta estación</SubsectionTitle>
+                                        <SubsectionTitle>Códigos CLAVE de esta estación</SubsectionTitle>
                                         <ClavesSection>
                                             {claves.length === 0 ? (
                                                 <EmptyClaves>
